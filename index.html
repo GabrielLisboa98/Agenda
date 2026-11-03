@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261103-175208';</script>
+<script>window.AGENDA_BUILD = '20261103-181903';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261103-175208"></script>
+<script src="cloud.js?v=20261103-181903"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -2898,12 +2898,28 @@ html[data-mode="dark"] .ck-round.green{color:#30D158;} html[data-mode="dark"] .c
 </style><style id="ios-shell-2k">
 #hero-slot::before{opacity:0; transition:opacity .15s ease-out;}
 body.hero-stuck #hero-slot::before{opacity:1;}
+</style><style id="ios-shell-2l">
+@media (max-width:860px){
+  html::after{height:calc(var(--safe-top,0px) + 4px)!important; z-index:11!important;
+    -webkit-mask-image:linear-gradient(#000 55%, transparent)!important; mask-image:linear-gradient(#000 55%, transparent)!important;}
+  #hero-slot{top:calc(var(--safe-top,0px) - 6px)!important;}
+  #ios-tabbar{padding-top:16px!important; padding-bottom:max(2px, calc(var(--safe-bottom,0px) - 22px))!important;
+    background:linear-gradient(transparent, color-mix(in srgb, var(--glass-bg-strong) 30%, transparent) 22px)!important;
+    -webkit-mask-image:linear-gradient(transparent, #000 26px)!important; mask-image:linear-gradient(transparent, #000 26px)!important;}
+  .ac-dot{position:absolute!important;} .ac-menu{position:absolute!important;}
+}
+#hero-slot::before{background:color-mix(in srgb, var(--glass-bg-strong) 22%, transparent)!important;
+  backdrop-filter:blur(10px) saturate(1.6)!important; -webkit-backdrop-filter:blur(10px) saturate(1.6)!important;
+  bottom:-24px!important; -webkit-mask-image:linear-gradient(#000 calc(100% - 24px), transparent)!important; mask-image:linear-gradient(#000 calc(100% - 24px), transparent)!important;}
+.why-panel, .notif-panel, #sky-panel, .qf-menu, .toast, .modal, .pn-pop, .nt-pop{
+  background:color-mix(in srgb, var(--glass-bg-strong) 88%, transparent)!important;
+  backdrop-filter:blur(28px) saturate(1.8)!important; -webkit-backdrop-filter:blur(28px) saturate(1.8)!important;}
 </style><script>
 (function(){
   var tick=false;
   function chk(){ tick=false; var h=document.getElementById('hero-slot'); if(!h) return;
     var t=parseFloat(getComputedStyle(h).top)||0, r=h.getBoundingClientRect().top;
-    document.body.classList.toggle('hero-stuck', window.scrollY>0 && r<=t+1); }
+    document.body.classList.toggle('hero-stuck', window.scrollY>8 && r<=t+1); }
   window.addEventListener('scroll', function(){ if(!tick){ tick=true; requestAnimationFrame(chk); } }, {passive:true});
   window.addEventListener('resize', chk);
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', chk); else chk();
@@ -11083,8 +11099,8 @@ window.addEventListener('keydown', function(e){
     var r = dayRecord(dstr) || {};
     var wake = r.wakeTime || null;
     if(!wake){
-      return '<div class="panel wake-panel" id="wake-panel" style="margin-bottom:12px;"><div class="panel-body wake-ask">' +
-        '<div class="wake-q">Como foi a noite?</div>' +
+      return '<div class="panel wake-panel'+sideFoldCls('night')+'" id="wake-panel" data-fold="night" style="margin-bottom:12px;"><div class="panel-head">'+sideFoldHead('night','Como foi a noite?')+'</div><div class="panel-body wake-ask">' +
+        '' +
         '<div class="wake-controls">' +
           nightFieldsHtml(r) +
           '<button class="btn small" id="wake-now">Acordei agora</button>' +
@@ -11098,7 +11114,9 @@ window.addEventListener('keydown', function(e){
     var gapMin = began ? Math.max(0, minutesOf(began)-minutesOf(wake)) : null;
     var pend = blocksBeforeWake(dstr, wake);
     var pendMin = pend.reduce(function(s,b){ return s + (minutesOf(b.plannedEnd)-minutesOf(b.plannedStart)); }, 0);
-    return '<div class="panel wake-panel" id="wake-panel" style="margin-bottom:12px;">' +
+    return '<div class="panel wake-panel'+sideFoldCls('night')+'" id="wake-panel" data-fold="night" style="margin-bottom:12px;">' +
+
+      '<div class="panel-head">'+sideFoldHead('night','Sono', st.sleptMin!=null ? fmtDuration(st.sleptMin) : '')+'</div>' +
       '<div class="panel-body">' +
         '<div class="wake-nums">' +
           (r.bedTime ? '<div><dt>Deitei</dt><dd class="mono">'+r.bedTime+'</dd></div>' : '') +
