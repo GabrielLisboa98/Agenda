@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261104-165109';</script>
+<script>window.AGENDA_BUILD = '20261104-170657';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261104-165109"></script>
+<script src="cloud.js?v=20261104-170657"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -2944,6 +2944,17 @@ body.nt-row-dragging #nt-nav [data-go="trash"]{outline:1.5px dashed var(--critic
   html:has(body.hero-stuck)::after{opacity:0!important;}
   html.hero-stuck::after{opacity:0!important;}
   #hero-slot{z-index:44!important;}
+}
+</style><style id="ios-fix-2q">
+@media (max-width:860px){
+  .cal-headerrow, .cal-body{width:max-content; min-width:100%;}
+  .cal-daylabels, .cal-columns{flex:1 0 auto;}
+  .cal-daylabel, .cal-col{flex:1 0 84px; width:84px; min-width:84px!important;}
+  .cal-headerrow{z-index:8;}
+  .cal-gutter-head, .cal-gutter{position:sticky; left:0; z-index:7;
+    background:linear-gradient(var(--surface),var(--surface)), linear-gradient(var(--glass-bg-strong),var(--glass-bg-strong)), var(--sky-base, var(--bg));
+    box-shadow:1px 0 0 var(--border-soft);}
+  .rz-lab{max-width:calc(100% - 8px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-sizing:border-box;}
 }
 </style><script>
 
