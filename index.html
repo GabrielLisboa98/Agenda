@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261104-131552';</script>
+<script>window.AGENDA_BUILD = '20261104-165109';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261104-131552"></script>
+<script src="cloud.js?v=20261104-165109"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -2920,12 +2920,83 @@ body.nt-row-dragging, body.nt-row-dragging *{cursor:grabbing!important; user-sel
 body.nt-row-dragging #nt-nav [data-go="trash"]{outline:1.5px dashed var(--critical); outline-offset:-2px;}
 #nt-nav .nt-drop-trash{background:var(--critical-soft)!important; color:var(--critical)!important; transform:scale(1.03); transition:transform .12s ease-out;}
 #nt-nav .nt-row[data-open]{-webkit-touch-callout:none; touch-action:pan-y;}
+</style><style id="ios-fix-2p">
+@media (pointer:coarse){
+  .chip{touch-action:pan-x pan-y; -webkit-touch-callout:none; -webkit-user-select:none;}
+  .chip.chip-lift{touch-action:none; transform:scale(1.04); box-shadow:0 10px 24px -8px rgba(0,0,0,.55); z-index:30!important; transition:transform .18s cubic-bezier(.32,.72,0,1), box-shadow .18s;}
+}
+#quick-fabs{pointer-events:none;}
+#quick-fabs > *:not(.qf-menu), #quick-fabs.open .qf-menu{pointer-events:auto;}
+.field-row .field{min-width:0;}
+.field input, .field select, .field textarea{max-width:100%; min-width:0; box-sizing:border-box;}
+.field input[type="time"], .field input[type="date"]{width:100%; -webkit-appearance:none; appearance:none; text-align:left;}
+@media (max-width:600px){ .field-row{flex-wrap:nowrap;} }
+@media (max-width:860px){
+  .main-grid, .main-grid.week{grid-template-columns:minmax(0,1fr)!important;}
+  .main-grid.week .side{grid-template-columns:minmax(0,1fr)!important;}
+  .main-grid .side > *{min-width:0; max-width:100%;}
+  html, body{overflow-x:clip;}
+}
+@media (max-width:860px) and (pointer:coarse){
+  input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea{font-size:max(16px, 1em)!important;}
+}
+@media (max-width:860px){
+  html:has(body.hero-stuck)::after{opacity:0!important;}
+  html.hero-stuck::after{opacity:0!important;}
+  #hero-slot{z-index:44!important;}
+}
 </style><script>
+
+(function(){
+  try{ if(navigator.audioSession) navigator.audioSession.type='ambient'; }catch(_){}
+  var C=null;
+  function ctx(){ try{ if(!C){ var A=window.AudioContext||window.webkitAudioContext; if(!A) return null; C=new A(); } if(C.state==='suspended') C.resume(); return C; }catch(_){ return null; } }
+  document.addEventListener('pointerdown', function(){ ctx(); }, {capture:true});
+  function on(){ try{ return localStorage.getItem('agenda-ui-sound')!=='off'; }catch(_){ return true; } }
+  function tone(c, t, f, d, v, type, glide){
+    var o=c.createOscillator(), g=c.createGain(); o.type=type||'sine'; o.frequency.setValueAtTime(f,t);
+    if(glide) o.frequency.exponentialRampToValueAtTime(glide, t+d*0.9);
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(v,t+0.008); g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+d+0.03);
+  }
+  var KINDS={
+
+    ok:function(c,t){ tone(c,t,1046.5,.16,.09); tone(c,t,2093,.10,.025); tone(c,t+.085,1568,.26,.085); tone(c,t+.085,3136,.14,.02); },
+
+    pop:function(c,t){ tone(c,t,880,.07,.07,'sine',1320); },
+
+    warn:function(c,t){ tone(c,t,659,.14,.07,'triangle'); tone(c,t+.12,523,.2,.06,'triangle'); },
+
+    trash:function(c,t){ tone(c,t,520,.22,.06,'sine',190); },
+
+    add:function(c,t){ tone(c,t,784,.1,.06); tone(c,t+.06,988,.1,.06); tone(c,t+.12,1318.5,.22,.07); }
+  };
+  window.uiSound=function(k){ if(!on()) return; var c=ctx(); if(!c) return; var f=KINDS[k]||KINDS.ok; try{ f(c, c.currentTime+0.01); }catch(_){} };
+  window.uiSoundKind=function(msg, icon, err){
+    var m=String(msg||''); if(err || /⚠|❌/.test(icon||'') || /não|erro|falt|preencha|escolha um|selecione|digite|inválid|válid/i.test(m)) return 'warn';
+    if(/lixeira|exclu|apag|removid/i.test(m)) return 'trash';
+    if(/agendad|criad|novo|nova|adicionad|salvo|salva\b/i.test(m)) return 'add';
+    if(/conclu|feito|pronto|✓/i.test(m+(icon||''))) return 'ok';
+    return 'pop';
+  };
+
+  window.sysNotify=function(title, body, tag){
+    try{
+      if(!('Notification' in window) || Notification.permission!=='granted') return;
+      var opts={body:body||'', tag:tag||undefined, icon:'icons/icon-192.png', badge:'icons/favicon-32.png'};
+      if(navigator.serviceWorker && navigator.serviceWorker.getRegistration){
+        navigator.serviceWorker.getRegistration().then(function(r){ if(r && r.showNotification) r.showNotification(title, opts); else new Notification(title, opts); })
+          .catch(function(){ try{ new Notification(title, opts); }catch(_){} });
+      } else new Notification(title, opts);
+    }catch(_){}
+  };
+})();
+</script><script>
 (function(){
   var tick=false;
   function chk(){ tick=false; var h=document.getElementById('hero-slot'); if(!h) return;
     var t=parseFloat(getComputedStyle(h).top)||0, r=h.getBoundingClientRect().top;
-    document.body.classList.toggle('hero-stuck', window.scrollY>8 && r<=t+1); }
+    var st=window.scrollY>8 && r<=t+1; document.body.classList.toggle('hero-stuck', st); document.documentElement.classList.toggle('hero-stuck', st); }
   window.addEventListener('scroll', function(){ if(!tick){ tick=true; requestAnimationFrame(chk); } }, {passive:true});
   window.addEventListener('resize', chk);
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', chk); else chk();
@@ -3135,6 +3206,7 @@ function ntSanitize(html){
 function ntToast(msg, err, action){
   var box=$('#nt-toasts'), el=document.createElement('div');
   el.className='nt-toast'+(err?' err':''); el.textContent=msg; box.appendChild(el);
+  if(window.uiSound) window.uiSound(window.uiSoundKind(msg, '', err));
   if(action){ el.classList.add('has-act'); var b=document.createElement('button'); b.type='button'; b.className='nt-toast-act'; b.textContent=action.label; b.onclick=function(){ el.remove(); action.fn(); }; el.appendChild(b); }
   setTimeout(function(){ el.remove(); }, action?6500:err?4200:2400);
 }
@@ -7619,7 +7691,7 @@ window.addEventListener('keydown', function(e){
       bedLastSound=Date.now(); startKeepAliveAudio(); var bsd=playSound(r.sound||'tigela', bedSpeech());
 
       if(first && (r.sound||'tigela')!=='voz' && bedWhyItems().length) setTimeout(function(){ if(document.getElementById('bed-ov')) bedSay(bedSpeech()); }, ((bsd||2)+0.6)*1000);
-      if(document.hidden && 'Notification' in window && Notification.permission==='granted'){ try{ new Notification('🌙 Hora de desligar', {body:'Já deu o horário. Continua amanhã — vamos descansar?'}); }catch(e){} }
+      if(document.hidden && 'Notification' in window && Notification.permission==='granted'){ try{ (window.sysNotify||function(t,b){ new Notification(t,{body:b}); })('🌙 Hora de desligar', 'Já deu o horário. Continua amanhã — vamos descansar?'); }catch(e){} }
     }
   }
 
@@ -7695,7 +7767,7 @@ window.addEventListener('keydown', function(e){
     document.body.appendChild(ov);
     function loop(){ if(!document.getElementById('alarm-ov')) return; var d=playSound(a.sound||'carrilhao', a.label||'Despertador'); ov._t=setTimeout(loop, Math.max(3, d+1.5)*1000); }
     loop();
-    if('Notification' in window && Notification.permission==='granted'){ try{ new Notification('⏰ '+(a.label||'Despertador'), {body:a.time}); }catch(e){} }
+    if(window.sysNotify) window.sysNotify('⏰ '+(a.label||'Despertador'), a.time, 'alarm');
     ov.addEventListener('click', function(e){
       var b=e.target.closest('[data-al]'); if(!b) return; clearTimeout(ov._t); ov.remove(); try{ speechSynthesis.cancel(); }catch(_){}
       if(b.getAttribute('data-al')==='snooze'){ a._snoozeUntil=Date.now()+5*60000; showToast('Soneca: toca de novo em 5 minutos.', '⏰'); }
@@ -7939,7 +8011,7 @@ window.addEventListener('keydown', function(e){
     opts = opts||{};
     playAlertSound(opts.urgent ? 'urgent' : 'beep');
     if('Notification' in window && Notification.permission==='granted'){
-      try{ new Notification(title, {body:body}); }catch(e){}
+      if(window.sysNotify) window.sysNotify(title, body); else try{ new Notification(title, {body:body}); }catch(e){}
     }
 
     var entry = logAlert(title, body, opts);
@@ -8891,6 +8963,7 @@ window.addEventListener('keydown', function(e){
     el.className = 'toast';
     el.innerHTML = '<span class="toast-ic">'+(icon||'✓')+'</span><span>'+escapeHtml(msg)+'</span>';
     host.appendChild(el);
+    if(window.uiSound) window.uiSound(window.uiSoundKind(msg, icon));
     requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.classList.add('show'); }); });
     setTimeout(function(){
       el.classList.remove('show');
@@ -11959,13 +12032,34 @@ window.addEventListener('keydown', function(e){
 
     function effectiveCopy(){ return isCopy || !canMove; }
 
+    var lpT=null, armed=false, tPt=null, dragged=false;
+    function disarm(){ clearTimeout(lpT); lpT=null; tPt=null; }
+    chip.addEventListener('click', function(e){
+      e.stopPropagation();
+      if(dragged){ dragged=false; return; }
+      if(chip.dataset.tapOpen==='1'){ chip.dataset.tapOpen=''; openFn(); }
+    });
+    chip.addEventListener('touchmove', function(e){ if(armed && e.cancelable) e.preventDefault(); }, {passive:false});
+    chip.addEventListener('contextmenu', function(e){ if(tPt||armed) e.preventDefault(); });
     chip.addEventListener('pointerdown', function(e){
       e.stopPropagation();
+      if(e.pointerType==='touch'){
+        disarm(); armed=false; dragged=false; chip.dataset.tapOpen='1';
+        tPt={x:e.clientX, y:e.clientY, id:e.pointerId};
+        lpT=setTimeout(function(){
+          if(!tPt) return;
+          armed=true; dragging=true; moved=false; startX=tPt.x; startY=tPt.y; isCopy=false; chip.dataset.tapOpen='';
+          try{ chip.setPointerCapture(tPt.id); }catch(_){}
+          chip.classList.add('chip-lift'); try{ if(navigator.vibrate) navigator.vibrate(8); }catch(_){}
+        }, 380);
+        return;
+      }
       e.preventDefault();
       dragging=true; moved=false; startX=e.clientX; startY=e.clientY; isCopy=!!e.shiftKey;
       chip.setPointerCapture(e.pointerId);
     });
     chip.addEventListener('pointermove', function(e){
+      if(tPt && !armed && (Math.abs(e.clientX-tPt.x)>10 || Math.abs(e.clientY-tPt.y)>10)){ disarm(); chip.dataset.tapOpen=''; }
       if(!dragging) return;
       e.preventDefault();
       isCopy = !!e.shiftKey;
@@ -12000,7 +12094,9 @@ window.addEventListener('keydown', function(e){
       dragActive=false;
       chip.style.opacity='';
       if(ghost){ ghost.remove(); ghost=null; ghostCol=null; }
-      if(!moved){ openFn(); return; }
+      var wasTouch=armed; armed=false; chip.classList.remove('chip-lift');
+      if(wasTouch){ dragged=true; if(!moved){ openFn(); return; } }
+      else if(!moved){ openFn(); return; }
       if(lastDate==null) return;
       var copyNow = effectiveCopy();
       if(it.kind==='check'){
@@ -12012,8 +12108,8 @@ window.addEventListener('keydown', function(e){
         else updateBlock(b.id, {date:lastDate, plannedStart:timeOfMinutes(lastStartMin), plannedEnd:timeOfMinutes(lastStartMin+durMin), overlapEatenMin:null, overlapAcknowledged:false});
       }
     }
-    chip.addEventListener('pointerup', finish);
-    chip.addEventListener('pointercancel', function(){ dragging=false; dragActive=false; chip.style.opacity=''; if(ghost){ghost.remove(); ghost=null; ghostCol=null;} });
+    chip.addEventListener('pointerup', function(e){ if(tPt && !armed){ disarm(); return; } disarm(); finish(e); });
+    chip.addEventListener('pointercancel', function(){ disarm(); armed=false; chip.dataset.tapOpen=''; chip.classList.remove('chip-lift'); dragging=false; dragActive=false; chip.style.opacity=''; if(ghost){ghost.remove(); ghost=null; ghostCol=null;} });
   }
 
   function wireColumnCreate(col, d){
@@ -14172,9 +14268,11 @@ window.addEventListener('keydown', function(e){
       '<div class="empty-hint" style="padding:8px 0 0;">'+notifHint+'</div>' +
       '<div class="empty-hint" style="padding:4px 0 0;">Funciona enquanto esta aba fica aberta no PC (não manda nada com a aba fechada ou o navegador minimizado no celular). Bom pra manter tocando em segundo plano se puder.</div>' +
       '<button class="btn ghost small" id="alerts-test" style="margin-top:8px;">🔊 Testar som</button>' +
+      '<label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-top:12px;"><input type="checkbox" id="ui-sound-toggle" '+((function(){ try{ return localStorage.getItem('agenda-ui-sound')!=='off'; }catch(_){ return true; } })()?'checked':'')+' style="width:16px; height:16px;"><span>Sons curtos ao concluir, agendar, salvar e apagar (no iPhone respeitam o modo silencioso)</span></label>' +
     '</div></div>';
   }
   function wireAlertsPanel(app){
+    var uis=app.querySelector('#ui-sound-toggle'); if(uis) uis.onchange=function(){ try{ localStorage.setItem('agenda-ui-sound', uis.checked?'on':'off'); }catch(_){} if(uis.checked && window.uiSound) window.uiSound('ok'); };
     var toggle=app.querySelector('#alerts-toggle');
     if(toggle) toggle.onchange=function(){ setAlertsEnabled(toggle.checked); };
     var testBtn=app.querySelector('#alerts-test');
