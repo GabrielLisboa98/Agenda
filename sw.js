@@ -3,7 +3,7 @@
    - Scripts, ícones, dicionário e fontes: do cache, atualizando por trás.
    - Imagens das notas (Supabase Storage): do cache depois da primeira vez.
    - Chamadas de dados ao Supabase (auth/rest) nunca passam pelo cache. */
-var VERSION = '20261103-181903';
+var VERSION = '20261104-131552';
 var CACHE = 'agenda-' + VERSION;
 var SHELL = ['./', './index.html', './cloud.js?v=' + VERSION, './config.js', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png', './icons/favicon-32.png'];

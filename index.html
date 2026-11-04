@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261103-181903';</script>
+<script>window.AGENDA_BUILD = '20261104-131552';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261103-181903"></script>
+<script src="cloud.js?v=20261104-131552"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -2914,6 +2914,12 @@ body.hero-stuck #hero-slot::before{opacity:1;}
 .why-panel, .notif-panel, #sky-panel, .qf-menu, .toast, .modal, .pn-pop, .nt-pop{
   background:color-mix(in srgb, var(--glass-bg-strong) 88%, transparent)!important;
   backdrop-filter:blur(28px) saturate(1.8)!important; -webkit-backdrop-filter:blur(28px) saturate(1.8)!important;}
+</style><style id="nt-ctx-css">
+.nt-drag-ghost{position:fixed!important; left:0; top:0; z-index:99999; pointer-events:none; opacity:.92; background:var(--surface)!important; border-radius:10px; box-shadow:var(--shadow-lg);}
+body.nt-row-dragging, body.nt-row-dragging *{cursor:grabbing!important; user-select:none;}
+body.nt-row-dragging #nt-nav [data-go="trash"]{outline:1.5px dashed var(--critical); outline-offset:-2px;}
+#nt-nav .nt-drop-trash{background:var(--critical-soft)!important; color:var(--critical)!important; transform:scale(1.03); transition:transform .12s ease-out;}
+#nt-nav .nt-row[data-open]{-webkit-touch-callout:none; touch-action:pan-y;}
 </style><script>
 (function(){
   var tick=false;
@@ -4876,6 +4882,62 @@ function ntRestore(id){
   if(NT.cur && NT.cur.id===id){ NT.readOnly=false; ntRenderPage(); }
   ntToast('Página restaurada'); ntRenderSide(); if(NT.view!=='page') ntRenderMain();
 }
+
+function ntCtxMenu(id, rc){
+  var p=NT.pages[id]; if(!p || p.archived) return;
+  var h='<button type="button" class="nt-mi" data-cx="open"><span class="nt-mi-i">↗</span><span class="nt-mi-t">Abrir</span></button>'+
+    (p.template?'':'<button type="button" class="nt-mi" data-cx="sub">'+ntIcon('plus')+'<span class="nt-mi-t">Nova subpágina</span></button>')+
+    (p.template?'':'<button type="button" class="nt-mi" data-cx="pin"><span class="nt-mi-i">📌</span><span class="nt-mi-t">'+(p.pinned?'Desafixar':'Fixar')+'</span></button>')+
+    '<button type="button" class="nt-mi" data-cx="dup">'+ntIcon('copy')+'<span class="nt-mi-t">Duplicar</span></button>'+
+    (p.template?'':'<button type="button" class="nt-mi" data-cx="move">'+ntIcon('move')+'<span class="nt-mi-t">Mover para…</span></button>')+
+    '<div class="nt-pop-sep"></div>'+
+    '<button type="button" class="nt-mi danger" data-cx="del">'+ntIcon('trash')+'<span class="nt-mi-t">'+(p.template?'Excluir modelo':'Mover para a lixeira')+'</span></button>';
+  var fake={getBoundingClientRect:function(){ return rc; }};
+  ntOpenPop(fake, h, function(pop){
+    pop.classList.add('nt-ctx');
+    var q=function(k){ return pop.querySelector('[data-cx="'+k+'"]'); };
+    q('open').onclick=function(){ ntClosePop(); ntOpen(id); };
+    if(q('sub')) q('sub').onclick=function(){ ntClosePop(); ntFlush(); ntNewPage(id); };
+    if(q('pin')) q('pin').onclick=function(){ ntClosePop(); ntUpdPage(id,{pinned:!p.pinned}); ntRenderSide(); ntToast(p.pinned?'Página fixada':'Página desafixada'); };
+    q('dup').onclick=function(){ ntClosePop(); ntDuplicate(id); };
+    if(q('move')) q('move').onclick=function(){ ntClosePop(); ntMovePop(fake, id); };
+    q('del').onclick=function(){ ntClosePop(); ntTrash(id); };
+  });
+}
+(function(){
+  function rowOf(t){ var r=t && t.closest && t.closest('#nt-nav .nt-row[data-open]'); return r; }
+  document.addEventListener('contextmenu', function(e){
+    var r=rowOf(e.target); if(!r) return;
+    e.preventDefault(); ntCtxMenu(r.getAttribute('data-open'), {left:e.clientX, right:e.clientX, top:e.clientY, bottom:e.clientY});
+  });
+  var D=null, eatClick=false;
+  document.addEventListener('pointerdown', function(e){
+    var r=rowOf(e.target); if(!r || e.button!==0) return;
+    D={id:r.getAttribute('data-open'), row:r, x:e.clientX, y:e.clientY, touch:e.pointerType!=='mouse', ghost:null, moved:false,
+       lp:setTimeout(function(){ if(D && !D.moved && D.touch){ var rc=r.getBoundingClientRect(); eatClick=true; ntCtxMenu(D.id, rc); if(navigator.vibrate) try{ navigator.vibrate(10); }catch(_){}; D=null; } }, 480)};
+  });
+  document.addEventListener('pointermove', function(e){
+    if(!D) return;
+    var dx=e.clientX-D.x, dy=e.clientY-D.y;
+    if(!D.moved && Math.abs(dx)+Math.abs(dy)>6){ D.moved=true; clearTimeout(D.lp);
+      if(D.touch){ D=null; return; }
+      var g=D.row.cloneNode(true); g.className='nt-row nt-drag-ghost'; g.style.width=D.row.offsetWidth+'px'; document.body.appendChild(g); D.ghost=g;
+      document.body.classList.add('nt-row-dragging'); }
+    if(D.ghost){ D.ghost.style.transform='translate('+(e.clientX+8)+'px,'+(e.clientY-14)+'px)';
+      var over=document.elementFromPoint(e.clientX, e.clientY), tr=over && over.closest && over.closest('#nt-nav [data-go="trash"]');
+      var old=document.querySelector('#nt-nav .nt-drop-trash'); if(old && old!==tr) old.classList.remove('nt-drop-trash'); if(tr) tr.classList.add('nt-drop-trash'); }
+  });
+  function end(e){
+    if(!D) return; clearTimeout(D.lp);
+    if(D.ghost){ var over=document.elementFromPoint(e.clientX, e.clientY), tr=over && over.closest && over.closest('#nt-nav [data-go="trash"]');
+      D.ghost.remove(); document.body.classList.remove('nt-row-dragging');
+      var hl=document.querySelector('#nt-nav .nt-drop-trash'); if(hl) hl.classList.remove('nt-drop-trash');
+      eatClick=true; if(tr) ntTrash(D.id); }
+    D=null;
+  }
+  document.addEventListener('pointerup', end); document.addEventListener('pointercancel', function(){ if(D){ clearTimeout(D.lp); if(D.ghost){ D.ghost.remove(); document.body.classList.remove('nt-row-dragging'); } D=null; } });
+  document.addEventListener('click', function(e){ if(eatClick){ eatClick=false; if(rowOf(e.target) || (e.target.closest && e.target.closest('#nt-nav'))){ e.preventDefault(); e.stopPropagation(); } } }, true);
+})();
 function ntPurge(id){
   Object.keys(NT.pages).forEach(function(k){ var p=NT.pages[k]; if(p && p.archived && p.trashRoot===id){ ntDelPage(k); ntQueue(k,{kind:'delete'},'history'); } });
   if(NT.cur && NT.pages[NT.cur.id]===undefined){ ntCloseEditor(); NT.view='trash'; }
