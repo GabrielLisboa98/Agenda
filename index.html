@@ -5,11 +5,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Agenda">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261104-170657';</script>
+<link rel="icon" type="image/png" sizes="32x32" href="icons/pm-favicon-32.png">
+<link rel="apple-touch-icon" href="icons/pm-apple-touch-icon.png">
+<script>window.AGENDA_BUILD = '20261105-183816';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261104-170657"></script>
+<script src="cloud.js?v=20261105-183816"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -2994,7 +2994,7 @@ body.nt-row-dragging #nt-nav [data-go="trash"]{outline:1.5px dashed var(--critic
   window.sysNotify=function(title, body, tag){
     try{
       if(!('Notification' in window) || Notification.permission!=='granted') return;
-      var opts={body:body||'', tag:tag||undefined, icon:'icons/icon-192.png', badge:'icons/favicon-32.png'};
+      var opts={body:body||'', tag:tag||undefined, icon:'icons/pm-icon-192.png', badge:'icons/pm-favicon-32.png'};
       if(navigator.serviceWorker && navigator.serviceWorker.getRegistration){
         navigator.serviceWorker.getRegistration().then(function(r){ if(r && r.showNotification) r.showNotification(title, opts); else new Notification(title, opts); })
           .catch(function(){ try{ new Notification(title, opts); }catch(_){} });
@@ -10617,9 +10617,8 @@ window.addEventListener('keydown', function(e){
     });
   }
   function brandMarkHtml(){
-    var today=todayStr();
 
-    return '<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" aria-hidden="true" viewBox="0 0 1024 1024"><defs><linearGradient id="agi-g" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#4B2C9A"/><stop offset=".55" stop-color="#B0478F"/><stop offset="1" stop-color="#FF9A4A"/></linearGradient><filter id="agi-s" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#2A0F55" flood-opacity=".32"/></filter></defs><rect width="1024" height="1024" rx="230" fill="url(#agi-g)"/><g transform="translate(0 10) scale(1)"><rect x="330" y="186" width="476" height="476" rx="116" fill="#fff" fill-opacity=".18" stroke="#fff" stroke-opacity=".32" stroke-width="3"/><rect x="274" y="242" width="476" height="476" rx="116" fill="#fff" fill-opacity=".3" stroke="#fff" stroke-opacity=".4" stroke-width="3"/><g filter="url(#agi-s)"><rect x="218" y="298" width="476" height="476" rx="116" fill="#fff" fill-opacity=".78" stroke="#fff" stroke-opacity=".9" stroke-width="3"/></g><g transform="translate(456 536)" fill="none" stroke-linecap="round" stroke-width="48"><circle r="158" stroke="#2A1550" stroke-opacity=".1"/><path d="M0 -158 A158 158 0 0 1 137 79" stroke="#7B6CFF"/><path d="M123 99 A158 158 0 0 1 -32 155" stroke="#34C27A"/><path d="M-66 144 A158 158 0 0 1 -156 27" stroke="#FFB020"/><path d="M-152 -41 A158 158 0 0 1 -80 -136" stroke="#FF5A4E"/></g><g transform="translate(456 536)" stroke="#1C1C1E" stroke-linecap="round" stroke-width="22"><path d="M0 0 L0 -96"/><path d="M0 0 L63 36"/><circle r="20" fill="#1C1C1E" stroke="none"/></g></g></svg>';
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" aria-hidden="true" viewBox="0 0 1024 1024"><defs><linearGradient id="agi-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1F2A44"/><stop offset=".62" stop-color="#3E4A6B"/><stop offset="1" stop-color="#C9A98B"/></linearGradient><mask id="agi-m"><rect width="1024" height="1024" fill="#fff"/><circle cx="706" cy="706" r="196" fill="#000"/></mask></defs><rect width="1024" height="1024" rx="230" fill="url(#agi-g)"/><g transform="translate(0 0) scale(1)"><rect x="198" y="198" width="540" height="600" rx="96" fill="#F3E3CF" mask="url(#agi-m)"/><rect x="318" y="160" width="56" height="124" rx="28" fill="#D9A574"/><rect x="514" y="160" width="56" height="124" rx="28" fill="#D9A574"/><path d="M300 420 H560" stroke="#1F2A44" stroke-width="44" stroke-linecap="round"/><path d="M300 534 H470" stroke="#1F2A44" stroke-opacity=".4" stroke-width="44" stroke-linecap="round"/><path d="M706.0 578.0 A128 128 0 1 1 585.7 749.8" fill="none" stroke="#D9A574" stroke-width="56" stroke-linecap="round"/><circle cx="706" cy="706" r="30" fill="#F3E3CF"/></g></svg>';
   }
   function sidebarClockHtml(){
     var now=new Date();
