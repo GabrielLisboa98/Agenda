@@ -3,10 +3,10 @@
    - Scripts, ícones, dicionário e fontes: do cache, atualizando por trás.
    - Imagens das notas (Supabase Storage): do cache depois da primeira vez.
    - Chamadas de dados ao Supabase (auth/rest) nunca passam pelo cache. */
-var VERSION = '20261105-183816';
+var VERSION = '20261105-193647';
 var CACHE = 'agenda-' + VERSION;
 var SHELL = ['./', './index.html', './cloud.js?v=' + VERSION, './config.js', './manifest.webmanifest',
-  './icons/pm-icon-192.png', './icons/pm-icon-512.png', './icons/pm-apple-touch-icon.png', './icons/pm-favicon-32.png'];
+  './icons/sl-icon-192.png', './icons/sl-icon-512.png', './icons/sl-apple-touch-icon.png', './icons/sl-favicon-32.png'];
 
 self.addEventListener('install', function(e){
   e.waitUntil(caches.open(CACHE).then(function(c){ return c.addAll(SHELL.map(function(u){ return new Request(u, {cache:'reload'}); })); }).then(function(){ return self.skipWaiting(); }));
