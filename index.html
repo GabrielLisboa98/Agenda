@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261105-195730';</script>
+<script>window.AGENDA_BUILD = '20261106-121406';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261105-195730"></script>
+<script src="cloud.js?v=20261106-121406"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -464,10 +464,15 @@
   .appt-toggle-field label{display:flex; align-items:center; gap:8px; font-size:0.8333rem; font-weight:700; cursor:pointer;}
   .appt-toggle-hint{font-size:0.7222rem; color:var(--ink-soft); margin-top:4px; line-height:1.35;}
   .rem-editor{display:flex; flex-direction:column; gap:6px; align-items:flex-start;}
-  .rem-row{display:flex; align-items:center; gap:6px;}
-  .rem-row .rem-ic{font-size:0.8333rem;}
-  .rem-row .rem-val{width:64px; background:var(--surface-3); border:1px solid var(--border); border-radius:3px; padding:5px 6px; font-size:0.8333rem; color:var(--ink); font-family:var(--mono);font-variant-numeric:tabular-nums; text-align:right;}
-  .rem-row .rem-unit{background:var(--surface-3); border:1px solid var(--border); border-radius:3px; padding:5px 4px; font-size:0.8333rem; color:var(--ink);}
+  /* Linha "🔔 [número] [min/h] antes ✕" (06/11/2026): a regra geral `.field select{width:100%}` fazia o
+     seletor de unidade querer a linha inteira e o flex espremia o número (cabia só um dígito, "30" virava
+     "3") e o sino. Agora cada peça tem a largura do que mostra e nenhuma encolhe: o número é o que importa
+     ler, então ganha espaço e destaque; "min"/"h" é palavra curta, então o seletor fica justo nela. */
+  .rem-row{display:flex; align-items:center; gap:8px;}
+  .rem-row > *{flex:none;}
+  .rem-row .rem-ic{font-size:0.9444rem; line-height:1;}
+  .rem-row .rem-val{width:72px; min-width:72px; background:var(--surface-3); border:1px solid var(--border); border-radius:3px; padding:7px 8px; font-size:1rem; font-weight:600; color:var(--ink); font-family:var(--mono);font-variant-numeric:tabular-nums; text-align:center;}
+  .rem-row .rem-unit{width:auto; min-width:68px; background:var(--surface-3); border:1px solid var(--border); border-radius:3px; padding:7px 8px; font-size:0.8333rem; color:var(--ink);}
   .rem-row .rem-lbl{font-size:0.8333rem; color:var(--ink-soft);}
   .rem-empty{font-size:0.8333rem; color:var(--ink-faint);}
   .rem-warn{font-size:0.7222rem; color:var(--warning); margin-top:2px;}
