@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261106-150945';</script>
+<script>window.AGENDA_BUILD = '20261106-151727';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261106-150945"></script>
+<script src="cloud.js?v=20261106-151727"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -3234,6 +3234,29 @@ html.lay-off-progress.lay-off-budget #mobile-metrics, html.lay-off-progress.lay-
   .lay-bar{transition:none;}
 }
 
+/* legenda dos sons em Configurações › Alertas */
+.snd-legend{margin-top:14px; display:flex; flex-direction:column; gap:3px;}
+.ia-layout{display:flex; align-items:center; justify-content:center; background:transparent; border:none; height:auto; overflow:visible;}
+.ia-layout .lay-phone{width:92px; padding-top:14px;}
+.is-on .ia-layout .lay-bar:nth-child(2n+3){animation:ia-lay 3.2s cubic-bezier(.32,.72,0,1) infinite;}
+@keyframes ia-lay{0%,30%{height:var(--h); opacity:1; margin-bottom:4px;} 45%,80%{height:0; opacity:0; margin-bottom:0;} 100%{height:var(--h); opacity:1; margin-bottom:4px;}}
+.ia-moon{display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 10%, var(--surface-3)), var(--surface-3));}
+.ia-moon i{width:46px; height:46px; border-radius:50%; box-shadow:-12px 6px 0 0 var(--accent); transform:translate(8px,-4px);}
+.ia-moon b{position:absolute; left:24px; right:24px; bottom:20px; height:14px; border-radius:7px; background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--accent) 45%, transparent) 0 5px, transparent 5px 10px);}
+.is-on .ia-moon i{animation:ia-rise 1s cubic-bezier(.32,.72,0,1) both;}
+@keyframes ia-rise{from{transform:translate(8px,30px); opacity:0;}}
+.ia-pal{display:flex; align-items:center; justify-content:center; gap:10px;}
+.ia-pal i{width:30px; height:30px; border-radius:50%; background:var(--accent);}
+.ia-pal i:nth-child(2){background:#6F8F7A;} .ia-pal i:nth-child(3){background:#7E7AA8;} .ia-pal i:nth-child(4){background:#C9A98B;}
+.is-on .ia-pal i{animation:ia-hop 2.4s cubic-bezier(.32,.72,0,1) infinite;}
+.is-on .ia-pal i:nth-child(2){animation-delay:.15s;} .is-on .ia-pal i:nth-child(3){animation-delay:.3s;} .is-on .ia-pal i:nth-child(4){animation-delay:.45s;}
+@keyframes ia-hop{0%,40%,100%{transform:none;} 20%{transform:translateY(-10px) scale(1.08);}}
+.ia-bell{display:flex; align-items:center; justify-content:center; color:var(--accent);}
+.ia-bell svg{transform-origin:50% 15%;}
+.is-on .ia-bell svg{animation:ia-ring2 2.4s ease-in-out infinite;}
+@keyframes ia-ring2{0%,50%,100%{transform:none;} 10%{transform:rotate(14deg);} 20%{transform:rotate(-12deg);} 30%{transform:rotate(8deg);} 40%{transform:rotate(-4deg);}}
+.snd-legend em{font-style:normal; font-size:0.8333rem; color:var(--ink-soft);}
+.snd-btns{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;}
 /* ---------- Guias de cada app (06/11/2026): mesma folha das dicas, com o nome do app no topo ---------- */
 .guide-ov{z-index:99985;}
 .guide-head{position:absolute; top:16px; left:22px; z-index:2; display:flex; flex-direction:column; gap:1px; pointer-events:none;}
@@ -3369,24 +3392,83 @@ html.lay-off-progress.lay-off-budget #mobile-metrics, html.lay-off-progress.lay-
     g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(v,t+0.008); g.gain.exponentialRampToValueAtTime(0.0001,t+d);
     o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+d+0.03);
   }
+  /* Sons desenhados (06/11/2026, pedido do Gabriel: os antigos tinham "cara de ar" — eram ondas puras, sem
+     corpo). Agora cada nota é um instrumento de verdade em miniatura: a fundamental mais os harmônicos de vidro,
+     sino ou marimba, cada um caindo no seu tempo (os agudos somem antes, como num objeto real), e tudo passa
+     por uma sala pequena (reverberação curta gerada aqui mesmo) e um compressor que dá peso sem estourar.
+     São sons próprios, no espírito dos do iPhone, não cópias deles. */
+  var BUS=null;
+  function impulse(c, sec, decay){
+    var n=Math.floor(c.sampleRate*sec), b=c.createBuffer(2, n, c.sampleRate);
+    for(var ch=0; ch<2; ch++){ var d=b.getChannelData(ch); for(var i=0;i<n;i++){ d[i]=(Math.random()*2-1)*Math.pow(1-i/n, decay); } }
+    return b;
+  }
+  function bus(c){
+    if(BUS && BUS.c===c) return BUS;
+    var dry=c.createGain(), wet=c.createGain(), conv=c.createConvolver(), comp=c.createDynamicsCompressor(), out=c.createGain();
+    conv.buffer=impulse(c, 1.6, 3.2); wet.gain.value=.28; dry.gain.value=1; out.gain.value=.9;
+    comp.threshold.value=-20; comp.knee.value=12; comp.ratio.value=3.5; comp.attack.value=.002; comp.release.value=.18;
+    dry.connect(comp); dry.connect(conv); conv.connect(wet); wet.connect(comp); comp.connect(out); out.connect(c.destination);
+    BUS={c:c, dry:dry, close:comp};
+    return BUS;
+  }
+  var TIMBRES={
+    // [proporção da frequência, volume relativo, quanto do tempo da nota ela dura]
+    glass:  [[1,1,1],[2,.42,.62],[3.01,.2,.4],[4.2,.08,.25],[.5,.18,.7]],
+    bell:   [[1,1,1],[2.76,.38,.55],[5.4,.16,.32],[8.93,.06,.18],[.5,.12,.8]],
+    marimba:[[1,1,1],[3.93,.28,.16],[9.54,.07,.07],[.5,.1,.5]],
+    wood:   [[1,1,1],[2.57,.35,.4],[4.9,.12,.25]]
+  };
+  function note(c, t, f, v, len, timbre, dryOnly){
+    var B=bus(c), dest=dryOnly ? B.close : B.dry, P=TIMBRES[timbre||'glass'];
+    P.forEach(function(p){
+      var o=c.createOscillator(), g=c.createGain(), d=Math.max(.02, len*p[2]);
+      o.type='sine'; o.frequency.setValueAtTime(f*p[0], t);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v*p[1], t+0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+d);
+      o.connect(g); g.connect(dest); o.start(t); o.stop(t+d+0.05);
+    });
+  }
   var KINDS={
-
-    ok:function(c,t){ tone(c,t,1046.5,.16,.09); tone(c,t,2093,.10,.025); tone(c,t+.085,1568,.26,.085); tone(c,t+.085,3136,.14,.02); },
-
-    pop:function(c,t){ tone(c,t,880,.07,.07,'sine',1320); },
-
-    warn:function(c,t){ tone(c,t,659,.14,.07,'triangle'); tone(c,t+.12,523,.2,.06,'triangle'); },
-
-    trash:function(c,t){ tone(c,t,520,.22,.06,'sine',190); },
-
-    add:function(c,t){ tone(c,t,784,.1,.06); tone(c,t+.06,988,.1,.06); tone(c,t+.12,1318.5,.22,.07); },
-
-    // clique seco e curtíssimo das rodinhas (como a catraca do seletor de hora do iPhone): grave e baixo,
-    // porque toca dezenas de vezes seguidas num giro e não pode cansar
-    tick:function(c,t){ tone(c,t,1900,.022,.035,'triangle',1200); },
+    // feito/salvo: duas notas de vidro subindo uma quinta
+    ok:function(c,t){ note(c,t,1046.5,.11,.55,'glass'); note(c,t+.09,1568,.1,.8,'glass'); },
+    // toque leve (menus, escolhas)
+    pop:function(c,t){ note(c,t,1174.7,.07,.22,'marimba'); },
+    // algo não deu: duas notas descendo, mais graves e foscas
+    warn:function(c,t){ note(c,t,659.3,.1,.4,'marimba'); note(c,t+.13,493.9,.1,.55,'marimba'); },
+    // apagado: um "tum" grave que afunda
+    trash:function(c,t){ note(c,t,392,.11,.35,'wood'); note(c,t+.07,261.6,.09,.45,'wood'); },
+    // criado: arpejo curto de marimba, como um "pronto!"
+    add:function(c,t){ note(c,t,784,.08,.35,'marimba'); note(c,t+.065,987.8,.08,.35,'marimba'); note(c,t+.13,1318.5,.09,.6,'glass'); },
+    // catraca das rodinhas: madeira seca, sem sala (com eco viraria chiado num giro rápido)
+    tick:function(c,t){ note(c,t,2200,.035,.03,'wood',true); },
     // interruptor: subindo ao ligar, descendo ao desligar
-    swOn:function(c,t){ tone(c,t,660,.06,.05,'sine',990); },
-    swOff:function(c,t){ tone(c,t,880,.06,.045,'sine',560); }
+    swOn:function(c,t){ note(c,t,880,.06,.16,'marimba',true); note(c,t+.05,1318.5,.06,.22,'marimba'); },
+    swOff:function(c,t){ note(c,t,1318.5,.05,.14,'marimba',true); note(c,t+.05,880,.05,.2,'marimba'); }
+  };
+  /* Avisos dos blocos (vai começar, hora de começar, fim chegando, estourou...). Tocam mesmo com os sons de
+     toque desligados: quem desliga avisos é o interruptor de Alertas. Devolve false se o áudio do navegador
+     ainda não foi liberado (precisa de um toque na página antes) — aí quem chamou usa o bipe antigo. */
+  /* Um som por tipo de aviso, todos da mesma família para não virar decoreba: SOBE = começa, DESCE = acaba,
+     REPETIDO = atenção. Uma nota só = "se prepara". */
+  var CHIMES={
+    // vai começar (faltam X min): uma nota de vidro com um eco mais baixo — só um toque no ombro
+    pre:function(c,t){ note(c,t,1046.5,.11,1.3,'glass'); note(c,t+.32,1046.5,.045,1,'glass'); },
+    // hora de começar: acorde de vidro subindo, abre e assenta
+    start:function(c,t){ note(c,t,783.99,.12,1.2,'glass'); note(c,t+.12,1046.5,.12,1.4,'glass'); note(c,t+.24,1318.5,.11,1.8,'bell'); },
+    // fim chegando: o mesmo acorde descendo, para soar como fechamento
+    nearend:function(c,t){ note(c,t,1318.5,.11,1,'glass'); note(c,t+.14,1046.5,.11,1.1,'glass'); note(c,t+.28,783.99,.12,1.6,'glass'); },
+    // estourou: três notas de sino subindo, duas vezes — insiste sem gritar
+    over:function(c,t){ [0,.62].forEach(function(o){ note(c,t+o,1046.5,.14,.7,'bell'); note(c,t+o+.12,1318.5,.14,.7,'bell'); note(c,t+o+.24,1568,.15,1.1,'bell'); }); },
+    // afazer na hora: marimba curta, mais "leve" que um bloco
+    check:function(c,t){ note(c,t,880,.1,.4,'marimba'); note(c,t+.1,1174.7,.11,.6,'marimba'); },
+    // compromisso: duas notas de sino iguais, como um "dim-dim" de recepção
+    appt:function(c,t){ note(c,t,1174.7,.13,1.1,'bell'); note(c,t+.28,1174.7,.12,1.5,'bell'); }
+  };
+  CHIMES.beep=CHIMES.start; CHIMES.urgent=CHIMES.over;
+  window.uiChime=function(kind){
+    var c=ctx(); if(!c || c.state!=='running') return false;
+    try{ (CHIMES[kind]||CHIMES.beep)(c, c.currentTime+0.02); return true; }catch(_){ return false; }
   };
   /* Toque tátil (06/11/2026). Android: navigator.vibrate. iPhone: o Safari não tem vibrate, mas desde o
      iOS 18 um <input type=checkbox switch> dá o "tique" do sistema quando é acionado pelo rótulo — então
@@ -8212,6 +8294,16 @@ window.addEventListener('keydown', function(e){
       {t:'Nota rápida', a:'quick', p:'No "+" › Nota rápida (Ctrl+Alt+N no PC), a ideia vai em segundos para a Caixa de entrada. Depois você move para a página certa.'},
       {t:'Meus porquês', a:'why', p:'Uma página com os seus motivos. De tempos em tempos a Agenda mostra um deles, para lembrar por que você está fazendo o que faz.'}
     ]},
+    config: {name:'Configurações', slides:[
+      {v:'cfg:visual', t:'Visual do app', a:'layout', p:'Quanto aparece na tela. Simples mostra só a grade e os afazeres; Completo mostra tudo. Dá para trocar quando quiser.'},
+      {v:'cfg:descanso', t:'Descanso', a:'moon', p:'Seu horário de dormir. A grade marca o período de descanso e, quando chega a hora, a Agenda avisa para desligar.'},
+      {v:'cfg:porques', t:'Meus porquês', a:'why', p:'Escreva por que cada hábito ou meta importa para você. A Agenda mostra um desses motivos de tempos em tempos.'},
+      {v:'cfg:aparencia', t:'Aparência', a:'palette', p:'As cores do app, claro ou escuro, o fundo e o céu que muda com a hora do dia.'},
+      {v:'cfg:alertas', t:'Alertas', a:'bell', p:'Som e notificação antes, no começo e no fim de cada bloco. Cada aviso tem o seu som, e dá para ouvir todos ali.'},
+      {v:'cfg:habitos', t:'Hábitos diários', a:'list', p:'Hábitos de sim ou não, como ler ou beber água. Você marca no Dia e o app conta quantos dias seguidos.'},
+      {v:'cfg:lembretes', t:'Eventos', a:'month', p:'Aniversários e datas especiais. Aparecem no topo do dia, o dia todo, e podem se repetir todo ano.'},
+      {v:'cfg:calendario', t:'Calendário', a:'week', p:'Feriados que não vêm prontos (os da sua cidade, por exemplo) e horários da grade que você prefere esconder.'}
+    ]},
     relogio: {name:'Relógio', slides:[
       {v:'ck-relogio', t:'Relógio', a:'clock', p:'A hora certa, grande, para bater o olho de longe.'},
       {v:'ck-alarmes', t:'Alarmes', a:'relogio', p:'No topo, o horário de dormir e de acordar. Embaixo, outros alarmes, com repetição e soneca. No iPhone eles tocam com o app aberto.'},
@@ -8236,11 +8328,15 @@ window.addEventListener('keydown', function(e){
       case 'quick': return '<div class="ia ia-quick"><div class="tray"></div><b class="note"></b><span class="plus">+</span></div>';
       case 'why': return '<div class="ia ia-why"><div class="card"><i></i><b></b><b class="s"></b></div></div>';
       case 'clock': return '<div class="ia ia-clock"><div class="face"><i class="h"></i><i class="m"></i><i class="s"></i></div></div>';
+      case 'layout': return '<div class="ia ia-layout">'+layoutPreviewHtml()+'</div>';
+      case 'moon': return '<div class="ia ia-moon"><i></i><b></b></div>';
+      case 'palette': return '<div class="ia ia-pal"><i></i><i></i><i></i><i></i></div>';
+      case 'bell': return '<div class="ia ia-bell"><svg viewBox="0 0 24 24" width="54" height="54" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg></div>';
       case 'stopwatch': return '<div class="ia ia-stop"><div class="t">00:<u>12</u>,4</div><div class="laps"><b></b><b></b></div></div>';
       default: return introArtHtml(a);
     }
   }
-  function appOfView(v){ return v==='planner' ? 'planner' : v==='pages' ? 'notas' : v==='clock' ? 'relogio' : (v==='settings' ? null : 'agenda'); }
+  function appOfView(v){ return v==='planner' ? 'planner' : v==='pages' ? 'notas' : v==='clock' ? 'relogio' : (v==='settings' ? 'config' : 'agenda'); }
   var introThisSession=false;
   function guideMaybe(){
     if(!state.layoutLoaded || !state.layout.introSeen) return;
@@ -8293,7 +8389,9 @@ window.addEventListener('keydown', function(e){
         var v=b.getAttribute('data-go'), intro=document.getElementById('intro-ov');
         // vindo do "Ver mais" das dicas, ir para a aba encerra as dicas também (a pessoa escolheu explorar)
         if(intro){ var sk=intro.querySelector('[data-intro=skip]'); if(sk) sk.click(); }
-        close(); setView(v);
+        close();
+        if(v.indexOf('cfg:')===0){ if(state.view!=='settings') setView('settings'); var ap=document.getElementById('app'); if(ap) setCfgSec(ap, v.slice(4)); }
+        else setView(v);
       };
     });
     ov.addEventListener('keydown', function(e){
@@ -8778,7 +8876,8 @@ window.addEventListener('keydown', function(e){
     try{ var p=el.play(); if(p && p.catch) p.catch(function(){   }); }catch(e){}
     _keepAliveStarted = true;
   }
-  function playAlertSound(kind){
+  function playAlertSound(kind, alertKind){
+    if(window.uiChime && window.uiChime(alertKind || (kind==='urgent' ? 'urgent' : 'beep'))) return;
     var el = document.getElementById(kind==='urgent' ? 'audio-urgent' : 'audio-beep');
     if(!el) return;
     try{ el.currentTime = 0; var p=el.play(); if(p && p.catch) p.catch(function(){}); }catch(e){}
@@ -8794,7 +8893,7 @@ window.addEventListener('keydown', function(e){
   }
   function fireAlert(title, body, opts){
     opts = opts||{};
-    playAlertSound(opts.urgent ? 'urgent' : 'beep');
+    playAlertSound(opts.urgent ? 'urgent' : 'beep', opts.kind);
     if('Notification' in window && Notification.permission==='granted'){
       if(window.sysNotify) window.sysNotify(title, body); else try{ new Notification(title, {body:body}); }catch(e){}
     }
@@ -9772,7 +9871,8 @@ window.addEventListener('keydown', function(e){
     if(CK_TAB_OF[v]){ CK.tab=CK_TAB_OF[v]; v='clock'; }
     if(v==='planner') subscribePlanner();
     else { if(v!=='settings' && v!=='pages' && v!=='clock') state.lastAgendaView=v; if(PN.detailId) pnCloseDetail(); }
-    if(v==='settings' && state.view!=='settings') state.cfgSec=null;
+    if(v==='settings' && state.view!=='settings'){ state.cfgSec=null; cfgDepth=0; cfgPush(); }
+    if(v!=='settings') cfgDepth=0;
     state.view=v;
     if(v==='month'){ state.monthAnchor=state.selectedDate.slice(0,7); subscribeMonth(state.monthAnchor); }
     else stopMonth();
@@ -15068,10 +15168,13 @@ window.addEventListener('keydown', function(e){
       '<div class="empty-hint" style="padding:8px 0 0;">'+notifHint+'</div>' +
       '<div class="empty-hint" style="padding:4px 0 0;">Funciona enquanto esta aba fica aberta no PC (não manda nada com a aba fechada ou o navegador minimizado no celular). Bom pra manter tocando em segundo plano se puder.</div>' +
       '<button class="btn ghost small" id="alerts-test" style="margin-top:8px;">🔊 Testar som</button>' +
+      '<div class="snd-legend"><b>Um som para cada aviso</b><em>Sobe = começa, desce = acaba, repetido = atenção. Toque para ouvir.</em>' +
+        '<div class="snd-btns">'+[['pre','Vai começar'],['start','Hora de começar'],['nearend','Fim chegando'],['over','Estourou'],['check','Afazer'],['appt','Compromisso']].map(function(x){ return '<button type="button" class="btn small" data-snd="'+x[0]+'">'+x[1]+'</button>'; }).join('')+'</div></div>' +
       '<label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-top:12px;"><input type="checkbox" id="ui-sound-toggle" '+((function(){ try{ return localStorage.getItem('agenda-ui-sound')!=='off'; }catch(_){ return true; } })()?'checked':'')+' style="width:16px; height:16px;"><span>Sons curtos ao concluir, agendar, salvar e apagar (no iPhone respeitam o modo silencioso)</span></label>' +
     '</div></div>';
   }
   function wireAlertsPanel(app){
+    Array.prototype.forEach.call(app.querySelectorAll('[data-snd]'), function(b){ b.onclick=function(){ if(!(window.uiChime && window.uiChime(b.getAttribute('data-snd')))) playAlertSound('beep'); }; });
     var uis=app.querySelector('#ui-sound-toggle'); if(uis) uis.onchange=function(){ try{ localStorage.setItem('agenda-ui-sound', uis.checked?'on':'off'); }catch(_){} if(uis.checked && window.uiSound) window.uiSound('ok'); };
     var toggle=app.querySelector('#alerts-toggle');
     if(toggle) toggle.onchange=function(){ setAlertsEnabled(toggle.checked); };
@@ -15182,28 +15285,76 @@ window.addEventListener('keydown', function(e){
   }
 
   var CFG_SECS = [
-    ['visual','layers','Visual do app','Simples, equilibrado, completo ou do seu jeito'],
-    ['descanso','clock','Descanso','Horário de dormir e banner roxo'],
-    ['porques','chat','Meus porquês','Seus motivos aparecendo ao longo do dia'],
-    ['aparencia','palette','Aparência','Cores padrão ou céu, claro/escuro, fundo e programação'],
-    ['alertas','bell','Alertas','Som e notificação antes, no início e no fim dos blocos'],
-    ['habitos','checklist','Hábitos diários','Sim ou não, com sequência'],
-    ['lembretes','flag','Lembretes','Aniversários, eventos e datas que se repetem'],
-    ['calendario','cal','Calendário','Feriados extras e intervalos ocultáveis da grade']
+    // descrições escritas para quem nunca usou o app (06/11/2026): dizem o que a seção FAZ, não como o
+    // Gabriel a usa (a do Descanso ainda falava do "banner roxo", que nem roxo é mais)
+    ['visual','layers','Visual do app','Quanto aparece na tela: Simples, Equilibrado, Completo ou do seu jeito'],
+    ['descanso','clock','Descanso','Seu horário de dormir: a grade marca o descanso e, na hora, a Agenda avisa para desligar'],
+    ['porques','chat','Meus porquês','Seus motivos para hábitos e metas, lembrados ao longo do dia'],
+    ['aparencia','palette','Aparência','Cores do app, claro ou escuro, fundo e o céu que muda com a hora'],
+    ['alertas','bell','Alertas','Som e notificação antes, no começo e no fim de cada bloco'],
+    ['habitos','checklist','Hábitos diários','Hábitos de sim ou não (ler, beber água, treinar), com a sequência de dias'],
+    ['lembretes','flag','Eventos','Aniversários e datas especiais que aparecem no topo do dia, o dia todo'],
+    ['calendario','cal','Calendário','Feriados extras e horários da grade que você prefere esconder, como a madrugada']
   ];
   function cfgTitleHtml(){
     var sec=null; CFG_SECS.forEach(function(x){ if(x[0]===state.cfgSec) sec=x; });
     return sec ? '<button class="cfg-back" id="cfg-back">'+pnIc('left')+'Configurações</button><h1>'+sec[2]+'</h1><p>'+sec[3]+'</p>'
       : '<h1>Configurações</h1><p>Ajustes do app inteiro. Categorias e metas ficam em Gerenciamento › Categorias.</p>';
   }
+  /* Voltar nas Configurações (06/11/2026, pedido do Gabriel): no app instalado o iPhone não tem o "voltar"
+     do navegador, então arrastar da borda esquerda não fazia nada e só restava a setinha. Agora: (1) gesto
+     próprio — puxar a partir da borda esquerda, a tela acompanha o dedo e, soltando depois de ~80px, volta
+     um nível; (2) cada nível entra no histórico, então o botão/gesto de voltar do Android e do navegador
+     fazem o mesmo. A setinha "‹ Configurações" passa pelo mesmo caminho, para o histórico não sobrar. */
+  var cfgDepth=0;
+  function cfgPush(){ try{ history.pushState({ag:'cfg'}, ''); cfgDepth++; }catch(_){ } }
+  function settingsBack(){
+    if(state.view!=='settings') return false;
+    var app=document.getElementById('app');
+    if(state.cfgSec && app) setCfgSec(app, null); else setView(state.lastAgendaView||'day');
+    return true;
+  }
+  function navBack(){
+    if(cfgDepth>0 && history.state && history.state.ag==='cfg'){ try{ history.back(); return; }catch(_){ } }
+    settingsBack();
+  }
+  window.addEventListener('popstate', function(){
+    if(cfgDepth>0){ cfgDepth--; if(state.view==='settings') settingsBack(); }
+  });
+  (function(){
+    var sx=0, sy=0, dx=0, on=false, el=null;
+    function reset(){ if(!el) return; el.style.transition='transform .28s cubic-bezier(.32,.72,0,1), opacity .28s ease'; el.style.transform=''; el.style.opacity=''; }
+    document.addEventListener('touchstart', function(e){
+      if(state.view!=='settings' || e.touches.length!==1 || document.querySelector('#modal-inner, #intro-ov, #guide-ov')) return;
+      var t=e.touches[0]; if(t.clientX>30) return;
+      sx=t.clientX; sy=t.clientY; dx=0; on=true; el=document.getElementById('app');
+    }, {passive:true});
+    document.addEventListener('touchmove', function(e){
+      if(!on || !el) return;
+      var t=e.touches[0]; dx=t.clientX-sx; var dy=Math.abs(t.clientY-sy);
+      if(dy>36 && dy>dx){ on=false; reset(); return; }
+      if(dx>0){ el.style.transition='none'; el.style.transform='translateX('+dx+'px)'; el.style.opacity=String(1-Math.min(.35, dx/700)); }
+    }, {passive:true});
+    function end(){
+      if(!on) return; on=false;
+      if(dx>80 && el){
+        var e1=el; e1.style.transition='transform .2s cubic-bezier(.32,.72,0,1), opacity .2s ease'; e1.style.transform='translateX(60%)'; e1.style.opacity='0';
+        if(window.uiHaptic) uiHaptic(8);
+        setTimeout(function(){ e1.style.transition='none'; e1.style.transform=''; e1.style.opacity=''; navBack(); }, 190);
+      } else reset();
+    }
+    document.addEventListener('touchend', end, {passive:true});
+    document.addEventListener('touchcancel', function(){ on=false; reset(); }, {passive:true});
+  })();
   function setCfgSec(app, sec){
+    if(sec && !state.cfgSec) cfgPush();
     state.cfgSec=sec||null; app.setAttribute('data-sec', state.cfgSec||'home');
     var t=app.querySelector('.cfg-title'); if(t){ t.innerHTML=cfgTitleHtml(); wireCfgNav(app); }
     var m=document.querySelector('.main'); if(m) m.scrollTop=0; window.scrollTo(0,0);
   }
   function wireCfgNav(app){
     Array.prototype.forEach.call(app.querySelectorAll('[data-cfgsec]'), function(b){ b.onclick=function(){ setCfgSec(app, b.getAttribute('data-cfgsec')); }; });
-    var bk=app.querySelector('#cfg-back'); if(bk) bk.onclick=function(){ setCfgSec(app, null); };
+    var bk=app.querySelector('#cfg-back'); if(bk) bk.onclick=function(){ navBack(); };
   }
   function renderCategories(app){
     if(state.view==='settings') app.setAttribute('data-sec', state.cfgSec||'home');
@@ -15217,7 +15368,7 @@ window.addEventListener('keydown', function(e){
       '<div class="cfg-set cfg-sec" data-sec-p="descanso">'+restPanelHtml()+'</div>' +
       '<div class="cfg-set cfg-sec" data-sec-p="porques">'+whyPanelHtml()+'</div>' +
       '<div class="cfg-set cfg-sec" data-sec-p="habitos"><div class="panel"><div class="panel-head"><h2>Hábitos diários</h2><button class="iconbtn" id="hab-add">+</button></div><div class="panel-body" id="hab-list"></div></div></div>' +
-      '<div class="cfg-set cfg-sec" data-sec-p="lembretes"><div class="panel"><div class="panel-head"><h2>Lembretes</h2><button class="iconbtn" id="rem-add">+</button></div><div class="panel-body" id="rem-list"></div></div></div>' +
+      '<div class="cfg-set cfg-sec" data-sec-p="lembretes"><div class="panel"><div class="panel-head"><h2>Eventos do dia todo</h2><button class="iconbtn" id="rem-add">+</button></div><div class="panel-body" id="rem-list"></div></div></div>' +
       '<div class="cfg-set cfg-sec" data-sec-p="calendario"><div class="panel"><div class="panel-head"><h2>Feriados extras</h2><button class="iconbtn" id="hol-add">+</button></div><div class="panel-body" id="hol-list"></div></div>' +
         '<div class="panel"><div class="panel-head"><h2>Intervalos ocultáveis da grade</h2><button class="iconbtn" id="range-add">+</button></div><div class="panel-body" id="range-list"></div></div></div>';
     wireCfgNav(app);
