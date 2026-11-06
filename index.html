@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261106-121406';</script>
+<script>window.AGENDA_BUILD = '20261106-122140';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261106-121406"></script>
+<script src="cloud.js?v=20261106-122140"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -3016,6 +3016,99 @@ html:root[data-mode="light"][data-style="ceu"][data-depth="profundo"][data-sky]{
 .ap-noite{display:none; margin-top:8px;} :root[data-brand^="noite-"] .ap-noite{display:block;}
 .ap-padrao .sp-lbl{margin-top:2px;}
 #sky-panel .sp-style, #cfg-appearance .sp-style{margin-bottom:2px;}
+</style><style id="tamanhos-2t">
+/* Tamanhos (06/11/2026, pedido do Gabriel: "tá muito pequenininho, parece carregado").
+   Medido antes, a 390px: rótulos de campo com 11px, botões com 23–32px de altura, o "+" do Planejamento
+   com 20px e campos de hora sem altura mínima — no iPhone, com appearance:none, o campo VAZIO encolhe até
+   virar um risco (foi o "Como foi a noite?" do print). A regra que segue é a do guia da Apple: tudo que se
+   toca tem pelo menos 44px no celular, texto de leitura não fica abaixo de 13px (Footnote do iOS) e os
+   campos têm altura própria em vez de depender do conteúdo. No PC (mouse) o aumento é mais leve: o mouse
+   acerta alvos menores, mas o texto miúdo cansava igual. Fica numa camada só, no fim do CSS, pra ser fácil
+   de achar e ajustar. */
+
+/* ---------- campos ---------- */
+.field input:not([type=checkbox]):not([type=radio]):not([type=color]), .field select,
+.night-fields input, .rt-time, .rt-select{min-height:38px;}
+input[type=time], input[type=date], input[type=datetime-local], input[type=month]{min-height:38px; line-height:1.3;}
+/* o iPhone mede o campo de hora pelo texto dentro dele; vazio não há texto, então a altura vinha zero */
+input[type=time]::-webkit-date-and-time-value, input[type=date]::-webkit-date-and-time-value{min-height:1.3em; text-align:left;}
+.field > label, .field-row .field > label, .night-fields label > span, .night-fields label{font-size:13px;}
+.night-fields label{gap:5px;}
+
+/* ---------- textos miúdos (abaixo de 13px) que são pra ler ---------- */
+.sp-lbl{font-size:13px!important;}
+.sp-note{font-size:13px;}
+.goal-field-label, .pd-dow, .pd-n, .cg-count, .cx-sub, .wstat-label, .daytop-sub, .holiday-lbl, .rd-scope, .chart-sub, .empty-hint{font-size:13px;}
+.cal-daylabel .dow, .month-dow{font-size:12px;}
+.cal-gutter .hr-label{font-size:12px;}
+.sb-head, .sb-sub, .sb-empty{font-size:12px;}
+.seg-toggle button{font-size:13px; padding:5px 12px;}
+.sp-seg > button{font-size:13px;}
+.appt-count{font-size:13px;}
+.pl-add{font-size:13px; padding:4px 10px;}
+
+/* ---------- botões (PC) ---------- */
+.btn{min-height:36px;}
+.btn.small{min-height:32px; font-size:14px; padding:5px 12px;}
+.navbtn, .today-btn{height:34px;} .navbtn{width:34px;}
+.icon-trigger, .color-trigger{width:34px; height:34px;}
+.goal-input{min-height:34px;}
+
+/* ---------- celular / toque: 44px ---------- */
+@media (pointer:coarse){
+  .field input:not([type=checkbox]):not([type=radio]):not([type=color]), .field select, .field textarea,
+  .night-fields input, .rt-time, .rt-select, .goal-input, .wh-row input[type=text],
+  input[type=time], input[type=date], input[type=datetime-local], input[type=month]{min-height:44px;}
+  .field input, .field select, .rt-time, .rt-select{padding-top:9px; padding-bottom:9px;}
+  .field > label, .field-row .field > label, .night-fields label > span, .night-fields label{font-size:14px;}
+  .appt-toggle-hint, .wake-hint{font-size:15px;}
+
+  .btn{min-height:44px; font-size:16px; padding:10px 18px;}
+  .btn.small{min-height:44px; font-size:15px; padding:8px 16px;}
+  .btn.ghost.small, .rem-del{min-width:44px;}
+  .navbtn, .iconbtn{width:44px; height:44px; flex:none;}
+  .today-btn{height:44px; padding:0 16px; font-size:16px;}
+  .icon-trigger, .color-trigger{width:44px; height:44px;}
+  .side-fold{min-height:44px;}
+  .seg-toggle button{min-height:36px; font-size:14px; padding:6px 14px;}
+  .sp-seg > button{min-height:40px; font-size:14px!important;}
+  .appt-count{height:36px; padding:0 12px; font-size:14px;}
+  .pl-add{min-height:36px; min-width:44px; font-size:14px; padding:6px 12px;}
+  .qf-item{min-height:50px;}
+  .ck-chip{min-height:44px; font-size:15px; padding:0 16px;}
+  .nt-row{min-height:44px;}
+  .rem-row .rem-val, .rem-row .rem-unit{min-height:44px;}
+  .goal-field-label, .pd-dow, .pd-n, .cg-count, .cx-sub, .sp-note, .sp-lbl, .rd-scope, .chart-sub{font-size:14px!important;}
+  .cal-gutter .hr-label, .cal-daylabel .dow, .month-dow{font-size:13px;}
+  .sb-head, .sb-sub, .sb-empty{font-size:13px;}
+  .empty-hint{font-size:15px;}
+  /* campos soltos fora de .field (busca do Planner/Notas, nome de categoria, som do timer) */
+  input[type=text], input[type=search], input[type=number], input[type=email], select{min-height:44px;}
+  .nt-codebar select, .ck-group select, .chip input{min-height:0;}
+  #hero-quickstart{min-height:44px;}
+  /* com botões de 44px o ‹ Esta semana › não cabe na mesma linha do "+ Novo afazer": o botão de criar
+     fica numa linha só dele e a navegação inteira na de baixo, em vez de o › cair sozinho */
+  .daytop-nav{flex-wrap:wrap; gap:8px;}
+  /* rótulo maior pode quebrar em duas linhas ("Peguei no sono"): os campos alinham pela base, senão um
+     fica mais baixo que os vizinhos */
+  .field-row{align-items:flex-end;}
+  .daytop-nav .pl-newcheck, .daytop-nav .pl-carry{flex:1 1 100%;}
+  .fq-more-tog, .nt-sec-tg{min-height:44px;}
+}
+
+/* Interruptor do Relógio (06/11/2026): o verde do iPhone (#34C759) brigava com a identidade da marca;
+   passa a usar a cor dos botões do tema escolhido (--accent), a mesma do "Salvar". Movimento como o do
+   iOS: a bolinha estica enquanto o dedo está em cima (sinal de que o toque "pegou") e desliza com a curva
+   de gaveta do iOS (rápida no começo, assenta macia), em vez do deslize linear de 200ms. A cor do trilho
+   acompanha o deslize. Só transform/largura da bolinha e cor: nada que force repintar a página. */
+.ck-switch span{transition:background-color .28s cubic-bezier(.32,.72,0,1), box-shadow .28s ease;}
+.ck-switch input:checked + span{background:var(--accent); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--accent-ink) 12%, transparent);}
+.ck-switch span::after{transition:transform .34s cubic-bezier(.32,.72,0,1), width .16s ease-out;}
+.ck-switch:active span::after{width:33px;}
+.ck-switch:active input:checked + span::after{transform:translateX(14px);}
+.ck-switch.ck-bump span::after{animation:ck-bump .34s cubic-bezier(.32,.72,0,1);}
+@keyframes ck-bump{40%{box-shadow:0 3px 10px rgba(0,0,0,.28);}}
+@media (prefers-reduced-motion:reduce){ .ck-switch span::after{transition:none;} .ck-switch:active span::after{width:27px;} }
 </style><script>
 
 (function(){
@@ -3040,7 +3133,30 @@ html:root[data-mode="light"][data-style="ceu"][data-depth="profundo"][data-sky]{
 
     trash:function(c,t){ tone(c,t,520,.22,.06,'sine',190); },
 
-    add:function(c,t){ tone(c,t,784,.1,.06); tone(c,t+.06,988,.1,.06); tone(c,t+.12,1318.5,.22,.07); }
+    add:function(c,t){ tone(c,t,784,.1,.06); tone(c,t+.06,988,.1,.06); tone(c,t+.12,1318.5,.22,.07); },
+
+    // clique seco e curtíssimo das rodinhas (como a catraca do seletor de hora do iPhone): grave e baixo,
+    // porque toca dezenas de vezes seguidas num giro e não pode cansar
+    tick:function(c,t){ tone(c,t,1900,.022,.035,'triangle',1200); },
+    // interruptor: subindo ao ligar, descendo ao desligar
+    swOn:function(c,t){ tone(c,t,660,.06,.05,'sine',990); },
+    swOff:function(c,t){ tone(c,t,880,.06,.045,'sine',560); }
+  };
+  /* Toque tátil (06/11/2026). Android: navigator.vibrate. iPhone: o Safari não tem vibrate, mas desde o
+     iOS 18 um <input type=checkbox switch> dá o "tique" do sistema quando é acionado pelo rótulo — então
+     há um interruptor invisível só pra isso. Sem suporte, não acontece nada (é enfeite, não aviso). */
+  var HAP=null;
+  window.uiHaptic=function(ms){
+    try{
+      if(navigator.vibrate && !/iPhone|iPad|iPod/.test(navigator.userAgent)){ navigator.vibrate(ms||8); return; }
+      if(!HAP){
+        var i=document.createElement('input'); i.type='checkbox'; i.setAttribute('switch',''); i.id='ui-haptic'; i.tabIndex=-1; i.setAttribute('aria-hidden','true');
+        var l=document.createElement('label'); l.htmlFor='ui-haptic'; l.setAttribute('aria-hidden','true');
+        i.style.cssText=l.style.cssText='position:fixed;left:-99px;top:0;width:1px;height:1px;opacity:0;pointer-events:none;';
+        document.body.appendChild(i); document.body.appendChild(l); HAP=l;
+      }
+      HAP.click();
+    }catch(_){}
   };
   window.uiSound=function(k){ if(!on()) return; var c=ctx(); if(!c) return; var f=KINDS[k]||KINDS.ok; try{ f(c, c.currentTime+0.01); }catch(_){} };
   window.uiSoundKind=function(msg, icon, err){
@@ -10922,6 +11038,11 @@ window.addEventListener('keydown', function(e){
         if(a.days&&a.days.length&&a.days.indexOf(d.getDay())<0) continue; if(!best||d<best.at) best={at:d,a:a}; break; } });
     return best;
   }
+  document.addEventListener('change', function(e){
+    var sw=e.target && e.target.closest && e.target.closest('.ck-switch'); if(!sw) return;
+    if(window.uiSound) uiSound(e.target.checked?'swOn':'swOff'); if(window.uiHaptic) uiHaptic(10);
+    sw.classList.remove('ck-bump'); void sw.offsetWidth; sw.classList.add('ck-bump');
+  }, true);
   function ckSwitch(on, attrs){ return '<label class="ck-switch"><input type="checkbox" '+attrs+(on?' checked':'')+'><span></span></label>'; }
 
   function renderClock(app){
@@ -10976,7 +11097,16 @@ window.addEventListener('keydown', function(e){
   }
   var CK_ROW=40;
   function ckWheelInit(w){ if(!w) return; var sel=+w.getAttribute('data-sel')||0; w.scrollTop=sel*CK_ROW;
-    w.addEventListener('keydown', function(e){ if(e.key==='ArrowDown'||e.key==='ArrowUp'){ e.preventDefault(); w.scrollTop+= (e.key==='ArrowDown'?1:-1)*CK_ROW; } }); }
+    w.addEventListener('keydown', function(e){ if(e.key==='ArrowDown'||e.key==='ArrowUp'){ e.preventDefault(); w.scrollTop+= (e.key==='ArrowDown'?1:-1)*CK_ROW; } });
+    // a cada número que cruza a faixa do meio: um tic e um toque, como a catraca do seletor do iPhone
+    // (06/11/2026). Compara com o último índice em vez de disparar em todo evento de rolagem, senão um
+    // giro rápido viraria um zumbido contínuo.
+    var lastIdx=sel;
+    w.addEventListener('scroll', function(){
+      var i=Math.round(w.scrollTop/CK_ROW); if(i===lastIdx) return; lastIdx=i;
+      if(window.uiSound) uiSound('tick'); if(window.uiHaptic) uiHaptic(6);
+    }, {passive:true});
+  }
   function ckWheelVal(w){ return w ? Math.max(0, Math.round(w.scrollTop/CK_ROW)) : 0; }
 
   function wireClock(app){
