@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261106-122140';</script>
+<script>window.AGENDA_BUILD = '20261106-144249';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261106-122140"></script>
+<script src="cloud.js?v=20261106-144249"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -1126,7 +1126,7 @@ body:has(#modal-overlay) #quick-fabs, body:has(#pn-detail) #quick-fabs{display:n
 .cfg-title p{margin:4px 0 0; color:var(--ink-soft); font-size:0.8333rem;}
 #app[data-cfg=settings][data-sec=home] .cfg-sec{display:none!important;}
 #app[data-cfg=settings]:not([data-sec=home]) .cfg-home{display:none!important;}
-#app[data-sec=descanso] .cfg-sec:not([data-sec-p=descanso]), #app[data-sec=porques] .cfg-sec:not([data-sec-p=porques]), #app[data-sec=aparencia] .cfg-sec:not([data-sec-p=aparencia]), #app[data-sec=alertas] .cfg-sec:not([data-sec-p=alertas]), #app[data-sec=habitos] .cfg-sec:not([data-sec-p=habitos]), #app[data-sec=lembretes] .cfg-sec:not([data-sec-p=lembretes]), #app[data-sec=calendario] .cfg-sec:not([data-sec-p=calendario]){display:none!important;}
+#app[data-sec=visual] .cfg-sec:not([data-sec-p=visual]), #app[data-sec=descanso] .cfg-sec:not([data-sec-p=descanso]), #app[data-sec=porques] .cfg-sec:not([data-sec-p=porques]), #app[data-sec=aparencia] .cfg-sec:not([data-sec-p=aparencia]), #app[data-sec=alertas] .cfg-sec:not([data-sec-p=alertas]), #app[data-sec=habitos] .cfg-sec:not([data-sec-p=habitos]), #app[data-sec=lembretes] .cfg-sec:not([data-sec-p=lembretes]), #app[data-sec=calendario] .cfg-sec:not([data-sec-p=calendario]){display:none!important;}
 .cfg-sec > .panel{margin-top:0!important;} .cfg-sec > .panel + .panel{margin-top:12px!important;}
 .cfg-home{display:flex; flex-direction:column; gap:8px; max-width:640px;}
 .cfg-row{display:flex; align-items:center; gap:14px; width:100%; text-align:left; padding:14px 16px; border-radius:16px; border:1px solid var(--glass-border); background:var(--glass-bg); color:var(--ink); cursor:pointer; transition:background .15s, border-color .15s;}
@@ -3109,6 +3109,125 @@ input[type=time]::-webkit-date-and-time-value, input[type=date]::-webkit-date-an
 .ck-switch.ck-bump span::after{animation:ck-bump .34s cubic-bezier(.32,.72,0,1);}
 @keyframes ck-bump{40%{box-shadow:0 3px 10px rgba(0,0,0,.28);}}
 @media (prefers-reduced-motion:reduce){ .ck-switch span::after{transition:none;} .ck-switch:active span::after{width:27px;} }
+
+/* ---------- Visual do app (06/11/2026): peças desligadas ficam escondidas ---------- */
+html.lay-off-night #wake-panel, html.lay-off-habits #habits-panel, html.lay-off-pie #day-pie-panel,
+html.lay-off-check [data-fold="check"], html.lay-off-loose [data-fold="loose"], html.lay-off-tray #pn-tray,
+html.lay-off-noteday [data-fold="noteday"], html.lay-off-noteweek [data-fold="noteweek"],
+html.lay-off-weekstats .week-stats, html.lay-off-progress #sidebar-progress, html.lay-off-budget #sidebar-budget{display:none!important;}
+/* sem nada na coluna do lado, a grade do Dia ocupa a largura toda em vez de deixar 300px vazios */
+html.lay-off-check.lay-off-loose.lay-off-tray .main-grid{grid-template-columns:1fr;}
+html.lay-off-check.lay-off-loose.lay-off-tray .main-grid .side{display:none;}
+
+/* ---------- Configurações › Visual do app ---------- */
+.lay-top{display:flex; gap:18px; align-items:flex-start;}
+.lay-modes{flex:1; min-width:0; display:flex; flex-direction:column; gap:8px;}
+.lay-mode{display:flex; flex-direction:column; gap:3px; text-align:left; padding:12px 14px; border-radius:14px; border:1.5px solid var(--border); background:var(--surface-3); color:var(--ink); cursor:pointer;
+  transition:border-color .2s ease, background-color .2s ease, transform .16s cubic-bezier(.32,.72,0,1);}
+.lay-mode b{font-size:1rem; font-weight:650;}
+.lay-mode em{font-style:normal; font-size:0.8333rem; color:var(--ink-soft); line-height:1.35;}
+.lay-mode.sel{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 14%, var(--surface-3));}
+.lay-mode:active{transform:scale(.98);}
+.lay-phone{flex:none; width:118px; padding:16px 8px 10px; border-radius:22px; border:1.5px solid var(--border); background:var(--surface-3); display:flex; flex-direction:column; position:relative;}
+.lay-notch{position:absolute; top:6px; left:50%; width:34px; height:5px; margin-left:-17px; border-radius:5px; background:var(--border);}
+.lay-bar{height:var(--h); margin-bottom:4px; border-radius:5px; background:color-mix(in srgb, var(--accent) 30%, transparent); overflow:hidden; display:flex; align-items:center; padding:0 6px;
+  transition:height .38s cubic-bezier(.32,.72,0,1), margin .38s cubic-bezier(.32,.72,0,1), opacity .25s ease;}
+.lay-bar span{font-size:9px; line-height:1; color:var(--ink); opacity:.75; white-space:nowrap;}
+.lay-bar.is-grid{background:repeating-linear-gradient(180deg, color-mix(in srgb, var(--ink) 10%, transparent) 0 1px, transparent 1px 9px), color-mix(in srgb, var(--accent) 12%, transparent);}
+.lay-bar.off{height:0; margin-bottom:0; opacity:0;}
+.lay-list{display:flex; flex-direction:column;}
+.lay-group{font-size:13px; font-weight:650; color:var(--ink-soft); margin:12px 0 4px;}
+.lay-group:first-child{margin-top:0;}
+.lay-row{display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid var(--border-soft); cursor:pointer; min-height:52px;}
+.lay-row:last-child{border-bottom:none;}
+.lay-row-t{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;}
+.lay-row-t b{font-size:0.9444rem; font-weight:600;}
+.lay-row-t em{font-style:normal; font-size:0.8333rem; color:var(--ink-soft);}
+.lay-intro-row{display:flex; align-items:center; gap:12px;}
+.lay-intro-row > span{flex:1; display:flex; flex-direction:column; gap:2px;}
+.lay-intro-row em{font-style:normal; font-size:0.8333rem; color:var(--ink-soft);}
+.lay-panel + .lay-panel{margin-top:12px;}
+@media (max-width:520px){ .lay-top{flex-direction:column-reverse; align-items:center;} .lay-modes{width:100%;} }
+
+/* ---------- Dicas de boas-vindas ---------- */
+.intro-ov{position:fixed; inset:0; z-index:99980; display:flex; align-items:center; justify-content:center; padding:calc(16px + var(--safe-top,0px)) 16px calc(16px + var(--safe-bottom,0px));
+  background:color-mix(in srgb, var(--bg) 55%, transparent); backdrop-filter:blur(18px) saturate(1.2); -webkit-backdrop-filter:blur(18px) saturate(1.2); animation:intro-in .32s cubic-bezier(.32,.72,0,1);}
+.intro-ov.out{opacity:0; transition:opacity .2s ease;}
+@keyframes intro-in{from{opacity:0;}}
+.intro-card{position:relative; width:100%; max-width:440px; max-height:100%; display:flex; flex-direction:column; border-radius:28px; overflow:hidden;
+  background:var(--glass-bg-strong); border:1px solid var(--glass-border); box-shadow:var(--shadow-lg); animation:intro-up .42s cubic-bezier(.32,.72,0,1);}
+@keyframes intro-up{from{transform:translateY(24px) scale(.98); opacity:0;}}
+.intro-skip{position:absolute; top:10px; right:12px; z-index:2; border:none; background:transparent; color:var(--ink-soft); font-size:15px; font-weight:600; padding:10px 12px; min-height:44px; cursor:pointer;}
+.intro-track{display:flex; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; scrollbar-width:none; overscroll-behavior-x:contain; flex:1;}
+.intro-track::-webkit-scrollbar{display:none;}
+.intro-slide{flex:0 0 100%; scroll-snap-align:center; scroll-snap-stop:always; padding:56px 28px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; overflow-y:auto;}
+.intro-slide[data-k="modo"]{justify-content:flex-start;}
+.intro-slide h2{font-size:1.5556rem; font-weight:700; letter-spacing:-0.015em; margin:22px 0 8px; color:var(--ink);}
+.intro-slide p{font-size:1rem; line-height:1.45; color:var(--ink-soft); margin:0; max-width:34ch;}
+.intro-slide[data-k="modo"]{padding-top:48px;}
+.intro-slide[data-k="modo"] h2{margin-top:0; order:-2;}
+.intro-slide[data-k="modo"] p{order:-1; margin-bottom:14px; font-size:0.8889rem;}
+.intro-modo{display:flex; gap:12px; align-items:flex-start; width:100%; text-align:left;}
+.intro-modo .lay-phone{width:96px;}
+.intro-modo .lay-mode{padding:10px 12px;}
+.intro-modo .lay-mode em{font-size:13px;}
+.intro-foot{display:flex; align-items:center; gap:12px; padding:14px 20px 20px;}
+.intro-dots{flex:1; display:flex; gap:7px;}
+.intro-dots i{width:8px; height:8px; border-radius:8px; background:var(--border); cursor:pointer; transition:width .3s cubic-bezier(.32,.72,0,1), background-color .3s ease;}
+.intro-dots i.on{width:22px; background:var(--accent);}
+.intro-foot .btn{min-height:48px; min-width:132px; font-size:16px; border-radius:999px;}
+@media (max-width:420px){ .intro-modo{flex-direction:column-reverse; align-items:center;} .intro-modo .lay-modes{width:100%;} }
+
+/* ilustrações: formas simples na cor do tema, cada uma com um movimento só que conta o que o app faz.
+   Só animam com a tela visível (.is-on), para não gastar bateria com as outras escondidas. */
+.ia{position:relative; width:200px; height:132px; border-radius:22px; background:var(--surface-3); border:1px solid var(--border-soft); overflow:hidden; flex:none;}
+.ia-oi{display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px; background:transparent; border:none;}
+.ia-oi i{border-radius:16px; background:color-mix(in srgb, var(--accent) 22%, var(--surface-3)); border:1px solid var(--border-soft); display:flex; align-items:center; justify-content:center; color:var(--ink);}
+.ia-oi i svg{width:22px; height:22px;}
+.is-on .ia-oi i{animation:ia-pop .5s cubic-bezier(.32,.72,0,1) both;}
+.is-on .ia-oi i:nth-child(2){animation-delay:.08s;} .is-on .ia-oi i:nth-child(3){animation-delay:.16s;} .is-on .ia-oi i:nth-child(4){animation-delay:.24s;}
+@keyframes ia-pop{from{transform:scale(.6); opacity:0;}}
+.ia-grid{position:absolute; inset:14px 14px 34px; background:repeating-linear-gradient(180deg, var(--border-soft) 0 1px, transparent 1px 16px);}
+.ia-grid b{position:absolute; left:8px; right:8px; border-radius:6px; background:color-mix(in srgb, var(--accent) 55%, transparent);}
+.ia-grid .b1{top:4px; height:18px;} .ia-grid .b2{top:34px; height:26px; background:color-mix(in srgb, var(--accent) 80%, transparent);} .ia-grid .b3{top:66px; height:14px;}
+.ia-grid s{position:absolute; left:0; right:0; top:46px; height:2px; background:var(--critical);}
+.is-on .ia-grid b{animation:ia-drop .5s cubic-bezier(.32,.72,0,1) both;}
+.is-on .ia-grid .b2{animation-delay:.12s;} .is-on .ia-grid .b3{animation-delay:.24s;}
+@keyframes ia-drop{from{transform:translateY(-10px); opacity:0;}}
+.ia-timer{position:absolute; left:0; right:0; bottom:8px; text-align:center; font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:15px; font-weight:700; color:var(--ink);}
+.is-on .ia-timer u{text-decoration:none; display:inline-block; animation:ia-tick 1s steps(1) infinite;}
+@keyframes ia-tick{50%{opacity:.35;}}
+.ia-planner{display:flex; gap:8px; padding:12px;}
+.ia-col{flex:1; border-radius:10px; background:color-mix(in srgb, var(--ink) 6%, transparent);}
+.ia-card{position:absolute; left:16px; top:20px; width:50px; height:26px; border-radius:8px; background:var(--accent); box-shadow:0 6px 14px -6px rgba(0,0,0,.4);}
+.ia-card.c2{top:54px; background:color-mix(in srgb, var(--accent) 45%, var(--surface-3));}
+.is-on .ia-card:not(.c2){animation:ia-move 3.2s cubic-bezier(.32,.72,0,1) infinite;}
+@keyframes ia-move{0%,12%{transform:none;} 40%,55%{transform:translateX(62px);} 85%,100%{transform:translateX(124px);}}
+.ia-notas{padding:18px 20px; display:flex; flex-direction:column; gap:9px; align-items:flex-start;}
+.ia-notas b{height:8px; border-radius:4px; background:color-mix(in srgb, var(--ink) 22%, transparent); display:block;}
+.ia-notas .h{height:12px; width:60%; background:color-mix(in srgb, var(--ink) 45%, transparent);}
+.ia-notas .l1{width:90%;} .ia-notas .l2{width:72%;} .ia-notas .l3{width:56%;}
+.ia-notas .ck{width:14px; height:14px; border-radius:4px; border:2px solid var(--accent);}
+.is-on .ia-notas b{transform-origin:left; animation:ia-type 2.8s ease-out infinite both;}
+.is-on .ia-notas .l1{animation-delay:.2s;} .is-on .ia-notas .l2{animation-delay:.4s;} .is-on .ia-notas .l3{animation-delay:.8s;}
+.is-on .ia-notas .ck{animation:ia-check 2.8s ease infinite .6s;}
+@keyframes ia-type{0%{transform:scaleX(0);} 30%,100%{transform:scaleX(1);}}
+@keyframes ia-check{0%,40%{background:transparent;} 50%,100%{background:var(--accent);}}
+.ia-relogio{display:flex; align-items:center; justify-content:center; gap:22px;}
+.ia-wheel{height:44px; overflow:hidden; font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:30px; font-weight:600; color:var(--ink); line-height:44px;}
+.ia-wheel span{display:block;}
+.is-on .ia-wheel span{animation:ia-roll 3s cubic-bezier(.32,.72,0,1) infinite;}
+@keyframes ia-roll{0%,20%{transform:translateY(0);} 33%,53%{transform:translateY(-44px);} 66%,86%{transform:translateY(-88px);} 100%{transform:translateY(-132px);}}
+.ia-sw{width:51px; height:31px; border-radius:31px; background:var(--border); position:relative;}
+.ia-sw::after{content:''; position:absolute; top:2px; left:2px; width:27px; height:27px; border-radius:50%; background:#fff; box-shadow:0 2px 4px rgba(0,0,0,.2);}
+.is-on .ia-sw{animation:ia-swbg 3s ease infinite;}
+.is-on .ia-sw::after{animation:ia-swk 3s cubic-bezier(.32,.72,0,1) infinite;}
+@keyframes ia-swbg{0%,40%{background:var(--border);} 50%,100%{background:var(--accent);}}
+@keyframes ia-swk{0%,40%{transform:none;} 50%,100%{transform:translateX(20px);}}
+@media (prefers-reduced-motion:reduce){
+  .intro-ov, .intro-card, .is-on .ia *, .is-on .ia-oi i{animation:none!important;}
+  .lay-bar{transition:none;}
+}
 </style><script>
 
 (function(){
@@ -7702,9 +7821,231 @@ window.addEventListener('keydown', function(e){
       whySubscribePage();
       if(state.view==='settings') render();
     }, function(){});
+    subscribeLayout();
   }
   function saveRest(patch){ state.rest=Object.assign({}, state.rest, patch); if(state.db) state.db.collection('settings').doc('rest').set(state.rest); render(); }
   function saveAlarms(list){ state.alarms=list; if(state.db) state.db.collection('settings').doc('alarms').set({list:list}); render(); }
+
+  /* ================= Visual do app: Simples, Equilibrado, Completo ou Do meu jeito (06/11/2026) =================
+     Pedido do Gabriel, pensando em quem tem TDAH: para ele, ver tudo ajuda; para quem chega agora, uma tela cheia
+     de painéis é exatamente onde a pessoa trava. Escolher entre três é fácil, ticar quinze caixinhas não é. Por
+     isso são três modos prontos e o "Do meu jeito" para quem quiser mexer peça por peça.
+     Desligar só ESCONDE (classe lay-off-<peça> no <html>, CSS no fim): nenhum dado some e nada deixa de
+     funcionar por baixo — o "Começar uma tarefa agora" continua criando tarefa solta mesmo com o painel delas
+     escondido. Fica no banco (settings/layout), então vale para o celular e o PC da mesma conta. */
+  var LAYOUT_PANELS = [
+    // [chave, nome, o que é, onde aparece]
+    ['night',    'Como foi a noite?',          'Registro do sono no topo do Dia e a pergunta de manhã', 'Dia'],
+    ['habits',   'Hábitos do dia',             'Sim ou não, com sequência',                              'Dia'],
+    ['pie',      'Distribuição do dia (24h)',  'Gráfico de como as horas do dia foram divididas',        'Dia'],
+    ['check',    'Afazeres da semana',         'Lista de afazeres ao lado da grade',                     'Dia e Semana'],
+    ['loose',    'Tarefas soltas',             'Tarefas com cronômetro, sem hora marcada',               'Dia e Semana'],
+    ['tray',     'Planner ao lado da grade',   'Tarefas dos seus planos, prontas para arrastar',         'Dia e Semana'],
+    ['noteday',  'Anotações do dia',           'Texto livre abaixo da grade',                            'Dia e Semana'],
+    ['noteweek', 'Anotações da semana',        'Texto livre da semana inteira',                          'Dia e Semana'],
+    ['weekstats','Resumo da semana',           'Concluído, tempo registrado e estouros',                 'Semana'],
+    ['progress', 'Progresso',                  'Barras de hoje e da semana',                             'Barra lateral'],
+    ['budget',   'Orçamento da semana',        'Horas por categoria contra a meta',                      'Barra lateral'],
+    ['why',      'Lembretes dos seus porquês', 'Seus motivos aparecendo ao longo do dia',                'Avisos']
+  ];
+  var LAYOUT_MODES = {
+    simples:     {name:'Simples',     on:['check'],
+      desc:'Só a grade de horários e os afazeres. Para começar sem distração ou para dias corridos.'},
+    equilibrado: {name:'Equilibrado', on:['night','habits','check','tray','noteday','progress','why'],
+      desc:'O essencial do dia: sono, hábitos, afazeres, Planner, anotações do dia e seu progresso.'},
+    completo:    {name:'Completo',    on:LAYOUT_PANELS.map(function(p){ return p[0]; }),
+      desc:'Tudo à vista: distribuição do dia, tarefas soltas, resumo e orçamento da semana.'}
+  };
+  // Conta antiga (sem o documento): continua como está hoje, com tudo — só ganha as dicas uma vez.
+  var LAYOUT_DEF = {mode:'completo', custom:null, introSeen:false};
+  state.layout = Object.assign({}, LAYOUT_DEF); state.layoutLoaded = false;
+  function layoutSet(mode, custom){
+    if(mode==='custom'){ var on=[]; LAYOUT_PANELS.forEach(function(p){ if(!(custom && custom[p[0]]===false)) on.push(p[0]); }); return on; }
+    return (LAYOUT_MODES[mode]||LAYOUT_MODES.completo).on.slice();
+  }
+  function layOn(k){ return layoutSet(state.layout.mode, state.layout.custom).indexOf(k)>=0; }
+  function applyLayout(){
+    var h=document.documentElement;
+    LAYOUT_PANELS.forEach(function(p){ h.classList.toggle('lay-off-'+p[0], !layOn(p[0])); });
+    h.setAttribute('data-layout', state.layout.mode);
+  }
+  function saveLayout(patch){
+    state.layout = Object.assign({}, state.layout, patch);
+    var doc = {mode:state.layout.mode, custom:state.layout.custom||null, introSeen:!!state.layout.introSeen};
+    if(state.db) state.db.collection('settings').doc('layout').set(doc);
+    applyLayout();
+  }
+  function subscribeLayout(){
+    if(!state.db) return;
+    state.db.collection('settings').doc('layout').onSnapshot(function(snap){
+      var first = !state.layoutLoaded;
+      state.layout = Object.assign({}, LAYOUT_DEF, snap.exists ? snap.data() : {});
+      state.layoutLoaded = true;
+      applyLayout();
+      if(state.view==='settings') paintLayoutPanel();
+      if(first){
+        // espera um pouco: num aparelho já sincronizado, o documento de outro aparelho pode descer logo depois
+        setTimeout(function(){ if(!state.layout.introSeen) introOpen(); else maybeAskNight(); }, 1200);
+      }
+    }, function(){});
+  }
+
+  /* prévia: um celular de mentira com uma faixa por peça; ao trocar de modo as faixas entram e saem
+     (altura + opacidade), que é o jeito mais direto de mostrar a diferença entre um modo e outro */
+  var LAYOUT_PREVIEW = [ // [chave ou null (sempre), rótulo curto, altura]
+    ['night','Noite',12], ['habits','Hábitos',10], ['pie','Distribuição',20], [null,'Grade de horários',46],
+    ['check','Afazeres',16], ['loose','Tarefas soltas',12], ['tray','Planner',16], ['noteday','Anotações',12]
+  ];
+  function layoutPreviewHtml(){
+    return '<div class="lay-phone" aria-hidden="true"><div class="lay-notch"></div>' +
+      LAYOUT_PREVIEW.map(function(r){
+        return '<div class="lay-bar'+(r[0]?'':' is-grid')+'" data-lp="'+(r[0]||'grid')+'" style="--h:'+r[2]+'px"><span>'+r[1]+'</span></div>';
+      }).join('') + '</div>';
+  }
+  function paintLayoutPreview(root, mode, custom){
+    var on=layoutSet(mode, custom);
+    Array.prototype.forEach.call(root.querySelectorAll('.lay-bar[data-lp]'), function(b){
+      var k=b.getAttribute('data-lp'); b.classList.toggle('off', k!=='grid' && on.indexOf(k)<0);
+    });
+  }
+  function layoutModeCardsHtml(sel, withCustom){
+    var keys=['simples','equilibrado','completo'];
+    var h=keys.map(function(k){
+      var m=LAYOUT_MODES[k];
+      return '<button type="button" class="lay-mode'+(sel===k?' sel':'')+'" data-lay-mode="'+k+'"><b>'+m.name+'</b><em>'+m.desc+'</em></button>';
+    }).join('');
+    if(withCustom) h+='<button type="button" class="lay-mode'+(sel==='custom'?' sel':'')+'" data-lay-mode="custom"><b>Do meu jeito</b><em>Você liga e desliga cada parte aqui embaixo.</em></button>';
+    return '<div class="lay-modes">'+h+'</div>';
+  }
+  function layoutPanelHtml(){
+    var L=state.layout, on=layoutSet(L.mode, L.custom), groups={};
+    LAYOUT_PANELS.forEach(function(p){ (groups[p[3]]=groups[p[3]]||[]).push(p); });
+    return '<div class="panel lay-panel"><div class="panel-head"><h2>Como o app aparece</h2></div><div class="panel-body">' +
+        '<div class="lay-top">'+layoutModeCardsHtml(L.mode, true)+layoutPreviewHtml()+'</div>' +
+        '<p class="cfg-note">Pode trocar quando quiser, para ver a diferença. Nada é apagado: o que você desliga só fica escondido.</p>' +
+      '</div></div>' +
+      '<div class="panel lay-panel"><div class="panel-head"><h2>Personalizar</h2></div><div class="panel-body lay-list">' +
+        Object.keys(groups).map(function(g){
+          return '<div class="lay-group">'+g+'</div>' + groups[g].map(function(p){
+            return '<label class="lay-row"><span class="lay-row-t"><b>'+p[1]+'</b><em>'+p[2]+'</em></span>' +
+              '<span class="ck-switch"><input type="checkbox" data-lay-k="'+p[0]+'"'+(on.indexOf(p[0])>=0?' checked':'')+'><span></span></span></label>';
+          }).join('');
+        }).join('') +
+      '</div></div>' +
+      '<div class="panel lay-panel"><div class="panel-body lay-intro-row"><span><b>Dicas de boas-vindas</b><em>O que é a Agenda, o Planner, as Notas e o Relógio.</em></span><button type="button" class="btn small" id="lay-intro">Ver de novo</button></div></div>';
+  }
+  function paintLayoutPanel(){
+    var root=document.querySelector('[data-sec-p="visual"]'); if(!root) return;
+    var L=state.layout, on=layoutSet(L.mode, L.custom);
+    Array.prototype.forEach.call(root.querySelectorAll('[data-lay-mode]'), function(b){ b.classList.toggle('sel', b.getAttribute('data-lay-mode')===L.mode); });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-lay-k]'), function(i){ i.checked = on.indexOf(i.getAttribute('data-lay-k'))>=0; });
+    paintLayoutPreview(root, L.mode, L.custom);
+  }
+  function wireLayoutPanel(app){
+    var root=app.querySelector('[data-sec-p="visual"]'); if(!root) return;
+    paintLayoutPanel();
+    Array.prototype.forEach.call(root.querySelectorAll('[data-lay-mode]'), function(b){
+      b.onclick=function(){
+        var m=b.getAttribute('data-lay-mode');
+        // "Do meu jeito" parte do que está valendo agora, para a pessoa só ajustar a diferença
+        if(m==='custom'){ var cur=layoutSet(state.layout.mode, state.layout.custom), c={}; LAYOUT_PANELS.forEach(function(p){ c[p[0]]=cur.indexOf(p[0])>=0; }); saveLayout({mode:'custom', custom:c}); }
+        else saveLayout({mode:m});
+        paintLayoutPanel(); if(window.uiSound) uiSound('pop');
+      };
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('[data-lay-k]'), function(i){
+      i.onchange=function(){
+        var cur=layoutSet(state.layout.mode, state.layout.custom), c={};
+        LAYOUT_PANELS.forEach(function(p){ c[p[0]]=cur.indexOf(p[0])>=0; });
+        c[i.getAttribute('data-lay-k')]=i.checked;
+        saveLayout({mode:'custom', custom:c}); paintLayoutPanel();
+      };
+    });
+    var ib=root.querySelector('#lay-intro'); if(ib) ib.onclick=function(){ introOpen(); };
+  }
+
+  /* ================= Dicas de boas-vindas ================= */
+  var INTRO_SLIDES = [
+    {k:'oi', t:'Bem-vindo à Agenda', p:'Quatro apps num lugar só, para o seu dia caber numa tela: Agenda, Planner, Notas e Relógio. Deslize para conhecer cada um.'},
+    {k:'agenda', t:'Agenda', p:'Seu dia em blocos de horário. Toque num horário vazio para criar um bloco. Ao começar, o cronômetro conta o tempo e soma na meta da categoria.'},
+    {k:'planner', t:'Planner', p:'Projetos grandes viram tarefas pequenas. Organize no quadro (a fazer, fazendo, feito) e arraste uma tarefa para a grade na hora de fazer.'},
+    {k:'notas', t:'Notas', p:'Páginas, listas e checklists, como um caderno. A nota rápida do "+" cai na Caixa de entrada para você organizar depois.'},
+    {k:'relogio', t:'Relógio', p:'Alarmes, cronômetro e timer. O horário de dormir e de acordar fica em Alarmes, e a Agenda avisa quando for hora de desligar.'},
+    {k:'modo', t:'Como você quer começar?', p:'Dá para trocar quando quiser em Configurações › Visual do app.'}
+  ];
+  function introArtHtml(k){
+    if(k==='oi') return '<div class="ia ia-oi"><i>'+tbSvg('day',22)+'</i><i>'+pnIc('board')+'</i><i>'+tbSvg('pages',22)+'</i><i>'+pnIc('clock')+'</i></div>';
+    if(k==='agenda') return '<div class="ia ia-agenda"><div class="ia-grid"><b class="b1"></b><b class="b2"></b><b class="b3"></b><s></s></div><div class="ia-timer">00:<u>2</u>5</div></div>';
+    if(k==='planner') return '<div class="ia ia-planner"><div class="ia-col"></div><div class="ia-col"></div><div class="ia-col"></div><b class="ia-card"></b><b class="ia-card c2"></b></div>';
+    if(k==='notas') return '<div class="ia ia-notas"><b class="h"></b><b class="l l1"></b><b class="l l2"></b><span class="ck"></span><b class="l l3"></b></div>';
+    if(k==='relogio') return '<div class="ia ia-relogio"><div class="ia-wheel"><span>06</span><span>07</span><span>08</span><span>06</span></div><div class="ia-sw"></div></div>';
+    return '';
+  }
+  var introState = {mode:'equilibrado'};
+  function introOpen(){
+    if(document.getElementById('intro-ov')) return;
+    introState.mode = (state.layout.introSeen ? state.layout.mode : 'equilibrado');
+    if(introState.mode==='custom') introState.mode='completo';
+    var ov=document.createElement('div'); ov.id='intro-ov'; ov.className='intro-ov';
+    ov.innerHTML = '<div class="intro-card" role="dialog" aria-modal="true" aria-label="Boas-vindas">' +
+      '<button type="button" class="intro-skip" data-intro="skip">Pular</button>' +
+      '<div class="intro-track">' + INTRO_SLIDES.map(function(s, i){
+        return '<section class="intro-slide" data-i="'+i+'" data-k="'+s.k+'">' +
+          (s.k==='modo' ? '<div class="intro-modo">'+layoutModeCardsHtml(introState.mode, false)+layoutPreviewHtml()+'</div>' : introArtHtml(s.k)) +
+          '<h2>'+s.t+'</h2><p>'+s.p+'</p></section>';
+      }).join('') + '</div>' +
+      '<div class="intro-foot"><div class="intro-dots">'+INTRO_SLIDES.map(function(s,i){ return '<i data-dot="'+i+'"></i>'; }).join('')+'</div>' +
+      '<button type="button" class="btn primary" data-intro="next">Próximo</button></div>' +
+    '</div>';
+    document.body.appendChild(ov);
+    var track=ov.querySelector('.intro-track'), next=ov.querySelector('[data-intro=next]'), idx=0;
+    function cur(){ return Math.round(track.scrollLeft / Math.max(1, track.clientWidth)); }
+    function paint(){ idx=cur(); paintAt(idx); }
+    function paintAt(idx){
+      Array.prototype.forEach.call(ov.querySelectorAll('[data-dot]'), function(d){ d.classList.toggle('on', +d.getAttribute('data-dot')===idx); });
+      Array.prototype.forEach.call(ov.querySelectorAll('.intro-slide'), function(s){ s.classList.toggle('is-on', +s.getAttribute('data-i')===idx); });
+      var last = idx>=INTRO_SLIDES.length-1;
+      next.textContent = last ? 'Começar' : 'Próximo';
+      ov.querySelector('.intro-skip').style.visibility = last ? 'hidden' : '';
+    }
+    // durante o deslize pedido pelo botão, a rolagem passa pelas telas do meio: sem o alvo, os pontinhos
+    // voltariam um passo e um segundo toque rápido em "Próximo" iria para a tela errada
+    var target=null, tgtT=null;
+    function go(i){ idx=i; target=i; paintAt(i); clearTimeout(tgtT); tgtT=setTimeout(function(){ if(target!=null){ track.scrollLeft=target*track.clientWidth; target=null; paint(); } }, 900); track.scrollTo({left:i*track.clientWidth, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); }
+    var st=null; track.addEventListener('scroll', function(){
+      if(target!=null){ if(cur()!==target) return; target=null; clearTimeout(tgtT); }
+      clearTimeout(st); st=setTimeout(paint, 60);
+    }, {passive:true});
+    var modo=ov.querySelector('.intro-modo');
+    paintLayoutPreview(modo, introState.mode, null);
+    Array.prototype.forEach.call(modo.querySelectorAll('[data-lay-mode]'), function(b){
+      b.onclick=function(){
+        introState.mode=b.getAttribute('data-lay-mode');
+        Array.prototype.forEach.call(modo.querySelectorAll('[data-lay-mode]'), function(x){ x.classList.toggle('sel', x===b); });
+        paintLayoutPreview(modo, introState.mode, null); if(window.uiSound) uiSound('pop');
+      };
+    });
+    Array.prototype.forEach.call(ov.querySelectorAll('[data-dot]'), function(d){ d.onclick=function(){ go(+d.getAttribute('data-dot')); }; });
+    function close(save){
+      // fechar ou pular também conta como "visto": a pessoa não quer ver de novo a cada abertura.
+      // Quem pula fica com o que já tinha (conta nova: Completo, como o app sempre foi).
+      var patch={introSeen:true}; if(save) patch.mode=introState.mode;
+      var wasNew=!state.layout.introSeen;
+      saveLayout(patch); render();
+      // conta nova que pulou: começa no Equilibrado (o Completo assusta quem chega); conta com histórico
+      // (blocos já criados) fica como estava
+      if(!save && wasNew && state.db) state.db.collection('blocks').limit(1).get().then(function(s){ if(s.empty){ saveLayout({mode:'equilibrado'}); render(); } }).catch(function(){});
+      ov.classList.add('out'); setTimeout(function(){ ov.remove(); maybeAskNight(); }, 220);
+    }
+    next.onclick=function(){ if(idx>=INTRO_SLIDES.length-1) close(true); else go(idx+1); };
+    ov.querySelector('[data-intro=skip]').onclick=function(){ close(false); };
+    ov.addEventListener('keydown', function(e){
+      if(e.key==='ArrowRight'){ e.preventDefault(); go(Math.min(idx+1, INTRO_SLIDES.length-1)); }
+      if(e.key==='ArrowLeft'){ e.preventDefault(); go(Math.max(idx-1, 0)); }
+      if(e.key==='Escape') close(false);
+    });
+    paint(); setTimeout(function(){ try{ next.focus(); }catch(_){ } }, 50);
+  }
   function saveWhy(patch){ state.why=Object.assign({}, state.why, patch); if(state.db) state.db.collection('settings').doc('why').set(state.why); whySubscribePage(); render(); }
 
   function restMin(t, d){ var m=/^(\d{1,2}):(\d{2})/.exec(t||''); return m ? (+m[1])*60+(+m[2]) : d; }
@@ -8052,14 +8393,14 @@ window.addEventListener('keydown', function(e){
   }
   function whyOpenPage(){ if(!state.why.pageId){ setView('settings'); return; } setView('pages'); if(window.__notas && window.__notas.open) window.__notas.open(state.why.pageId); }
   function whyTick(){
-    var w=state.why; if(!w || !w.on || !(state.whyItems||[]).length) return;
+    var w=state.why; if(!w || !w.on || !(state.whyItems||[]).length || !layOn('why')) return;
     if(document.hidden || document.getElementById('bed-ov') || document.getElementById('why-pop') || restNightNow()) return;
     var s=whyStore(), every=Math.max(10, +w.everyMin||90)*60000;
     if(!s.last){ s.last=Date.now(); whySet(s); return; }
     if(Date.now()-s.last >= every) whyShow(whyNext(), 'timer');
   }
   function whyOnStart(catId){
-    var w=state.why; if(!w || !w.on || w.onStart===false) return;
+    var w=state.why; if(!w || !w.on || w.onStart===false || !layOn('why')) return;
     var it=whyNext(catId||null) || null; if(it) setTimeout(function(){ whyShow(it, 'start'); }, 900);
   }
 
@@ -14582,6 +14923,7 @@ window.addEventListener('keydown', function(e){
   }
 
   var CFG_SECS = [
+    ['visual','layers','Visual do app','Simples, equilibrado, completo ou do seu jeito'],
     ['descanso','clock','Descanso','Horário de dormir e banner roxo'],
     ['porques','chat','Meus porquês','Seus motivos aparecendo ao longo do dia'],
     ['aparencia','palette','Aparência','Cores padrão ou céu, claro/escuro, fundo e programação'],
@@ -14610,6 +14952,7 @@ window.addEventListener('keydown', function(e){
       '<div class="panel cfg-cat"><div class="panel-head"><h2>Categorias</h2><button class="iconbtn" id="cat-add">+</button></div><div class="panel-body" id="cat-list"></div></div>' +
       '<div class="cfg-cat">'+weekPieHtml()+'</div>' +
       '<div class="cfg-set cfg-home">'+CFG_SECS.map(function(x){ return '<button class="cfg-row" data-cfgsec="'+x[0]+'"><span class="cfg-row-ic">'+pnIc(x[1])+'</span><span class="cfg-row-t"><b>'+x[2]+'</b><em>'+x[3]+'</em></span>'+pnIc('chev')+'</button>'; }).join('')+'</div>' +
+      '<div class="cfg-set cfg-sec" data-sec-p="visual">'+layoutPanelHtml()+'</div>' +
       '<div class="cfg-set cfg-sec" data-sec-p="aparencia">'+appearancePanelHtml()+'</div>' +
       '<div class="cfg-set cfg-sec" data-sec-p="alertas">'+alertsPanelHtml()+'</div>' +
       '<div class="cfg-set cfg-sec" data-sec-p="descanso">'+restPanelHtml()+'</div>' +
@@ -14622,6 +14965,7 @@ window.addEventListener('keydown', function(e){
     wireAlertsPanel(app);
     wireAppearancePanel(app);
     wireRestPanels(app);
+    wireLayoutPanel(app);
     document.getElementById('cat-add').onclick=function(){
       if(!state.db) return;
       state.db.collection('categories').doc(uid()).set({name:'Nova categoria', color:COLOR_SWATCHES[state.categories.length % COLOR_SWATCHES.length], icon:null, order:state.categories.length});
@@ -15103,6 +15447,10 @@ window.addEventListener('keydown', function(e){
 
   function maybeAskNight(){
     if(nightPromptDone) return;
+    // espera saber o modo do app e não abre por baixo das dicas de boas-vindas; com a noite desligada
+    // (modo Simples, ou desligada no Do meu jeito) a pergunta da manhã também não aparece
+    if(!state.layoutLoaded || document.getElementById('intro-ov')) return;
+    if(!layOn('night')){ nightPromptDone=true; return; }
     var hoje=todayStr();
     if(new Date().getHours()>=12){ nightPromptDone=true; return; }
     if(wakeTimeFor(hoje)){ nightPromptDone=true; return; }
