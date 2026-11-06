@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261106-144249';</script>
+<script>window.AGENDA_BUILD = '20261106-150945';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261106-144249"></script>
+<script src="cloud.js?v=20261106-150945"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -2784,6 +2784,8 @@ code, pre, kbd, .nt-code, .nt-code *, .nt-codebar select{font-family:var(--code)
 </style><style id="ios-icon">.sidebar-brand .mark{background:none!important; border:none!important; box-shadow:none!important; backdrop-filter:none!important; -webkit-backdrop-filter:none!important; overflow:visible!important; border-radius:0!important;}</style><style id="ios-clock">
 .sb-switch.sb-switch4{grid-template-columns:repeat(4,1fr);}
 body[data-app="clock"] #hero-slot{display:none!important;}
+/* nas Configurações a barra lateral do PC também não mostra as abas da Agenda: elas valem para o app todo */
+body[data-app="settings"] .sidebar-nav{display:none!important;}
 .ck-app{padding-bottom:84px;}
 @media (max-width:860px){ .toast-host{bottom:calc(76px + var(--safe-bottom,0px))!important;} }
 html[data-mode="dark"] .ck-round.green{color:#30D158;} html[data-mode="dark"] .ck-round.red{color:#FF453A;} html[data-mode="dark"] .ck-round.orange{color:#FF9F0A;}
@@ -3118,6 +3120,9 @@ html.lay-off-weekstats .week-stats, html.lay-off-progress #sidebar-progress, htm
 /* sem nada na coluna do lado, a grade do Dia ocupa a largura toda em vez de deixar 300px vazios */
 html.lay-off-check.lay-off-loose.lay-off-tray .main-grid{grid-template-columns:1fr;}
 html.lay-off-check.lay-off-loose.lay-off-tray .main-grid .side{display:none;}
+/* com Progresso e Orçamento desligados, a caixa de vidro que os embrulha ficava vazia: no celular um
+   "vidrinho" solto no fim da página, no PC uma linha sobrando na barra lateral (06/11/2026, print do Gabriel) */
+html.lay-off-progress.lay-off-budget #mobile-metrics, html.lay-off-progress.lay-off-budget .sidebar-metrics{display:none!important;}
 
 /* ---------- Configurações › Visual do app ---------- */
 .lay-top{display:flex; gap:18px; align-items:flex-start;}
@@ -3228,6 +3233,128 @@ html.lay-off-check.lay-off-loose.lay-off-tray .main-grid .side{display:none;}
   .intro-ov, .intro-card, .is-on .ia *, .is-on .ia-oi i{animation:none!important;}
   .lay-bar{transition:none;}
 }
+
+/* ---------- Guias de cada app (06/11/2026): mesma folha das dicas, com o nome do app no topo ---------- */
+.guide-ov{z-index:99985;}
+.guide-head{position:absolute; top:16px; left:22px; z-index:2; display:flex; flex-direction:column; gap:1px; pointer-events:none;}
+.guide-head span{font-size:13px; color:var(--ink-soft);}
+.guide-head b{font-size:17px; font-weight:700; color:var(--ink);}
+.guide-ov .intro-slide{padding-top:72px;}
+.guide-go{margin-top:16px;}
+.intro-more{margin-top:14px;}
+.lay-guides{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+
+/* ilustrações das abas (mesma regra das dicas: só animam na tela visível) */
+.ia-ring{display:flex; align-items:center; justify-content:center;}
+.ia-ring svg{position:absolute; width:104px; height:104px; transform:rotate(-90deg);}
+.ia-ring circle{fill:none; stroke-width:8; stroke-linecap:round;}
+.ia-ring .tr{stroke:var(--border-soft);}
+.ia-ring .pr{stroke:var(--accent); stroke-dasharray:251; stroke-dashoffset:60;}
+.is-on .ia-ring .pr{animation:ia-ring 4s linear infinite;}
+@keyframes ia-ring{from{stroke-dashoffset:0;} to{stroke-dashoffset:251;}}
+.ia-ring span{font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:18px; font-weight:700; color:var(--ink);}
+.ia-per{padding:14px 14px 14px 12px; display:flex; flex-direction:column; gap:8px;}
+.ia-per .row{display:flex; gap:5px; align-items:center;}
+.ia-per em{font-style:normal; font-size:11px; width:12px; color:var(--ink-soft);}
+.ia-per i{flex:1; height:28px; border-radius:6px; background:color-mix(in srgb, var(--ink) 6%, transparent);}
+.ia-per .chip{position:absolute; left:30px; top:52px; width:28px; height:22px; border-radius:6px; background:var(--accent); box-shadow:0 6px 12px -6px rgba(0,0,0,.45);}
+.is-on .ia-per .chip{animation:ia-per 3.2s cubic-bezier(.32,.72,0,1) infinite;}
+@keyframes ia-per{0%,15%{transform:translate(0,0);} 45%,100%{transform:translate(64px,-36px);}}
+.ia-week{display:flex; gap:4px; padding:12px;}
+.ia-week .col{flex:1; position:relative; border-radius:6px; background:color-mix(in srgb, var(--ink) 5%, transparent);}
+.ia-week b{position:absolute; left:2px; right:2px; border-radius:4px; background:color-mix(in srgb, var(--accent) 70%, transparent);}
+.is-on .ia-week b{animation:ia-drop .5s cubic-bezier(.32,.72,0,1) both;}
+.is-on .ia-week .col:nth-child(2) b{animation-delay:.06s;} .is-on .ia-week .col:nth-child(3) b{animation-delay:.12s;} .is-on .ia-week .col:nth-child(4) b{animation-delay:.18s;}
+.is-on .ia-week .col:nth-child(5) b{animation-delay:.24s;} .is-on .ia-week .col:nth-child(6) b{animation-delay:.3s;} .is-on .ia-week .col:nth-child(7) b{animation-delay:.36s;}
+.ia-month{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; padding:12px;}
+.ia-month i{border-radius:4px; background:color-mix(in srgb, var(--ink) 6%, transparent);}
+.ia-month .hot{background:var(--accent);}
+.is-on .ia-month .hot{animation:ia-pop .5s cubic-bezier(.32,.72,0,1) both;}
+.is-on .ia-month .h1{animation-delay:.15s;} .is-on .ia-month .h2{animation-delay:.3s;} .is-on .ia-month .h3{animation-delay:.45s;} .is-on .ia-month .h4{animation-delay:.6s;}
+.ia-bars{display:flex; align-items:flex-end; gap:10px; padding:16px 22px;}
+.ia-bars b{flex:1; height:var(--h); border-radius:6px 6px 3px 3px; background:var(--accent); transform-origin:bottom;}
+.ia-bars s{position:absolute; left:16px; right:16px; top:38px; border-top:2px dashed color-mix(in srgb, var(--ink) 35%, transparent);}
+.is-on .ia-bars b{animation:ia-grow .7s cubic-bezier(.32,.72,0,1) both; animation-delay:var(--d);}
+@keyframes ia-grow{from{transform:scaleY(0);}}
+.ia-cats{display:flex; flex-direction:column; justify-content:center; gap:14px; padding:16px 20px;}
+.ia-cats .r{display:flex; align-items:center; gap:10px;}
+.ia-cats i{width:12px; height:12px; border-radius:50%; flex:none;}
+.ia-cats span{flex:1; height:8px; border-radius:8px; background:color-mix(in srgb, var(--ink) 8%, transparent); overflow:hidden;}
+.ia-cats span b{display:block; height:100%; width:var(--w); border-radius:8px; transform-origin:left;}
+.ia-cats .c0{background:var(--accent);} .ia-cats .c1{background:color-mix(in srgb, var(--accent) 55%, #6a8fd1);} .ia-cats .c2{background:color-mix(in srgb, var(--accent) 45%, #6faa83);}
+.is-on .ia-cats span b{animation:ia-fill .8s cubic-bezier(.32,.72,0,1) both; animation-delay:var(--d);}
+@keyframes ia-fill{from{transform:scaleX(0);}}
+.ia-rot{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:12px;}
+.ia-rot .r{display:flex; gap:5px;}
+.ia-rot i{width:20px; height:20px; border-radius:5px; background:color-mix(in srgb, var(--ink) 7%, transparent);}
+.ia-rot i.on{background:var(--accent);}
+.ia-rot .arr{font-size:14px; color:var(--ink-soft); line-height:1;}
+.is-on .ia-rot .dst i.on{animation:ia-pop .45s cubic-bezier(.32,.72,0,1) both; animation-delay:calc(.4s + var(--d));}
+.ia-diag svg{position:absolute; inset:0; width:100%; height:100%;}
+.ia-diag path{fill:none; stroke:color-mix(in srgb, var(--ink) 45%, transparent); stroke-width:2; stroke-dasharray:120; stroke-dashoffset:0;}
+.ia-diag b{position:absolute; width:60px; height:28px; border-radius:8px; background:color-mix(in srgb, var(--accent) 35%, var(--surface-3)); border:1.5px solid var(--accent);}
+.is-on .ia-diag path{animation:ia-line 1s ease-out both .3s;}
+.is-on .ia-diag path + path{animation-delay:.6s;}
+@keyframes ia-line{from{stroke-dashoffset:120;}}
+.ia-plans{display:flex; flex-direction:column; justify-content:center; gap:10px; padding:14px 18px;}
+.ia-plans .p{display:flex; flex-direction:column; gap:5px; padding:7px 10px; border-radius:10px; background:color-mix(in srgb, var(--ink) 5%, transparent);}
+.ia-plans em{display:block; width:55%; height:7px; border-radius:4px; background:color-mix(in srgb, var(--ink) 30%, transparent);}
+.ia-plans span{height:5px; border-radius:5px; background:color-mix(in srgb, var(--ink) 8%, transparent); overflow:hidden;}
+.ia-plans span b{display:block; height:100%; width:var(--w); background:var(--accent); transform-origin:left;}
+.is-on .ia-plans span b{animation:ia-fill .8s cubic-bezier(.32,.72,0,1) both; animation-delay:var(--d);}
+.ia-table{display:flex; flex-direction:column; gap:6px; padding:16px;}
+.ia-table .r{display:flex; gap:8px; height:18px; position:relative; z-index:1;}
+.ia-table .r i{flex:1; border-radius:4px; background:color-mix(in srgb, var(--ink) 9%, transparent);}
+.ia-table .r i:first-child{flex:2;}
+.ia-table .hd i{background:color-mix(in srgb, var(--ink) 22%, transparent);}
+.ia-table .hl{position:absolute; left:10px; right:10px; top:37px; height:24px; border-radius:6px; background:color-mix(in srgb, var(--accent) 30%, transparent);}
+.is-on .ia-table .hl{animation:ia-sort 3s cubic-bezier(.32,.72,0,1) infinite;}
+@keyframes ia-sort{0%,20%{transform:translateY(48px);} 50%,100%{transform:none;}}
+.ia-list{display:flex; flex-direction:column; justify-content:center; gap:14px; padding:16px 22px;}
+.ia-list .r{display:flex; align-items:center; gap:10px;}
+.ia-list .ck{width:18px; height:18px; border-radius:50%; border:2px solid var(--accent); flex:none;}
+.ia-list b{flex:1; height:8px; border-radius:4px; background:color-mix(in srgb, var(--ink) 22%, transparent);}
+.is-on .ia-list .ck{animation:ia-tick2 3s ease infinite; animation-delay:var(--d);}
+@keyframes ia-tick2{0%,25%{background:transparent;} 35%,100%{background:var(--accent);}}
+.ia-slash{padding:18px 20px;}
+.ia-slash .ln{display:flex; align-items:center; gap:6px;}
+.ia-slash u{text-decoration:none; font-family:var(--mono); font-size:18px; font-weight:700; color:var(--accent);}
+.ia-slash .ln i{width:2px; height:18px; background:var(--ink);}
+.is-on .ia-slash .ln i{animation:ia-tick 1s steps(1) infinite;}
+.ia-slash .menu{margin-top:8px; width:120px; padding:8px; border-radius:10px; background:var(--surface); border:1px solid var(--border); box-shadow:0 10px 24px -12px rgba(0,0,0,.45); display:flex; flex-direction:column; gap:7px; transform-origin:top left;}
+.ia-slash .menu b{height:8px; border-radius:4px; background:color-mix(in srgb, var(--ink) 20%, transparent);}
+.ia-slash .menu b:first-child{background:color-mix(in srgb, var(--accent) 60%, transparent);}
+.is-on .ia-slash .menu{animation:ia-menu 3s cubic-bezier(.32,.72,0,1) infinite;}
+@keyframes ia-menu{0%,15%{transform:scale(.6); opacity:0;} 30%,90%{transform:none; opacity:1;} 100%{opacity:0;}}
+.ia-quick .tray{position:absolute; left:20px; right:20px; top:14px; height:34px; border-radius:10px; border:1.5px dashed color-mix(in srgb, var(--ink) 30%, transparent);}
+.ia-quick .note{position:absolute; left:84px; top:70px; width:34px; height:24px; border-radius:6px; background:var(--accent);}
+.ia-quick .plus{position:absolute; right:18px; bottom:14px; width:34px; height:34px; border-radius:50%; background:var(--accent); color:var(--accent-ink); font-size:22px; line-height:32px; text-align:center; font-weight:600;}
+.is-on .ia-quick .note{animation:ia-fly 2.8s cubic-bezier(.32,.72,0,1) infinite;}
+@keyframes ia-fly{0%{transform:translate(64px,26px) scale(.4); opacity:0;} 25%{transform:translate(30px,10px); opacity:1;} 55%,100%{transform:translate(0,-52px) scale(.9); opacity:1;}}
+.ia-why{display:flex; align-items:center; justify-content:center;}
+.ia-why .card{width:150px; padding:12px; border-radius:14px; border:1.5px solid color-mix(in srgb, var(--accent) 70%, transparent); display:flex; flex-direction:column; gap:8px;}
+.ia-why .card i{width:14px; height:14px; border-radius:50%; background:var(--accent);}
+.ia-why .card b{height:8px; border-radius:4px; background:color-mix(in srgb, var(--ink) 30%, transparent);}
+.ia-why .card .s{width:65%; background:color-mix(in srgb, var(--ink) 15%, transparent);}
+.is-on .ia-why .card{animation:ia-pop .6s cubic-bezier(.32,.72,0,1) both;}
+.is-on .ia-why .card i{animation:ia-glow 1.6s ease-in-out infinite;}
+@keyframes ia-glow{50%{box-shadow:0 0 0 6px color-mix(in srgb, var(--accent) 25%, transparent);}}
+.ia-clock{display:flex; align-items:center; justify-content:center;}
+.ia-clock .face{position:relative; width:100px; height:100px; border-radius:50%; border:2px solid color-mix(in srgb, var(--ink) 25%, transparent);}
+.ia-clock i{position:absolute; left:50%; bottom:50%; transform-origin:bottom center; border-radius:3px; background:var(--ink);}
+.ia-clock .h{width:4px; height:26px; margin-left:-2px; transform:rotate(300deg);}
+.ia-clock .m{width:3px; height:38px; margin-left:-1.5px; transform:rotate(60deg);}
+.ia-clock .s{width:1.5px; height:42px; margin-left:-.75px; background:var(--accent);}
+.is-on .ia-clock .s{animation:ia-sec 6s steps(60) infinite;}
+@keyframes ia-sec{to{transform:rotate(360deg);}}
+.ia-stop{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;}
+.ia-stop .t{font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:24px; font-weight:700; color:var(--ink);}
+.is-on .ia-stop .t u{text-decoration:none; animation:ia-tick 1s steps(1) infinite;}
+.ia-stop .laps{display:flex; flex-direction:column; gap:6px; width:120px;}
+.ia-stop .laps b{height:8px; border-radius:4px; background:color-mix(in srgb, var(--ink) 18%, transparent);}
+.is-on .ia-stop .laps b{animation:ia-drop .5s cubic-bezier(.32,.72,0,1) both .4s;}
+.is-on .ia-stop .laps b + b{animation-delay:.9s;}
+@media (prefers-reduced-motion:reduce){ .is-on .ia *, .is-on .ia{animation:none!important;} }
 </style><script>
 
 (function(){
@@ -7857,7 +7984,7 @@ window.addEventListener('keydown', function(e){
       desc:'Tudo à vista: distribuição do dia, tarefas soltas, resumo e orçamento da semana.'}
   };
   // Conta antiga (sem o documento): continua como está hoje, com tudo — só ganha as dicas uma vez.
-  var LAYOUT_DEF = {mode:'completo', custom:null, introSeen:false};
+  var LAYOUT_DEF = {mode:'completo', custom:null, introSeen:false, guidesSeen:{}};
   state.layout = Object.assign({}, LAYOUT_DEF); state.layoutLoaded = false;
   function layoutSet(mode, custom){
     if(mode==='custom'){ var on=[]; LAYOUT_PANELS.forEach(function(p){ if(!(custom && custom[p[0]]===false)) on.push(p[0]); }); return on; }
@@ -7871,7 +7998,7 @@ window.addEventListener('keydown', function(e){
   }
   function saveLayout(patch){
     state.layout = Object.assign({}, state.layout, patch);
-    var doc = {mode:state.layout.mode, custom:state.layout.custom||null, introSeen:!!state.layout.introSeen};
+    var doc = {mode:state.layout.mode, custom:state.layout.custom||null, introSeen:!!state.layout.introSeen, guidesSeen:state.layout.guidesSeen||{}};
     if(state.db) state.db.collection('settings').doc('layout').set(doc);
     applyLayout();
   }
@@ -7885,7 +8012,7 @@ window.addEventListener('keydown', function(e){
       if(state.view==='settings') paintLayoutPanel();
       if(first){
         // espera um pouco: num aparelho já sincronizado, o documento de outro aparelho pode descer logo depois
-        setTimeout(function(){ if(!state.layout.introSeen) introOpen(); else maybeAskNight(); }, 1200);
+        setTimeout(function(){ if(!state.layout.introSeen) introOpen(); else { maybeAskNight(); guideMaybe(); } }, 1200);
       }
     }, function(){});
   }
@@ -7932,7 +8059,9 @@ window.addEventListener('keydown', function(e){
           }).join('');
         }).join('') +
       '</div></div>' +
-      '<div class="panel lay-panel"><div class="panel-body lay-intro-row"><span><b>Dicas de boas-vindas</b><em>O que é a Agenda, o Planner, as Notas e o Relógio.</em></span><button type="button" class="btn small" id="lay-intro">Ver de novo</button></div></div>';
+      '<div class="panel lay-panel"><div class="panel-body"><div class="lay-intro-row"><span><b>Dicas de boas-vindas</b><em>O que é a Agenda, o Planner, as Notas e o Relógio.</em></span><button type="button" class="btn small" id="lay-intro">Ver de novo</button></div>' +
+        '<div class="lay-intro-row" style="margin-top:14px"><span><b>Como funciona cada app</b><em>Uma tela para cada aba, com o botão para abrir.</em></span></div>' +
+        '<div class="lay-guides">'+Object.keys(GUIDES).map(function(k){ return '<button type="button" class="btn small" data-guide="'+k+'">'+GUIDES[k].name+'</button>'; }).join('')+'</div></div></div>';
   }
   function paintLayoutPanel(){
     var root=document.querySelector('[data-sec-p="visual"]'); if(!root) return;
@@ -7962,6 +8091,7 @@ window.addEventListener('keydown', function(e){
       };
     });
     var ib=root.querySelector('#lay-intro'); if(ib) ib.onclick=function(){ introOpen(); };
+    Array.prototype.forEach.call(root.querySelectorAll('[data-guide]'), function(b){ b.onclick=function(){ guideOpen(b.getAttribute('data-guide'), false); }; });
   }
 
   /* ================= Dicas de boas-vindas ================= */
@@ -7984,6 +8114,7 @@ window.addEventListener('keydown', function(e){
   var introState = {mode:'equilibrado'};
   function introOpen(){
     if(document.getElementById('intro-ov')) return;
+    introThisSession=true;
     introState.mode = (state.layout.introSeen ? state.layout.mode : 'equilibrado');
     if(introState.mode==='custom') introState.mode='completo';
     var ov=document.createElement('div'); ov.id='intro-ov'; ov.className='intro-ov';
@@ -7992,7 +8123,9 @@ window.addEventListener('keydown', function(e){
       '<div class="intro-track">' + INTRO_SLIDES.map(function(s, i){
         return '<section class="intro-slide" data-i="'+i+'" data-k="'+s.k+'">' +
           (s.k==='modo' ? '<div class="intro-modo">'+layoutModeCardsHtml(introState.mode, false)+layoutPreviewHtml()+'</div>' : introArtHtml(s.k)) +
-          '<h2>'+s.t+'</h2><p>'+s.p+'</p></section>';
+          '<h2>'+s.t+'</h2><p>'+s.p+'</p>' +
+          (GUIDES[s.k] ? '<button type="button" class="btn small intro-more" data-more="'+s.k+'">Ver mais sobre '+s.t+'</button>' : '') +
+          '</section>';
       }).join('') + '</div>' +
       '<div class="intro-foot"><div class="intro-dots">'+INTRO_SLIDES.map(function(s,i){ return '<i data-dot="'+i+'"></i>'; }).join('')+'</div>' +
       '<button type="button" class="btn primary" data-intro="next">Próximo</button></div>' +
@@ -8026,6 +8159,7 @@ window.addEventListener('keydown', function(e){
       };
     });
     Array.prototype.forEach.call(ov.querySelectorAll('[data-dot]'), function(d){ d.onclick=function(){ go(+d.getAttribute('data-dot')); }; });
+    Array.prototype.forEach.call(ov.querySelectorAll('[data-more]'), function(b){ b.onclick=function(){ guideOpen(b.getAttribute('data-more'), false); }; });
     function close(save){
       // fechar ou pular também conta como "visto": a pessoa não quer ver de novo a cada abertura.
       // Quem pula fica com o que já tinha (conta nova: Completo, como o app sempre foi).
@@ -8042,9 +8176,132 @@ window.addEventListener('keydown', function(e){
     ov.addEventListener('keydown', function(e){
       if(e.key==='ArrowRight'){ e.preventDefault(); go(Math.min(idx+1, INTRO_SLIDES.length-1)); }
       if(e.key==='ArrowLeft'){ e.preventDefault(); go(Math.max(idx-1, 0)); }
-      if(e.key==='Escape') close(false);
+      if(e.key==='Escape' && !document.getElementById('guide-ov')) close(false);
     });
     paint(); setTimeout(function(){ try{ next.focus(); }catch(_){ } }, 50);
+  }
+
+  /* ================= Guias de cada app (06/11/2026) =================
+     Pedido do Gabriel: além das dicas gerais, um passo a passo de cada app explicando cada aba, que aparece na
+     PRIMEIRA vez que a pessoa entra naquele app (dá para pular) e pode ser revisto quando quiser (Visual do
+     app e o "Ver mais" de cada app nas dicas). Uma tela por aba, com a mesma linguagem das animações das
+     dicas, e um "Abrir" que leva direto para a aba explicada: ler sobre o Painel e já cair nele ensina mais
+     do que ler e depois procurar onde fica. Visto/não visto fica em settings/layout.guidesSeen. */
+  var GUIDES = {
+    agenda: {name:'Agenda', slides:[
+      {v:'focus', t:'Foco', a:'ring', p:'A tarefa que está acontecendo agora, com o cronômetro grande e o que vem em seguida. Para não se perder no meio do dia.'},
+      {v:'plan', t:'Planejamento', a:'periods', p:'Os afazeres da semana por dia e por período (manhã, tarde e noite). Crie no "sem dia" e arraste para quando for fazer.'},
+      {v:'day', t:'Dia', a:'agenda', p:'A grade de horários. Toque num horário vazio para criar um bloco; toque no bloco para começar, concluir ou editar. Segure para arrastar.'},
+      {v:'week', t:'Semana', a:'week', p:'Os sete dias lado a lado, para ver se a semana está equilibrada e passar blocos de um dia para outro.'},
+      {v:'month', t:'Mês', a:'month', p:'O mês inteiro com feriados, aniversários e lembretes. Toque num dia para abrir.'},
+      {v:'metrics', t:'Painel', a:'bars', p:'Seus números: horas por categoria contra a meta, sequência dos hábitos e as noites de sono.'},
+      {v:'categories', t:'Categorias', a:'cats', p:'Trabalho, estudo, lazer… Cada uma com cor, ícone e meta de horas por dia ou de vezes por semana. É o que o Painel mede.'},
+      {v:'routine', t:'Rotina', a:'routine', p:'Os blocos que se repetem toda semana, como a academia na segunda. Monte uma vez e aplique na semana com um toque.'},
+      {v:'diagram', t:'Diagramas', a:'diag', p:'Um quadro livre para organizar ideias: cartões ligados por setas, que você arrasta para onde quiser.'}
+    ]},
+    planner: {name:'Planner', slides:[
+      {v:'pl-plans', t:'Planos', a:'plans', p:'Cada projeto grande vira um plano (uma obra, um curso, uma mudança), com o progresso das tarefas dele.'},
+      {v:'pl-board', t:'Quadro', a:'planner', p:'As tarefas do plano em colunas, como "a fazer", "fazendo" e "feito". Arraste o cartão quando a situação mudar.'},
+      {v:'pl-grid', t:'Grade', a:'table', p:'As mesmas tarefas numa tabela: prazo, prioridade, checklist e horas. Toque no nome de uma coluna para ordenar por ela.'},
+      {v:'pl-charts', t:'Gráficos', a:'bars', p:'Quanto de cada plano já foi feito, o que está atrasado e quantas horas cada um levou.'},
+      {v:'pl-mine', t:'Minhas tarefas', a:'list', p:'Todas as tarefas de todos os planos numa lista só: atrasadas, para hoje e as próximas.'}
+    ]},
+    notas: {name:'Notas', slides:[
+      {v:'pages', t:'Páginas', a:'notas', p:'Escreva como num caderno. Cada página pode ter subpáginas, que aparecem na lista ao lado.'},
+      {t:'Comandos com "/"', a:'slash', p:'Numa linha vazia, digite "/" para escolher o que criar: título, lista, checklist, citação, código ou divisória.'},
+      {t:'Nota rápida', a:'quick', p:'No "+" › Nota rápida (Ctrl+Alt+N no PC), a ideia vai em segundos para a Caixa de entrada. Depois você move para a página certa.'},
+      {t:'Meus porquês', a:'why', p:'Uma página com os seus motivos. De tempos em tempos a Agenda mostra um deles, para lembrar por que você está fazendo o que faz.'}
+    ]},
+    relogio: {name:'Relógio', slides:[
+      {v:'ck-relogio', t:'Relógio', a:'clock', p:'A hora certa, grande, para bater o olho de longe.'},
+      {v:'ck-alarmes', t:'Alarmes', a:'relogio', p:'No topo, o horário de dormir e de acordar. Embaixo, outros alarmes, com repetição e soneca. No iPhone eles tocam com o app aberto.'},
+      {v:'ck-cronometro', t:'Cronômetro', a:'stopwatch', p:'Para medir algo rápido, com voltas. Continua contando mesmo se você trocar de aba.'},
+      {v:'ck-timer', t:'Timer', a:'ring', p:'Escolha o tempo nas rodinhas e ele toca quando acabar, em qualquer aba do app.'}
+    ]}
+  };
+  function guideArtHtml(a){
+    switch(a){
+      case 'ring': return '<div class="ia ia-ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" class="tr"/><circle cx="50" cy="50" r="40" class="pr"/></svg><span>25:00</span></div>';
+      case 'periods': return '<div class="ia ia-per">'+['M','T','N'].map(function(r){ return '<div class="row"><em>'+r+'</em>'+'<i></i><i></i><i></i><i></i><i></i></div>'; }).join('')+'<b class="chip"></b></div>';
+      case 'week': return '<div class="ia ia-week">'+[0,1,2,3,4,5,6].map(function(i){ return '<div class="col"><b style="top:'+[10,30,18,46,12,36,24][i]+'px;height:'+[22,18,30,16,26,20,14][i]+'px"></b></div>'; }).join('')+'</div>';
+      case 'month': var c=''; for(var i=0;i<35;i++) c+='<i class="'+([4,11,17,23,30].indexOf(i)>=0?'hot h'+[4,11,17,23,30].indexOf(i):'')+'"></i>'; return '<div class="ia ia-month">'+c+'</div>';
+      case 'bars': return '<div class="ia ia-bars"><s></s>'+[60,85,40,95,70].map(function(h,i){ return '<b style="--h:'+h+'%;--d:'+(i*.08)+'s"></b>'; }).join('')+'</div>';
+      case 'cats': return '<div class="ia ia-cats">'+[78,52,95].map(function(w,i){ return '<div class="r"><i class="c'+i+'"></i><span><b class="c'+i+'" style="--w:'+w+'%;--d:'+(i*.15)+'s"></b></span></div>'; }).join('')+'</div>';
+      case 'routine': var row=function(cls){ return '<div class="r '+cls+'">'+[1,0,1,0,1,0,0].map(function(on,i){ return '<i class="'+(on?'on':'')+'" style="--d:'+(i*.08)+'s"></i>'; }).join('')+'</div>'; }; return '<div class="ia ia-rot">'+row('src')+'<div class="arr">↓</div>'+row('dst')+'</div>';
+      case 'diag': return '<div class="ia ia-diag"><svg viewBox="0 0 200 132"><path d="M52 40 L148 40"/><path d="M52 40 L100 100"/></svg><b style="left:22px;top:26px"></b><b style="left:118px;top:26px"></b><b style="left:70px;top:86px"></b></div>';
+      case 'plans': return '<div class="ia ia-plans">'+[70,35,90].map(function(w,i){ return '<div class="p"><em></em><span><b style="--w:'+w+'%;--d:'+(i*.15)+'s"></b></span></div>'; }).join('')+'</div>';
+      case 'table': return '<div class="ia ia-table">'+[0,1,2,3].map(function(i){ return '<div class="r'+(i===0?' hd':'')+'"><i></i><i></i><i></i></div>'; }).join('')+'<b class="hl"></b></div>';
+      case 'list': return '<div class="ia ia-list">'+[0,1,2].map(function(i){ return '<div class="r"><span class="ck" style="--d:'+(i*.5)+'s"></span><b></b></div>'; }).join('')+'</div>';
+      case 'slash': return '<div class="ia ia-slash"><div class="ln"><u>/</u><i></i></div><div class="menu"><b></b><b></b><b></b></div></div>';
+      case 'quick': return '<div class="ia ia-quick"><div class="tray"></div><b class="note"></b><span class="plus">+</span></div>';
+      case 'why': return '<div class="ia ia-why"><div class="card"><i></i><b></b><b class="s"></b></div></div>';
+      case 'clock': return '<div class="ia ia-clock"><div class="face"><i class="h"></i><i class="m"></i><i class="s"></i></div></div>';
+      case 'stopwatch': return '<div class="ia ia-stop"><div class="t">00:<u>12</u>,4</div><div class="laps"><b></b><b></b></div></div>';
+      default: return introArtHtml(a);
+    }
+  }
+  function appOfView(v){ return v==='planner' ? 'planner' : v==='pages' ? 'notas' : v==='clock' ? 'relogio' : (v==='settings' ? null : 'agenda'); }
+  var introThisSession=false;
+  function guideMaybe(){
+    if(!state.layoutLoaded || !state.layout.introSeen) return;
+    var a=appOfView(state.view); if(!a || (state.layout.guidesSeen||{})[a]) return;
+    // a Agenda acabou de ser apresentada nas dicas: o guia dela fica para a próxima vez que a pessoa voltar a ela
+    if(a==='agenda' && introThisSession) return;
+    setTimeout(function(){
+      if(appOfView(state.view)!==a || (state.layout.guidesSeen||{})[a]) return;
+      if(document.getElementById('intro-ov') || document.getElementById('guide-ov') || state.modal) return;
+      guideOpen(a, true);
+    }, 700);
+  }
+  function guideOpen(app, first){
+    var G=GUIDES[app]; if(!G || document.getElementById('guide-ov')) return;
+    var ov=document.createElement('div'); ov.id='guide-ov'; ov.className='intro-ov guide-ov';
+    var n=G.slides.length;
+    ov.innerHTML='<div class="intro-card" role="dialog" aria-modal="true" aria-label="Como funciona: '+G.name+'">' +
+      '<div class="guide-head"><span>Como funciona</span><b>'+G.name+'</b></div>' +
+      '<button type="button" class="intro-skip" data-g="skip">'+(first?'Pular':'Fechar')+'</button>' +
+      '<div class="intro-track">'+G.slides.map(function(s,i){
+        return '<section class="intro-slide" data-i="'+i+'">'+guideArtHtml(s.a)+'<h2>'+s.t+'</h2><p>'+s.p+'</p>' +
+          (s.v ? '<button type="button" class="btn small guide-go" data-go="'+s.v+'">Abrir '+s.t+'</button>' : '') + '</section>';
+      }).join('')+'</div>' +
+      '<div class="intro-foot"><div class="intro-dots">'+G.slides.map(function(s,i){ return '<i data-dot="'+i+'"></i>'; }).join('')+'</div>' +
+      '<button type="button" class="btn primary" data-g="next">Próximo</button></div></div>';
+    document.body.appendChild(ov);
+    var track=ov.querySelector('.intro-track'), next=ov.querySelector('[data-g=next]'), idx=0, target=null, tgtT=null, st=null;
+    function cur(){ return Math.round(track.scrollLeft/Math.max(1,track.clientWidth)); }
+    function paintAt(i){
+      Array.prototype.forEach.call(ov.querySelectorAll('[data-dot]'), function(d){ d.classList.toggle('on', +d.getAttribute('data-dot')===i); });
+      Array.prototype.forEach.call(ov.querySelectorAll('.intro-slide'), function(s){ s.classList.toggle('is-on', +s.getAttribute('data-i')===i); });
+      next.textContent = i>=n-1 ? 'Concluir' : 'Próximo';
+    }
+    function paint(){ idx=cur(); paintAt(idx); }
+    function go(i){ idx=i; target=i; paintAt(i); clearTimeout(tgtT); tgtT=setTimeout(function(){ if(target!=null){ track.scrollLeft=target*track.clientWidth; target=null; paint(); } }, 900);
+      track.scrollTo({left:i*track.clientWidth, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); }
+    track.addEventListener('scroll', function(){
+      if(target!=null){ if(cur()!==target) return; target=null; clearTimeout(tgtT); }
+      clearTimeout(st); st=setTimeout(paint, 60);
+    }, {passive:true});
+    function close(){
+      var gs=Object.assign({}, state.layout.guidesSeen||{}); gs[app]=true; saveLayout({guidesSeen:gs});
+      ov.classList.add('out'); setTimeout(function(){ ov.remove(); if(!document.getElementById('intro-ov')) maybeAskNight(); }, 220);
+    }
+    next.onclick=function(){ if(idx>=n-1) close(); else go(idx+1); };
+    ov.querySelector('[data-g=skip]').onclick=close;
+    Array.prototype.forEach.call(ov.querySelectorAll('[data-dot]'), function(d){ d.onclick=function(){ go(+d.getAttribute('data-dot')); }; });
+    Array.prototype.forEach.call(ov.querySelectorAll('[data-go]'), function(b){
+      b.onclick=function(){
+        var v=b.getAttribute('data-go'), intro=document.getElementById('intro-ov');
+        // vindo do "Ver mais" das dicas, ir para a aba encerra as dicas também (a pessoa escolheu explorar)
+        if(intro){ var sk=intro.querySelector('[data-intro=skip]'); if(sk) sk.click(); }
+        close(); setView(v);
+      };
+    });
+    ov.addEventListener('keydown', function(e){
+      if(e.key==='ArrowRight'){ e.preventDefault(); go(Math.min(idx+1,n-1)); }
+      if(e.key==='ArrowLeft'){ e.preventDefault(); go(Math.max(idx-1,0)); }
+      if(e.key==='Escape'){ e.stopPropagation(); close(); }
+    });
+    paintAt(0); setTimeout(function(){ try{ next.focus(); }catch(_){ } }, 50);
   }
   function saveWhy(patch){ state.why=Object.assign({}, state.why, patch); if(state.db) state.db.collection('settings').doc('why').set(state.why); whySubscribePage(); render(); }
 
@@ -9521,8 +9778,9 @@ window.addEventListener('keydown', function(e){
     else stopMonth();
     if(v==='metrics') subscribeMetrics(); else stopMetrics();
 
-    if(v==='focus' && startOfWeek(state.selectedDate)!==startOfWeek(todayStr())){ setDate(todayStr(), true); return; }
+    if(v==='focus' && startOfWeek(state.selectedDate)!==startOfWeek(todayStr())){ setDate(todayStr(), true); guideMaybe(); return; }
     render();
+    guideMaybe();
   }
 
   var tickHandle=null;
@@ -11170,7 +11428,7 @@ window.addEventListener('keydown', function(e){
 
       '<div class="ios-head"><h2 class="ios-title">'+escapeHtml(viewTitle(state.view))+'</h2></div>' +
 
-      '<div class="sb-switch sb-switch3 sb-switch4" role="tablist"><button data-mode="agenda" class="'+(pm||nm||cm?'':'on')+'">Agenda</button><button data-mode="planner" class="'+(pm?'on':'')+'">Planner</button><button data-mode="notas" class="'+(nm?'on':'')+'">Notas</button><button data-mode="relogio" class="'+(cm?'on':'')+'">Relógio</button></div>' +
+      '<div class="sb-switch sb-switch3 sb-switch4" role="tablist"><button data-mode="agenda" class="'+(pm||nm||cm||state.view==='settings'?'':'on')+'">Agenda</button><button data-mode="planner" class="'+(pm?'on':'')+'">Planner</button><button data-mode="notas" class="'+(nm?'on':'')+'">Notas</button><button data-mode="relogio" class="'+(cm?'on':'')+'">Relógio</button></div>' +
       (pm || cm ? '' : miniCalHtml()) +
       '<nav class="sidebar-nav" id="sidebar-nav">' +
         (pm ? pnSidebarNavHtml() : cm ? ckSidebarNavHtml() : NAV_GROUPS.map(function(g){
@@ -11184,14 +11442,14 @@ window.addEventListener('keydown', function(e){
       (pm || !SB_MOBILE.matches ? '<div class="sidebar-metrics">' + (pm ? pnSidebarStatsHtml() : sidebarBudgetHtml() + sidebarProgressHtml()) + '</div>' : '');
 
     var mm=document.getElementById('mobile-metrics');
-    if(mm) mm.innerHTML = (!pm && !cm && !nm && SB_MOBILE.matches) ? '<div class="sidebar-metrics">' + sidebarBudgetHtml() + sidebarProgressHtml() + '</div>' : '';
+    if(mm) mm.innerHTML = (!pm && !cm && !nm && state.view!=='settings' && SB_MOBILE.matches) ? '<div class="sidebar-metrics">' + sidebarBudgetHtml() + sidebarProgressHtml() + '</div>' : '';
     Array.prototype.forEach.call(sb.querySelectorAll('.sidebar-nav button'), function(b){ b.onclick=function(){ setView(b.getAttribute('data-v')); }; });
     Array.prototype.forEach.call(sb.querySelectorAll('[data-mode]'), function(b){ b.onclick=function(){
       var md=b.getAttribute('data-mode');
       if(md==='planner'){ if(state.view!=='planner') setView('planner'); }
       else if(md==='notas'){ if(state.view!=='pages') setView('pages'); }
       else if(md==='relogio'){ if(state.view!=='clock') setView('clock'); }
-      else if(state.view==='planner' || state.view==='pages' || state.view==='clock') setView(state.lastAgendaView && state.lastAgendaView!=='pages' ? state.lastAgendaView : 'day');
+      else if(state.view==='planner' || state.view==='pages' || state.view==='clock' || state.view==='settings') setView(state.lastAgendaView && state.lastAgendaView!=='pages' ? state.lastAgendaView : 'day');
     }; });
     wireMiniCal(sb);
     wireNotifBell();
@@ -11303,11 +11561,12 @@ window.addEventListener('keydown', function(e){
     var bar=document.getElementById('ios-tabbar');
     if(!bar){ bar=document.createElement('nav'); bar.id='ios-tabbar'; bar.setAttribute('aria-label','Abas'); document.body.appendChild(bar); }
     var v=state.view, inMore=TAB_MORE.indexOf(v)>=0;
-    document.body.setAttribute('data-app', v==='clock'?'clock':v==='pages'?'notas':v==='planner'?'planner':'agenda');
+    document.body.setAttribute('data-app', v==='clock'?'clock':v==='pages'?'notas':v==='planner'?'planner':v==='settings'?'settings':'agenda');
     var key=v+'|'+(v==='planner'?PN.view:v==='clock'?CK.tab:'')+'|'+(document.getElementById('ios-more')?'m':'');
     if(bar.getAttribute('data-k')===key) return;
     bar.setAttribute('data-k', key);
-    bar.hidden = (v==='pages');
+    // Configurações não pertencem a nenhum app (06/11/2026, pedido do Gabriel): sem as abas da Agenda embaixo
+    bar.hidden = (v==='pages' || v==='settings');
     if(v==='clock'){
       bar.innerHTML = CK_TABS.map(function(t){ var on=CK.tab===t;
         return '<button data-ck="'+t+'" class="'+(on?'on':'')+'"'+(on?' aria-current="page"':'')+'>'+tbSvg('ck-'+t)+'<span>'+CK_NAMES[t]+'</span></button>'; }).join('');
@@ -15449,7 +15708,7 @@ window.addEventListener('keydown', function(e){
     if(nightPromptDone) return;
     // espera saber o modo do app e não abre por baixo das dicas de boas-vindas; com a noite desligada
     // (modo Simples, ou desligada no Do meu jeito) a pergunta da manhã também não aparece
-    if(!state.layoutLoaded || document.getElementById('intro-ov')) return;
+    if(!state.layoutLoaded || document.getElementById('intro-ov') || document.getElementById('guide-ov')) return;
     if(!layOn('night')){ nightPromptDone=true; return; }
     var hoje=todayStr();
     if(new Date().getHours()>=12){ nightPromptDone=true; return; }
