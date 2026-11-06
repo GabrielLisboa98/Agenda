@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261106-151727';</script>
+<script>window.AGENDA_BUILD = '20261106-152329';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261106-151727"></script>
+<script src="cloud.js?v=20261106-152329"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -3273,7 +3273,8 @@ html.lay-off-progress.lay-off-budget #mobile-metrics, html.lay-off-progress.lay-
 .ia-ring circle{fill:none; stroke-width:8; stroke-linecap:round;}
 .ia-ring .tr{stroke:var(--border-soft);}
 .ia-ring .pr{stroke:var(--accent); stroke-dasharray:251; stroke-dashoffset:60;}
-.is-on .ia-ring .pr{animation:ia-ring 4s linear infinite;}
+/* bem devagar (06/11/2026): rodando em 4s dava aflição de "o tempo está acabando, preciso apertar logo" */
+.is-on .ia-ring .pr{animation:ia-ring 40s linear infinite;}
 @keyframes ia-ring{from{stroke-dashoffset:0;} to{stroke-dashoffset:251;}}
 .ia-ring span{font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:18px; font-weight:700; color:var(--ink);}
 .ia-per{padding:14px 14px 14px 12px; display:flex; flex-direction:column; gap:8px;}
