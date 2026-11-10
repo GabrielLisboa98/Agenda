@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261110-171000';</script>
+<script>window.AGENDA_BUILD = '20261110-171500';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261110-171000"></script>
+<script src="cloud.js?v=20261110-171500"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -9035,7 +9035,7 @@ window.addEventListener('keydown', function(e){
       el.querySelector('b').textContent=o.title; el.querySelector('em').textContent=o.sub||pick(CEL_SUBS);
       el.onclick=function(){ el.classList.add('out'); setTimeout(function(){ el.remove(); }, 220); };
       document.body.appendChild(el);
-      setTimeout(function(){ if(el.parentNode){ el.classList.add('out'); setTimeout(function(){ el.remove(); }, 260); } }, o.big ? 4200 : 3000);
+      autoHide(el, readMs(o.title+' '+(el.querySelector('em').textContent||''), o.big?1500:0), function(){ if(el.parentNode){ el.classList.add('out'); setTimeout(function(){ el.remove(); }, 260); } });
     }catch(_){ }
   }
   function catDoneMinToday(catId, excludeId){
@@ -10689,10 +10689,20 @@ window.addEventListener('keydown', function(e){
     host.appendChild(el);
     if(window.uiSound) window.uiSound(window.uiSoundKind(msg, icon));
     requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.classList.add('show'); }); });
-    setTimeout(function(){
-      el.classList.remove('show');
-      setTimeout(function(){ el.remove(); }, 260);
-    }, 2600);
+    autoHide(el, readMs(msg), function(){ el.classList.remove('show'); setTimeout(function(){ el.remove(); }, 260); });
+  }
+  /* Quanto tempo uma mensagem fica na tela (10/11/2026, pedido do Gabriel: "sumiu tão rápido que não consegui ler").
+     Proporcional ao texto: ~70 ms por letra (uns 14 caracteres por segundo, leitura tranquila) + 2,5 s para o olho
+     chegar até ela; nunca menos de 4 s nem mais de 12 s. Com o mouse em cima (ou o dedo encostado) ela não some. */
+  function readMs(text, extra){ var n=String(text||'').replace(/\s+/g,' ').trim().length; return Math.max(4000, Math.min(12000, 2500 + n*70 + (extra||0))); }
+  function autoHide(el, ms, hide){
+    var t=null, done=false;
+    function arm(d){ clearTimeout(t); t=setTimeout(function(){ if(!done){ done=true; hide(); } }, d); }
+    el.addEventListener('pointerenter', function(){ clearTimeout(t); });
+    el.addEventListener('pointerleave', function(){ if(!done) arm(1800); });
+    el.addEventListener('touchstart', function(){ clearTimeout(t); }, {passive:true});
+    el.addEventListener('touchend', function(){ if(!done) arm(2500); }, {passive:true});
+    arm(ms);
   }
 
   function setDate(d, keepView){
