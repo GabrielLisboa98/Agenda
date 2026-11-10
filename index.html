@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261110-153510';</script>
+<script>window.AGENDA_BUILD = '20261110-154955';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261110-153510"></script>
+<script src="cloud.js?v=20261110-154955"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -8599,7 +8599,23 @@ window.addEventListener('keydown', function(e){
   function bestPtVoice(){ try{ var v=speechSynthesis.getVoices().filter(function(x){ return /^pt(-|_)?BR/i.test(x.lang); }); if(!v.length) return null;
     var rank=function(x){ var n=x.name; return /natural|neural/i.test(n)?0 : /online/i.test(n)?1 : /google/i.test(n)?2 : 3; };
     return v.sort(function(a,b){ return rank(a)-rank(b); })[0]; }catch(e){ return null; } }
-  function bedSay(t){ try{ var u=new SpeechSynthesisUtterance(t); u.lang='pt-BR'; u.rate=0.95; var bv=bestPtVoice(); if(bv) u.voice=bv; speechSynthesis.cancel(); speechSynthesis.speak(u); }catch(e){} }
+  /* Voz no iPhone (10/11/2026, "não está lendo"): o Safari só deixa a página falar sozinha (de um timer, como o
+     lembrete do porquê) depois que ela falou UMA vez dentro de um toque da pessoa. O primeiro toque em qualquer
+     lugar do app faz uma fala muda que "destrava" a voz. E falar logo depois de cancel() faz o iOS engolir a
+     frase: a nova sai 120 ms depois. */
+  (function(){
+    if(!('speechSynthesis' in window)) return;
+    function unlock(){
+      try{ var u=new SpeechSynthesisUtterance(' '); u.volume=0; u.lang='pt-BR'; speechSynthesis.speak(u); }catch(_){}
+      document.removeEventListener('touchend', unlock, true); document.removeEventListener('click', unlock, true);
+    }
+    document.addEventListener('touchend', unlock, true); document.addEventListener('click', unlock, true);
+  })();
+  function bedSay(t){ try{
+    var u=new SpeechSynthesisUtterance(t); u.lang='pt-BR'; u.rate=0.95; var bv=bestPtVoice(); if(bv) u.voice=bv;
+    var busy=speechSynthesis.speaking||speechSynthesis.pending; speechSynthesis.cancel();
+    if(busy) setTimeout(function(){ try{ speechSynthesis.speak(u); }catch(_){} }, 120); else speechSynthesis.speak(u);
+  }catch(e){} }
   function bedShow(night, st){
     var r=state.rest, left=Math.max(0,(r.snoozeMax||0)-(st.snoozes||0)), run=currentTaskInfo && currentTaskInfo();
     var msg = r.msg ? escapeHtml(r.msg) : BED_MSGS[Math.floor(Date.now()/86400000)%BED_MSGS.length];
@@ -12505,7 +12521,7 @@ window.addEventListener('keydown', function(e){
       '<div class="panel-body" style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;">' +
         '<div>' +
           '<div class="hero-tag" style="color:'+(paused?'var(--warning)':(over?'var(--critical)':'var(--accent)'))+';">'+(paused?'PAUSADA':'EM CURSO'+(over?' · ESTOUROU':''))+'</div>' +
-          '<div class="hero-title">'+(b.isLoose?'':'<button class="hero-link hero-link-title" data-goto="'+b.id+'" title="Ver na grade">')+catIconPrefix(cat)+escapeHtml(b.title||(cat?cat.name:'Bloco'))+(b.isLoose?'':'</button>')+'</div>' +
+          '<div class="hero-title">'+catIconPrefix(cat)+escapeHtml(b.title||(cat?cat.name:'Bloco'))+'</div>' +
           (b.project?'<div class="hero-project">'+escapeHtml(b.project)+pnHeroSuffix(b)+'</div>':'') +
           (b.note?'<div class="hero-note">'+escapeHtml(b.note)+'</div>':'') +
           '<div class="hero-sub mono">'+timeLabel+(b.lateMin!=null && b.lateMin>=LATE_TOL_MIN ? ' · <span class="late-tag">começou '+fmtDuration(b.lateMin)+' depois'+(b.lateReason?' · '+lateReasonMeta(b.lateReason).label.toLowerCase():'')+'</span>' : '')+'</div>' +
