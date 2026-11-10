@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261106-152329';</script>
+<script>window.AGENDA_BUILD = '20261110-153510';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261106-152329"></script>
+<script src="cloud.js?v=20261110-153510"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -3234,6 +3234,10 @@ html.lay-off-progress.lay-off-budget #mobile-metrics, html.lay-off-progress.lay-
   .lay-bar{transition:none;}
 }
 
+/* card da tarefa em curso: dá para tocar e ir ao Foco — afunda um pouco no toque, como os cartões do iOS */
+.hero-current.hero-tap{cursor:pointer; transition:transform .16s cubic-bezier(.32,.72,0,1);}
+.hero-current.hero-tap:active:not(:has(button:active)){transform:scale(.985);}
+.hero-current.hero-tap:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 /* legenda dos sons em Configurações › Alertas */
 .snd-legend{margin-top:14px; display:flex; flex-direction:column; gap:3px;}
 .ia-layout{display:flex; align-items:center; justify-content:center; background:transparent; border:none; height:auto; overflow:visible;}
@@ -12578,6 +12582,19 @@ window.addEventListener('keydown', function(e){
 
     var heroEl=document.getElementById('hero-current');
     if(heroEl) wireApptCheckButtons(heroEl);
+    /* Tocar no card da tarefa em curso leva ao Foco (10/11/2026, pedido do Gabriel): o card no topo é um
+       resumo; quem quer o cronômetro grande e o "a seguir" ia procurar a aba. Os botões de dentro do card
+       (Concluir, Pausar…) continuam fazendo só o que fazem — o toque só conta fora deles. */
+    if(heroEl && b){
+      heroEl.classList.add('hero-tap'); heroEl.tabIndex=0;
+      heroEl.setAttribute('aria-label', 'Abrir no Foco: '+(b.title||'tarefa em curso'));
+      heroEl.onclick=function(e){
+        if(e.target.closest('button, a, input, select, textarea, label')) return;
+        if(window.uiSound) uiSound('pop');
+        setView('focus');
+      };
+      heroEl.onkeydown=function(e){ if((e.key==='Enter'||e.key===' ') && e.target===heroEl){ e.preventDefault(); setView('focus'); } };
+    }
     var qsBtn=document.getElementById('hero-quickstart');
     if(qsBtn){
       qsBtn.onclick=function(e){
