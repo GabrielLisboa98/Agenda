@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261110-165000';</script>
+<script>window.AGENDA_BUILD = '20261110-171000';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261110-165000"></script>
+<script src="cloud.js?v=20261110-171000"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -2797,7 +2797,7 @@ code, pre, kbd, .nt-code, .nt-code *, .nt-codebar select{font-family:var(--code)
 }
 </style><style id="ios-icon">.sidebar-brand .mark{background:none!important; border:none!important; box-shadow:none!important; backdrop-filter:none!important; -webkit-backdrop-filter:none!important; overflow:visible!important; border-radius:0!important;}</style><style id="ios-clock">
 .sb-switch.sb-switch4{grid-template-columns:repeat(4,1fr);}
-body[data-app="clock"] #hero-slot{display:none!important;}
+/* (10/11/2026) o card da tarefa em curso volta a aparecer no Relógio, como no resto do app */
 /* nas Configurações a barra lateral do PC também não mostra as abas da Agenda: elas valem para o app todo */
 body[data-app="settings"] .sidebar-nav{display:none!important;}
 .ck-app{padding-bottom:84px;}
@@ -2852,6 +2852,28 @@ html[data-mode="dark"] .ck-round.green{color:#30D158;} html[data-mode="dark"] .c
 .ck-laps{display:flex; flex-direction:column; border-top:.5px solid var(--border);}
 .ck-lap{display:flex; justify-content:space-between; padding:12px 6px; border-bottom:.5px solid var(--border); font-size:.9444rem;}
 .ck-lap.cur{color:var(--ink-soft);}
+/* botão do Foco embaixo dos quatro apps */
+.sb-foco{display:flex; align-items:center; justify-content:center; gap:8px; width:100%; min-height:38px; margin-top:-6px; padding:6px 12px; border-radius:18px; border:1px solid color-mix(in srgb, var(--sidebar-ink) 12%, transparent);
+  background:color-mix(in srgb, var(--sidebar-ink) 9%, transparent); color:color-mix(in srgb, var(--sidebar-ink) 80%, transparent); font-family:inherit; font-size:0.8333rem; font-weight:700; cursor:pointer; min-width:0;
+  transition:background .2s ease, transform .15s ease;}
+.sb-foco:hover{background:color-mix(in srgb, var(--sidebar-ink) 14%, transparent);}
+.sb-foco:active{transform:scale(.98);}
+.sb-foco.on{background:var(--active-glass, var(--sidebar-ink)); color:var(--sidebar-ink); box-shadow:0 4px 12px -6px rgba(0,0,0,.4), inset 0 1px 0 var(--panel-highlight);}
+.sb-foco.live{justify-content:flex-start; border-color:color-mix(in srgb, var(--accent) 45%, transparent);}
+.sb-foco .sbf-ic{display:inline-flex; color:var(--accent);}
+.sb-foco .sbf-t{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:0 1 auto;}
+.sb-foco.live .sbf-t{flex:1; text-align:left;}
+.sb-foco .sbf-clk{flex:none; font-size:0.7778rem; color:var(--accent);}
+.sbf-dot{width:9px; height:9px; border-radius:50%; flex:none; background:var(--c); box-shadow:0 0 0 0 var(--c); animation:sbf-pulse 2.4s ease-in-out infinite;}
+.sbf-dot.paused{animation:none; opacity:.5;}
+@keyframes sbf-pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb, var(--c) 60%, transparent);} 50%{box-shadow:0 0 0 5px transparent;}}
+@media (prefers-reduced-motion:reduce){ .sbf-dot{animation:none;} }
+@media (max-width:860px){ html body .sidebar .sb-foco{order:3; flex:1 1 100%; min-height:36px; margin-top:-4px;} }
+.ck-ask{display:flex; flex-direction:column; gap:3px; margin:4px 0 10px; padding:12px 14px; border-radius:14px; background:color-mix(in srgb, var(--accent) 14%, var(--surface)); border:1px solid color-mix(in srgb, var(--accent) 40%, transparent); animation:ck-ask-in .3s cubic-bezier(.32,.72,0,1) both;}
+@keyframes ck-ask-in{from{opacity:0; transform:translateY(-6px);}}
+.ck-ask b{font-size:16px;} .ck-ask span{font-size:14px; color:var(--ink-soft);}
+.ck-ask div{display:flex; justify-content:flex-end; gap:18px; margin-top:6px;}
+.ck-ask.nudge{animation:lock-nudge .45s ease;}
 .ck-wheels{display:flex; justify-content:center; gap:4px; position:relative; padding:8px 0;}
 .ck-wheels::before{content:''; position:absolute; left:8px; right:8px; top:calc(50% - 20px); height:40px; border-radius:10px; background:var(--surface-2); pointer-events:none;}
 .ck-wheel-box{position:relative; display:flex; align-items:center;}
@@ -9219,7 +9241,7 @@ window.addEventListener('keydown', function(e){
     }
     playAlertSound('beep'); return 2;
   }
-  function soundSelectHtml(id, sel){ return '<select id="'+id+'">'+SOUNDS.map(function(s){ return '<option value="'+s[0]+'"'+(s[0]===sel?' selected':'')+'>'+s[1]+'</option>'; }).join('')+'</select>'; }
+  function soundSelectHtml(id, sel){ return '<select class="snd-sel" id="'+id+'">'+SOUNDS.map(function(s){ return '<option value="'+s[0]+'"'+(s[0]===sel?' selected':'')+'>'+s[1]+'</option>'; }).join('')+'</select>'; }
 
   var BED_MSGS=['Já deu o horário. O que você está fazendo continua amanhã — e amanhã você vai estar descansado para fazer melhor.',
     'Hora de ir se desligando. Fecha o computador, pega um livro, deixa a cabeça desacelerar.',
@@ -10434,7 +10456,17 @@ window.addEventListener('keydown', function(e){
       t = (b.status==='paused' ? '❚❚ ' : '▶ ') + (plan!=null && el<=plan ? fmtClock(plan-el) : fmtClock(el)) + ' · ' + nm; }
     if(document.title!==t) document.title=t;
   }
-  setInterval(function(){ pipRender(); taskbarTitle(); }, 1000);
+  /* Botão do Foco embaixo de Agenda | Planner | Notas | Relógio (10/11/2026, pedido do Gabriel): o Foco fica a um toque
+     de qualquer app. Com tarefa rodando mostra o nome e o tempo; parada, só "Modo foco". */
+  function sbFocusInner(){
+    var b=currentTaskInfo();
+    if(!b) return '<span class="sbf-ic">'+tbSvg('focus',18)+'</span><span class="sbf-t">Modo foco</span>';
+    var cat=catById(b.categoryId), nm=b.title||(cat?cat.name:'Tarefa'), el=elapsedOf(b);
+    return '<span class="sbf-dot'+(b.status==='paused'?' paused':'')+'" style="--c:'+(cat?cat.color:'var(--accent)')+'"></span><span class="sbf-t">'+escapeHtml(nm)+'</span><span class="sbf-clk mono">'+(b.status==='paused'?'❚❚ ':'')+fmtClock(el)+'</span>';
+  }
+  function sbFocusHtml(){ return '<button type="button" id="sb-foco" class="sb-foco'+(state.view==='focus'?' on':'')+(currentTaskInfo()?' live':'')+'" aria-label="Abrir o modo foco">'+sbFocusInner()+'</button>'; }
+  function sbFocusTick(){ var e=document.getElementById('sb-foco'); if(!e) return; var h=sbFocusInner(); if(e.__h!==h){ e.__h=h; e.innerHTML=h; e.classList.toggle('live', !!currentTaskInfo()); } }
+  setInterval(function(){ pipRender(); taskbarTitle(); sbFocusTick(); }, 1000);
   document.addEventListener('click', function(e){ var x=e.target.closest && e.target.closest('[data-pip-open]'); if(x){ e.preventDefault(); e.stopPropagation(); pipOpen(); } }, true);
 
   function startBlock(b){
@@ -12339,6 +12371,7 @@ window.addEventListener('keydown', function(e){
       '<div class="ios-head"><h2 class="ios-title">'+escapeHtml(viewTitle(state.view))+'</h2></div>' +
 
       '<div class="sb-switch sb-switch3 sb-switch4" role="tablist"><button data-mode="agenda" class="'+(pm||nm||cm||state.view==='settings'?'':'on')+'">Agenda</button><button data-mode="planner" class="'+(pm?'on':'')+'">Planner</button><button data-mode="notas" class="'+(nm?'on':'')+'">Notas</button><button data-mode="relogio" class="'+(cm?'on':'')+'">Relógio</button></div>' +
+      sbFocusHtml() +
       (pm || cm ? '' : miniCalHtml()) +
       '<nav class="sidebar-nav" id="sidebar-nav">' +
         (pm ? pnSidebarNavHtml() : cm ? ckSidebarNavHtml() : NAV_GROUPS.map(function(g){
@@ -12361,6 +12394,7 @@ window.addEventListener('keydown', function(e){
       else if(md==='relogio'){ if(state.view!=='clock') setView('clock'); }
       else if(state.view==='planner' || state.view==='pages' || state.view==='clock' || state.view==='settings') setView(state.lastAgendaView && state.lastAgendaView!=='pages' ? state.lastAgendaView : 'day');
     }; });
+    var sf=sb.querySelector('#sb-foco'); if(sf) sf.onclick=function(){ if(window.uiSound) uiSound('pop'); setView('focus'); };
     wireMiniCal(sb);
     wireNotifBell();
     var stb=sb.querySelector('#settings-btn'); if(stb) stb.onclick=function(){ setView(state.view==='settings' ? (state.lastAgendaView||'day') : 'settings'); };
@@ -12589,7 +12623,7 @@ window.addEventListener('keydown', function(e){
         h='<div class="ck-wrap"><div class="ck-wheels">'+ckWheelHtml('ck-w-h',24,hh,'h')+ckWheelHtml('ck-w-m',60,mm,'min')+ckWheelHtml('ck-w-s',60,ss,'s')+'</div>' +
           '<div class="ck-presets">'+[1,5,10,15,25,45].map(function(n){ return '<button type="button" class="ck-chip" data-ck-pre="'+n+'">'+n+' min</button>'; }).join('')+'</div>' +
           '<div class="ck-btns"><span></span><button class="ck-round green" type="button" id="ck-tm-go">Iniciar</button></div>' +
-          '<div class="ck-group"><label class="ck-row"><span class="ck-row-main">Ao terminar</span>'+soundSelectHtml('ck-tm-sound', tm.sound||'marimba')+'</label></div></div>';
+          '<div class="ck-group"><label class="ck-row"><span class="ck-row-main">Ao terminar</span>'+soundSelectHtml('ck-tm-sound', tm.sound||'marimba')+'<button type="button" class="ck-link" data-snd-test="ck-tm-sound" aria-label="Ouvir o som">Ouvir</button></label></div></div>';
       } else {
         var rem=tmRemain(), frac=tm.dur? rem/tm.dur : 0;
         h='<div class="ck-wrap"><div class="ck-ring"><svg viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="90" class="ck-ring-bg"/><circle id="ck-ring" cx="100" cy="100" r="90" class="ck-ring-fg" stroke-dasharray="565.49" stroke-dashoffset="'+(565.49*(1-frac)).toFixed(2)+'"/></svg>' +
@@ -12612,6 +12646,21 @@ window.addEventListener('keydown', function(e){
     // (06/11/2026). Compara com o último índice em vez de disparar em todo evento de rolagem, senão um
     // giro rápido viraria um zumbido contínuo.
     var lastIdx=sel;
+    /* Roda do mouse (10/11/2026, pedido do Gabriel): cada "clique" da roda do Windows rola ~100 px, e com linhas de
+       40 px o seletor pulava de 3 em 3 mesmo girando devagar. Agora a roda move UM número por clique; girando rápido
+       (cliques a menos de ~80 ms um do outro) acelera para 2 e depois 3. Touchpad (passos pequenos) soma até dar uma linha. */
+    var wTarget=sel, wAcc=0, wLast=0, wMax=w.querySelectorAll('.ck-wi').length-1;
+    w.addEventListener('wheel', function(e){
+      e.preventDefault();
+      var dy=e.deltaMode===1 ? e.deltaY*40 : e.deltaMode===2 ? e.deltaY*400 : e.deltaY;
+      var now=performance.now(), dt=now-wLast, steps=0;
+      if(Math.abs(dy)>=50){ wAcc=0; wLast=now; steps=(dy>0?1:-1)*(dt<35?3:dt<80?2:1); }
+      else { wAcc+=dy; if(Math.abs(wAcc)>=CK_ROW*0.7){ steps=wAcc>0?1:-1; wAcc=0; wLast=now; } }
+      if(!steps) return;
+      if(Math.abs(w.scrollTop/CK_ROW-wTarget)>1.5) wTarget=Math.round(w.scrollTop/CK_ROW);
+      wTarget=Math.max(0, Math.min(wMax, wTarget+steps));
+      w.scrollTo({top:wTarget*CK_ROW, behavior:'smooth'});
+    }, {passive:false});
     w.addEventListener('scroll', function(){
       var i=Math.round(w.scrollTop/CK_ROW); if(i===lastIdx) return; lastIdx=i;
       if(window.uiSound) uiSound('tick'); if(window.uiHaptic) uiHaptic(6);
@@ -12683,7 +12732,20 @@ window.addEventListener('keydown', function(e){
     document.body.appendChild(o);
     ckWheelInit(o.querySelector('#ck-a-h')); ckWheelInit(o.querySelector('#ck-a-m'));
     function close(){ o.classList.remove('open'); setTimeout(function(){ o.remove(); }, 280); }
-    [].forEach.call(o.querySelectorAll('[data-x]'), function(b){ b.onclick=close; });
+    /* tocar fora (ou Esc) com algo mudado: pergunta antes de jogar fora (10/11/2026). "Cancelar" continua descartando direto. */
+    function snap(){ return [ckWheelVal(o.querySelector('#ck-a-h')), ckWheelVal(o.querySelector('#ck-a-m')), days.slice().sort().join(','), o.querySelector('#ck-a-label').value, o.querySelector('#ck-a-sound').value, o.querySelector('#ck-a-snooze').checked].join('|'); }
+    var snap0=null; setTimeout(function(){ snap0=snap(); }, 60);
+    o._tryClose=function(){
+      if(snap0==null || snap()===snap0){ close(); return; }
+      var sh=o.querySelector('.ck-sheet'), q=sh.querySelector('.ck-ask'); if(q){ q.classList.remove('nudge'); void q.offsetWidth; q.classList.add('nudge'); return; }
+      q=document.createElement('div'); q.className='ck-ask'; q.setAttribute('role','alertdialog');
+      q.innerHTML='<b>Salvar as mudanças?</b><span>Você mexeu neste alarme.</span><div><button type="button" class="ck-link" data-ask="drop">Descartar</button><button type="button" class="ck-link strong" data-ask="save">Salvar</button></div>';
+      sh.insertBefore(q, sh.children[1]);
+      q.querySelector('[data-ask=drop]').onclick=close; q.querySelector('[data-ask=save]').onclick=function(){ o.querySelector('#ck-a-save').click(); };
+      if(window.uiHaptic) uiHaptic(8);
+    };
+    o.querySelector('.im-scrim').onclick=o._tryClose;
+    [].forEach.call(o.querySelectorAll('.ck-sheet-head [data-x]'), function(b){ b.onclick=close; });
     [].forEach.call(o.querySelectorAll('[data-ck-day]'), function(b){ b.onclick=function(){ var k=+b.getAttribute('data-ck-day'), at=days.indexOf(k); if(at>=0) days.splice(at,1); else days.push(k); b.classList.toggle('on', at<0); }; });
     o.querySelector('#ck-a-test').onclick=function(e){ e.preventDefault(); playSound(o.querySelector('#ck-a-sound').value, o.querySelector('#ck-a-label').value||'Alarme'); };
     o.querySelector('#ck-a-save').onclick=function(){
@@ -12697,7 +12759,17 @@ window.addEventListener('keydown', function(e){
     var del=o.querySelector('#ck-a-del'); if(del) wireArmConfirm(del, 'Toque de novo para apagar', function(){ var l=(state.alarms||[]).slice(); l.splice(i,1); saveAlarms(l); close(); });
     requestAnimationFrame(function(){ o.classList.add('open'); });
   }
-  document.addEventListener('keydown', function(e){ var o=document.getElementById('ck-sheet'); if(e.key==='Escape' && o){ o.classList.remove('open'); setTimeout(function(){ o.remove(); }, 280); } });
+  document.addEventListener('keydown', function(e){ var o=document.getElementById('ck-sheet'); if(e.key==='Escape' && o){ if(o._tryClose) o._tryClose(); else { o.classList.remove('open'); setTimeout(function(){ o.remove(); }, 280); } } });
+  /* escolher um som já toca ele (10/11/2026, pedido do Gabriel: "ticar e ouvir"); os botões Ouvir continuam para repetir */
+  var sndPrevT=null;
+  document.addEventListener('change', function(e){
+    var s=e.target; if(!s || !s.classList || !s.classList.contains('snd-sel')) return;
+    clearTimeout(sndPrevT); sndPrevT=setTimeout(function(){ try{ speechSynthesis.cancel(); }catch(_){ } playSound(s.value, 'Teste do alarme'); }, 120);
+  }, true);
+  document.addEventListener('click', function(e){
+    var b=e.target.closest && e.target.closest('[data-snd-test]'); if(!b) return; e.preventDefault();
+    var s=document.getElementById(b.getAttribute('data-snd-test')); if(s) playSound(s.value, 'Teste do alarme');
+  }, true);
 
   function skyProxyHtml(){
     var f=document.getElementById('sky-fab');
