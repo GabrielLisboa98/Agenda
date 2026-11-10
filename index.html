@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261110-171500';</script>
+<script>window.AGENDA_BUILD = '20261110-172200';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261110-171500"></script>
+<script src="cloud.js?v=20261110-172200"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -13237,8 +13237,12 @@ window.addEventListener('keydown', function(e){
       flexHtml = '<div class="hero-flex-note">' +
         (flexOverdue.length===1 ? '↳ 1 tarefa adiável atrasada: ' : '↳ '+flexOverdue.length+' tarefas adiáveis atrasadas — a mais antiga: ') +
         '<button class="hero-link" data-goto="'+flexOverdue[0].id+'" title="Ver o bloco na grade">'+escapeHtml(flexOverdue[0].title||(catById(flexOverdue[0].categoryId)?catById(flexOverdue[0].categoryId).name:'bloco'))+' ('+flexOverdue[0].plannedStart+')</button>' +
-        ' <button class="btn ghost small" data-act="hero-push-flex" data-target="'+flexOverdue[0].id+'" style="padding:1px 8px; margin-left:4px;">Empurrar pra agora</button>' +
+        ' <button class="btn primary small" id="hero-start-flex" data-target="'+flexOverdue[0].id+'" style="padding:2px 10px; margin-left:4px;">▶ Iniciar agora</button>' +
+        ' <button class="btn ghost small" id="hero-push-flex" data-target="'+flexOverdue[0].id+'" style="padding:2px 8px;">Empurrar pra agora</button>' +
       '</div>';
+      // com tarefa atrasada para começar, o "Começar uma tarefa agora" deixa de ser o botão principal
+      if(right) right=right.replace('class="btn small primary" id="hero-quickstart"', 'class="btn small" id="hero-quickstart"');
+      if(title==='Nada mais planejado por hoje'){ title=flexOverdue.length===1?'Ficou uma tarefa para trás':'Ficaram tarefas para trás'; sub='Sem problema: comece agora ou empurre o horário.'; }
     }
     return '<div class="panel hero-current idle" id="hero-current">' +
       '<div class="panel-body" style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;">' +
@@ -13446,6 +13450,15 @@ window.addEventListener('keydown', function(e){
     if(skipBtn && od) skipBtn.onclick=function(e){ e.stopPropagation(); openModal({type:'detail', block:od}); };
 
     setAlertPulse(od);
+    /* "Iniciar agora" direto no aviso da tarefa adiável atrasada (10/11/2026, pedido do Gabriel: antes tinha que abrir
+       o bloco na grade para começar). E o "Empurrar pra agora" voltou a funcionar: o botão tinha data-act e o código
+       procurava pelo id, então o clique não fazia nada. */
+    var startFlexBtn=document.getElementById('hero-start-flex');
+    if(startFlexBtn) startFlexBtn.onclick=function(e){
+      e.stopPropagation();
+      var t=state.weekBlocks.filter(function(x){ return x.id===startFlexBtn.getAttribute('data-target'); })[0];
+      if(t){ if(window.uiSound) uiSound('pop'); startBlock(t); showToast('Começou: '+(t.title||(catById(t.categoryId)||{}).name||'tarefa'), '▶'); }
+    };
     var pushFlexBtn=document.getElementById('hero-push-flex');
     if(pushFlexBtn){
       pushFlexBtn.onclick=function(e){
