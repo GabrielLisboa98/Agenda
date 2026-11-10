@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261110-155732';</script>
+<script>window.AGENDA_BUILD = '20261110-161700';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261110-155732"></script>
+<script src="cloud.js?v=20261110-161700"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -3291,6 +3291,15 @@ html.lay-off-faixas .faixa-zone{display:none;}
 .faixa-hint{display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 12px; margin-bottom:12px; border-radius:12px; background:color-mix(in srgb, var(--c) 14%, transparent); border:1px solid color-mix(in srgb, var(--c) 35%, transparent); font-size:14px;}
 .faixa-hint span{flex:1; min-width:150px;}
 
+
+/* editar faixa por toque */
+.fx-times .field{flex:1;}
+.fx-dur{margin:2px 0 4px; font-size:14px; color:var(--ink-soft);}
+.fx-dur.bad{color:var(--critical);}
+.fx-days .dow-btn{min-height:40px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; font-size:13px;}
+.fx-days .dow-btn small{font-size:11px; font-weight:500; opacity:.8;}
+.fx-note{font-size:13px; color:var(--ink-soft); margin:10px 0 0;}
+.hz-add{margin-top:10px;}
 /* Dividir em blocos */
 .spl-sub{margin:0 0 12px; font-size:15px; color:var(--ink-soft);}
 .spl-lbl{font-size:13px; font-weight:600; color:var(--ink-soft); margin:12px 0 8px;}
@@ -3357,6 +3366,37 @@ html.lay-off-faixas .faixa-zone{display:none;}
 .ia-split i.p{background:color-mix(in srgb, var(--ink) 25%, transparent);}
 .is-on .ia-split i{animation:ia-pop .45s cubic-bezier(.32,.72,0,1) both;}
 .is-on .ia-split i:nth-child(2){animation-delay:.12s;} .is-on .ia-split i:nth-child(3){animation-delay:.24s;} .is-on .ia-split i:nth-child(4){animation-delay:.36s;} .is-on .ia-split i:nth-child(5){animation-delay:.48s;} .is-on .ia-split i:nth-child(6){animation-delay:.6s;} .is-on .ia-split i:nth-child(7){animation-delay:.72s;}
+
+/* ---------- Comemorar na hora (10/11/2026) ---------- */
+.cel{position:fixed; left:50%; bottom:calc(150px + var(--safe-bottom, 0px)); z-index:99970; transform:translateX(-50%); display:flex; align-items:center; gap:12px;
+  width:max-content; min-width:240px; max-width:calc(100vw - 32px); padding:12px 18px 12px 12px; border-radius:20px; box-sizing:border-box; cursor:pointer;
+  background:var(--glass-bg-strong); border:1px solid var(--glass-border); color:var(--ink); box-shadow:0 18px 44px -14px rgba(0,0,0,.55);
+  backdrop-filter:blur(18px) saturate(1.3); -webkit-backdrop-filter:blur(18px) saturate(1.3);
+  animation:cel-in .46s cubic-bezier(.32,.72,0,1) both;}
+@media (min-width:861px){ .cel{bottom:32px;} }
+.cel.out{opacity:0; transform:translate(-50%, 10px); transition:opacity .22s ease, transform .22s ease;}
+@keyframes cel-in{from{opacity:0; transform:translate(-50%, 18px) scale(.96);}}
+.cel-ck{width:40px; height:40px; flex:none;}
+.cel-ck circle{fill:var(--accent); opacity:.95; transform-origin:center; animation:cel-pop .5s cubic-bezier(.32,.72,0,1) both;}
+.cel-ck path{fill:none; stroke:var(--accent-ink); stroke-width:3.4; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:24; stroke-dashoffset:24; animation:cel-draw .38s ease-out .2s forwards;}
+@keyframes cel-pop{from{transform:scale(.4); opacity:0;} 70%{transform:scale(1.08);}}
+@keyframes cel-draw{to{stroke-dashoffset:0;}}
+.cel-t{display:flex; flex-direction:column; gap:2px; min-width:0;}
+.cel-t b{font-size:16px; font-weight:700; line-height:1.25; overflow-wrap:anywhere;}
+.cel-t em{font-style:normal; font-size:13px; color:var(--ink-soft);}
+.cel.big{padding:16px 22px 16px 16px; border-color:color-mix(in srgb, var(--accent) 55%, transparent);}
+.cel.big .cel-ck{width:48px; height:48px;}
+.cel.big .cel-t b{font-size:18px;}
+/* faíscas da meta batida: 8 pontinhos saindo do check, uma vez só */
+.cel-sp{position:absolute; left:36px; top:50%; width:0; height:0; pointer-events:none;}
+.cel-sp s{position:absolute; width:6px; height:6px; margin:-3px; border-radius:50%; background:var(--accent); opacity:0; animation:cel-spark .8s cubic-bezier(.2,.8,.2,1) .25s both;}
+.cel-sp s:nth-child(1){--x:0px; --y:-38px;} .cel-sp s:nth-child(2){--x:27px; --y:-27px;} .cel-sp s:nth-child(3){--x:38px; --y:0px;} .cel-sp s:nth-child(4){--x:27px; --y:27px;}
+.cel-sp s:nth-child(5){--x:0px; --y:38px;} .cel-sp s:nth-child(6){--x:-27px; --y:27px;} .cel-sp s:nth-child(7){--x:-38px; --y:0px;} .cel-sp s:nth-child(8){--x:-27px; --y:-27px;}
+.cel-sp s:nth-child(2n){background:color-mix(in srgb, var(--accent) 60%, #fff);}
+@keyframes cel-spark{0%{opacity:1; transform:translate(0,0) scale(1);} 100%{opacity:0; transform:translate(var(--x), var(--y)) scale(.4);}}
+@media (prefers-reduced-motion:reduce){ .cel, .cel-ck circle{animation:none;} .cel-ck path{animation:none; stroke-dashoffset:0;} .cel-sp{display:none;} }
+/* hábitos: dias da semana ao lado da sequência */
+.habit-streak .hw{margin-left:6px; font-weight:600; color:var(--ink-soft);}
 /* legenda dos sons em Configurações › Alertas */
 .snd-legend{margin-top:14px; display:flex; flex-direction:column; gap:3px;}
 .ia-layout{display:flex; align-items:center; justify-content:center; background:transparent; border:none; height:auto; overflow:visible;}
@@ -8021,14 +8061,29 @@ window.addEventListener('keydown', function(e){
   function toggleHabit(habitId, dstr){
     if(!state.db) return;
     var now = !habitDone(habitId, dstr);
-    if(now) showToast('Mais um dia na conta!', '🔥');
+    if(now) celebrateHabit(habitId, dstr);
     state.db.collection('habitLog').doc(habitId+'-'+dstr).set({habitId:habitId, date:dstr, done:now});
   }
 
-  function habitStreak(habitId){
-    var d = todayStr(), n = 0;
+  /* Sequência que perdoa (10/11/2026): um dia perdido não zera nada se o dia antes dele foi feito e não
+     houve outra folga nos últimos 7 dias. Quebrar a sequência por um dia é o que faz quem tem TDAH largar
+     tudo ("já estraguei mesmo"); a pesquisa de hábitos mostra que pular um dia não atrapalha o hábito. */
+  function habitStreak(habitId, fromDate){
+    var d = fromDate || todayStr(), n = 0, folgas = [];
     if(!habitDone(habitId, d)) d = addDays(d, -1);
-    while(habitDone(habitId, d)){ n++; d = addDays(d, -1); }
+    for(var k=0; k<1000; k++){
+      if(habitDone(habitId, d)){ n++; }
+      else {
+        var recent = folgas.some(function(f){ var a=f.split('-').map(Number), b=d.split('-').map(Number); return (new Date(a[0],a[1]-1,a[2]) - new Date(b[0],b[1]-1,b[2]))/86400000 < 7; });
+        if(n>0 && !recent && habitDone(habitId, addDays(d,-1))) folgas.push(d); else break;
+      }
+      d = addDays(d, -1);
+    }
+    return n;
+  }
+  function habitWeekCount(habitId, refDate){
+    var mon = startOfWeek(refDate || todayStr()), n=0;
+    weekDates(mon).forEach(function(x){ if(habitDone(habitId, x)) n++; });
     return n;
   }
 
@@ -8220,7 +8275,7 @@ window.addEventListener('keydown', function(e){
       if(state.view==='settings') paintLayoutPanel();
       if(first){
         // espera um pouco: num aparelho já sincronizado, o documento de outro aparelho pode descer logo depois
-        setTimeout(function(){ if(!state.layout.introSeen) introOpen(); else { maybeAskNight(); guideMaybe(); } }, 1200);
+        setTimeout(function(){ welcomeBackMaybe(); if(!state.layout.introSeen) introOpen(); else { maybeAskNight(); guideMaybe(); } }, 1200);
       }
     }, function(){});
   }
@@ -8649,8 +8704,8 @@ window.addEventListener('keydown', function(e){
     var heads=''; for(var j=0;j<7;j++) heads+='<div class="hz-dh'+(!molde && dates[j]===today?' is-today':'')+'">'+DOW[DOW_ORDER[j]]+(molde?'':'<small>'+dayNum(dates[j])+'</small>')+'</div>';
     var selCat = state.horasCat && state.horasCat!=='erase' ? catById(state.horasCat) : null;
     var hint = state.horasCat==='erase' ? 'Apagar: arraste por cima das faixas que quer tirar.' :
-      selCat ? escapeHtml(selCat.name)+' escolhido: arraste na grade para reservar. Arrastar por cima de outra faixa troca a categoria.' :
-      'Escolha uma categoria e arraste na grade para reservar o horário. As metas vêm de Categorias.';
+      selCat ? escapeHtml(selCat.name)+' escolhido: arraste na grade para reservar. Um toque (sem arrastar) abre para digitar o horário ou editar a faixa.' :
+      'Escolha uma categoria e arraste na grade para reservar o horário, ou toque num horário para digitar. Toque numa faixa para mudar ou excluir.';
     app.innerHTML =
       '<div class="daytop">' +
         '<div class="daytop-left"><div class="daytop-label">'+(molde?'Molde da semana':'Planejamento · semana de '+longDateLabel(mon))+'</div>' +
@@ -8666,6 +8721,7 @@ window.addEventListener('keydown', function(e){
         '<p class="hz-hint">'+hint+'</p>' +
         '<div class="hz-grid-wrap"><div class="hz-heads"><div class="hz-gut"></div>'+heads+'</div>' +
         '<div class="hz-grid'+(state.horasCat?' painting':'')+'" style="height:'+(24*HORAS_PX)+'px"><div class="hz-gut">'+hours+'</div>'+cols+'</div></div>' +
+        '<button type="button" class="btn hz-add" id="hz-add">＋ Reservar horário digitando</button>' +
       '</div></div>';
     wirePlanMode(app);
     Array.prototype.forEach.call(app.querySelectorAll('[data-hcat]'), function(b){
@@ -8679,13 +8735,17 @@ window.addEventListener('keydown', function(e){
     var nx=app.querySelector('#hz-next'); if(nx) nx.onclick=function(){ setDate(addDays(state.selectedDate,7), true); };
     var td=app.querySelector('#hz-today'); if(td) td.onclick=function(){ setDate(todayStr(), true); };
     Array.prototype.forEach.call(app.querySelectorAll('.hz-col'), function(col){ wireHorasPaint(col, +col.getAttribute('data-hi')); });
+    var ad=app.querySelector('#hz-add'); if(ad) ad.onclick=function(){ var di=(dowOf(todayStr())+6)%7; openFaixaEditor(di, -1); };
     horasGuideMaybe();
   }
+  function faixaHit(i, min){ return horasListFor(i).some(function(x){ return min>=x.s && min<x.e; }); }
   function wireHorasPaint(col, i){
     var startMin=null, ghost=null;
     function minAt(y){ var r=col.getBoundingClientRect(); var m=(y-r.top)/HORAS_PX*60; return Math.max(0, Math.min(1440, Math.round(m/15)*15)); }
+    var tapY=null, tapMin=null, moved=false;
     col.addEventListener('pointerdown', function(e){
-      if(!state.horasCat){ showToast('Escolha uma categoria em cima para pintar', '🎨'); return; }
+      tapY=e.clientY; tapMin=Math.floor(((e.clientY-col.getBoundingClientRect().top)/HORAS_PX*60)); moved=false;
+      if(!state.horasCat) return;
       e.preventDefault(); horasPainting=true; startMin=minAt(e.clientY);
       try{ col.setPointerCapture(e.pointerId); }catch(_){}
       ghost=document.createElement('div'); ghost.className='hz-ghost'+(state.horasCat==='erase'?' erase':'');
@@ -8694,13 +8754,18 @@ window.addEventListener('keydown', function(e){
     });
     function range(e){ var m=minAt(e.clientY), a=Math.min(startMin,m), b=Math.max(startMin,m); if(b-a<15){ b=Math.min(1440,a+15); a=Math.min(a, b-15); } return [a,b]; }
     function move(e){
-      if(startMin==null || !ghost) return; var r=range(e);
+      if(tapY!=null && Math.abs(e.clientY-tapY)>8) moved=true;
+      if(startMin==null || !ghost) return; if(!moved){ ghost.style.height='0'; ghost.removeAttribute('data-lbl'); return; } var r=range(e);
       ghost.style.top=(r[0]/60*HORAS_PX)+'px'; ghost.style.height=((r[1]-r[0])/60*HORAS_PX)+'px';
       ghost.setAttribute('data-lbl', timeOfMinutes(r[0])+'–'+(r[1]>=1440?'24:00':timeOfMinutes(r[1])));
     }
     col.addEventListener('pointermove', move);
     function end(e){
-      if(startMin==null) return; var r=range(e); startMin=null; if(ghost){ ghost.remove(); ghost=null; } horasPainting=false;
+      if(tapY!=null && Math.abs(e.clientY-tapY)>8) moved=true;
+      var wasTap=!moved, tm=tapMin; tapY=null;
+      if(startMin==null){ if(wasTap && tm!=null && !state.horasCat) openFaixaEditor(i, tm); return; }
+      var r=range(e); startMin=null; if(ghost){ ghost.remove(); ghost=null; } horasPainting=false;
+      if(wasTap){ if(state.horasCat==='erase' && !faixaHit(i, tm)) return; openFaixaEditor(i, tm); return; }
       var cat = state.horasCat==='erase' ? null : state.horasCat;
       var list = paintRange(horasListFor(i), r[0], r[1], cat);
       if(state.horasScope==='molde') saveMoldeDay(DOW_ORDER[i], list); else saveWeekDay(horasWeekDates()[i], list);
@@ -8708,7 +8773,68 @@ window.addEventListener('keydown', function(e){
       render();
     }
     col.addEventListener('pointerup', end);
-    col.addEventListener('pointercancel', function(){ startMin=null; horasPainting=false; if(ghost){ ghost.remove(); ghost=null; } });
+    col.addEventListener('pointercancel', function(){ startMin=null; tapY=null; horasPainting=false; if(ghost){ ghost.remove(); ghost=null; } });
+  }
+
+
+  /* Editar uma faixa sem arrastar (10/11/2026, pedido do Gabriel): no celular ele pintou 6h–6h30 sem querer e
+     não conseguia diminuir — arrastar só aumentava. Agora um TOQUE (sem arrastar) abre esta janela: na faixa,
+     para mudar categoria, início, fim, copiar para outros dias ou excluir; num espaço vazio, para criar uma
+     com horário digitado. Arrastar continua pintando como antes. */
+  function timeOptsHtml(sel, from, to){
+    var o=''; for(var t=from; t<=to; t+=15){ o+='<option value="'+t+'"'+(t===sel?' selected':'')+'>'+(t>=1440?'24:00':timeOfMinutes(t))+'</option>'; } return o;
+  }
+  function openFaixaEditor(i, min){
+    var f=null; if(min>=0) horasListFor(i).forEach(function(x){ if(min>=x.s && min<x.e) f=x; });
+    if(min<0) min=Math.min(23, new Date().getHours()+1)*60;
+    var cat = f ? f.cat : (state.horasCat && state.horasCat!=='erase' ? state.horasCat : (state.categories[0]||{}).id);
+    var s = f ? f.s : Math.min(1380, Math.floor(min/60)*60), e = f ? f.e : Math.min(1440, s+60);
+    var days=[false,false,false,false,false,false,false]; days[i]=true;
+    openModal({type:'faixa', i:i, orig:f?{s:f.s,e:f.e,cat:f.cat}:null, cat:cat, s:s, e:e, days:days});
+  }
+  function buildFaixaModal(modal, m){
+    var molde=state.horasScope==='molde', dates=horasWeekDates();
+    var dur=m.e-m.s;
+    modal.innerHTML='<div class="modal-head"><h3>'+(m.orig?'Editar horário':'Reservar horário')+'</h3><button class="iconbtn" id="fx-x" aria-label="Fechar">✕</button></div>' +
+      '<div class="modal-body fx-body">' +
+        '<div class="field"><label for="fx-cat">Categoria</label><select id="fx-cat" data-cats="1" class="rt-select">'+catOptionsHtml(m.cat)+'</select></div>' +
+        '<div class="field-row fx-times"><div class="field"><label for="fx-s">Começa</label><select id="fx-s" class="rt-select">'+timeOptsHtml(m.s, 0, 1425)+'</select></div>' +
+          '<div class="field"><label for="fx-e">Termina</label><select id="fx-e" class="rt-select">'+timeOptsHtml(m.e, 15, 1440)+'</select></div></div>' +
+        '<p class="fx-dur'+(dur>0?'':' bad')+'">'+(dur>0 ? fmtDuration(dur) : 'O fim precisa ser depois do começo')+'</p>' +
+        '<div class="spl-lbl">'+(m.orig?'Também aplicar em':'Em quais dias')+'</div>' +
+        '<div class="dow-picker fx-days">'+[0,1,2,3,4,5,6].map(function(j){ return '<button type="button" class="dow-btn'+(m.days[j]?' active':'')+(j===m.i?' own-day':'')+'" data-fxd="'+j+'">'+DOW[DOW_ORDER[j]]+(molde?'':'<small> '+dayNum(dates[j])+'</small>')+'</button>'; }).join('')+'</div>' +
+        '<p class="fx-note">'+(molde?'Vale para toda semana (molde).':'Só nesta semana; o molde continua igual.')+' Nos outros dias, substitui o que estiver nesse horário.</p>' +
+        '<div class="modal-actions fx-acts">' +
+          (m.orig?'<button class="btn ghost" id="fx-del" style="color:var(--critical); margin-right:auto;">Excluir</button>':'') +
+          '<button class="btn ghost" id="fx-cancel">Cancelar</button>' +
+          '<button class="btn primary" id="fx-save"'+(dur>0?'':' disabled')+'>Salvar</button>' +
+        '</div>' +
+      '</div>';
+    function q(id){ return modal.querySelector('#'+id); }
+    q('fx-x').onclick=q('fx-cancel').onclick=function(){ closeModal(); };
+    q('fx-cat').onchange=function(){ m.cat=this.value; };
+    q('fx-s').onchange=function(){ var d=m.e-m.s; m.s=+this.value; if(m.e<=m.s) m.e=Math.min(1440, m.s+(d>0?d:60)); renderModalOnly(); };
+    q('fx-e').onchange=function(){ m.e=+this.value; renderModalOnly(); };
+    Array.prototype.forEach.call(modal.querySelectorAll('[data-fxd]'), function(b){
+      b.onclick=function(){ var j=+b.getAttribute('data-fxd'); m.days[j]=!m.days[j]; if(!m.days.some(Boolean)) m.days[j]=true; renderModalOnly(); };
+    });
+    function saveDay(j, list){ if(molde) saveMoldeDay(DOW_ORDER[j], list); else saveWeekDay(dates[j], list); }
+    var del=q('fx-del');
+    if(del) wireArmConfirm(del, 'Toque de novo para excluir', function(){
+      saveDay(m.i, paintRange(horasListFor(m.i), m.orig.s, m.orig.e, null));
+      if(window.uiSound) uiSound('trash'); closeModal();
+    });
+    q('fx-save').onclick=function(){
+      if(m.e<=m.s || !m.cat) return;
+      for(var j=0;j<7;j++){
+        if(!m.days[j]) continue;
+        var list=horasListFor(j);
+        if(m.orig && j===m.i) list=paintRange(list, m.orig.s, m.orig.e, null);
+        saveDay(j, paintRange(list, m.s, m.e, m.cat));
+      }
+      if(window.uiSound) uiSound('add'); if(window.uiHaptic) uiHaptic(8);
+      closeModal();
+    };
   }
 
   /* faixas no fundo do Dia e da Semana: só desenho, não recebem toque (o toque cai na coluna e cria o bloco) */
@@ -8854,6 +8980,76 @@ window.addEventListener('keydown', function(e){
   function horasGuideMaybe(){
     if(!state.layoutLoaded || (state.layout.guidesSeen||{}).horas) return;
     setTimeout(function(){ if(state.view==='plan' && state.planMode==='horas' && !document.getElementById('guide-ov') && !document.getElementById('intro-ov')) guideOpen('horas', true); }, 500);
+  }
+
+  /* ================= Comemorar na hora (10/11/2026) =================
+     Pesquisa feita para o Gabriel (TDAH): o reforço que funciona é o IMEDIATO e específico; elogio genérico ou
+     que chega no fim da semana não pega. Então, ao concluir um bloco, um afazer ou um hábito, aparece na hora um
+     cartão com o que foi feito ("45 min de Trabalho em Orçamento da obra"), um som e um toque — e, quando fecha
+     uma meta do dia, um cartão um pouco maior. Nunca o contrário: nada de bronca quando não dá. */
+  var CEL_SUBS = ['Isso conta.', 'Um passo de cada vez.', 'Seguimos.', 'Bom ritmo.', 'Mais um no dia.', 'Feito é melhor que perfeito.'];
+  function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+  function celebrate(o){
+    try{
+      if(window.uiSound) uiSound(o.big ? 'add' : 'ok'); if(window.uiHaptic) uiHaptic(o.big ? 18 : 10);
+      var old=document.getElementById('cel'); if(old) old.remove();
+      var el=document.createElement('div'); el.id='cel'; el.className='cel'+(o.big?' big':''); el.setAttribute('role','status');
+      el.innerHTML='<svg class="cel-ck" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17"/><path d="M12.5 20.5l5 5 10-11"/></svg>' +
+        '<span class="cel-t"><b></b><em></em></span>' + (o.big ? '<i class="cel-sp" aria-hidden="true">'+'<s></s>'.repeat(8)+'</i>' : '');
+      el.querySelector('b').textContent=o.title; el.querySelector('em').textContent=o.sub||pick(CEL_SUBS);
+      el.onclick=function(){ el.classList.add('out'); setTimeout(function(){ el.remove(); }, 220); };
+      document.body.appendChild(el);
+      setTimeout(function(){ if(el.parentNode){ el.classList.add('out'); setTimeout(function(){ el.remove(); }, 260); } }, o.big ? 4200 : 3000);
+    }catch(_){ }
+  }
+  function catDoneMinToday(catId, excludeId){
+    var t=0; blocksForDate(todayStr()).forEach(function(x){
+      if(x.id===excludeId || x.categoryId!==catId || x.status!=='done' || !countsInMetrics(x) || !x.actualEnd || !x.actualStart) return;
+      t+=Math.max(0, Math.round((x.actualEnd-x.actualStart)/60000));
+    }); return t;
+  }
+  function celebrateBlock(b, startMs, endMs){
+    var cat=catById(b.categoryId), min=Math.max(1, Math.round((endMs-startMs)/60000));
+    var name=b.title||(cat?cat.name:'Bloco');
+    if(b.isBreak){ celebrate({title:'Pausa feita: '+name, sub:'Agora volta com a cabeça mais leve.'}); return; }
+    var title = cat && b.title ? fmtDuration(min)+' de '+cat.name+' em '+b.title : pick([fmtDuration(min)+' de '+name, 'Feito: '+name, name+' concluído']);
+    var sub=null, big=false;
+    var goal = cat ? catGoalForWeekday(cat, new Date().getDay()) : 0;
+    if(cat && goal && b.date===todayStr() && countsInMetrics(b)){
+      var before=catDoneMinToday(cat.id, b.id), after=before+min;
+      if(before<goal && after>=goal){ big=true; title='Meta de '+cat.name+' de hoje batida!'; sub=fmtDuration(after)+' de '+fmtDuration(goal)+'. Pode comemorar.'; }
+      else if(after<goal) sub=cat.name+' hoje: '+fmtDuration(after)+' de '+fmtDuration(goal);
+    }
+    if(!big && b.date===todayStr()){
+      var left=blocksForDate(todayStr()).filter(function(x){ return x.id!==b.id && !x.isLoose && !isAppt(x) && !x.isBreak && x.plannedStart && x.status==='pending'; }).length;
+      var had=blocksForDate(todayStr()).filter(function(x){ return !x.isLoose && !isAppt(x) && !x.isBreak && x.plannedStart; }).length;
+      if(left===0 && had>=3){ big=true; title='Todos os blocos de hoje feitos!'; sub='Dia cumprido. Descansa sem culpa.'; }
+    }
+    celebrate({title:title, sub:sub, big:big});
+  }
+  function celebrateCheck(item){
+    var name=item.title||'afazer';
+    var title=pick(['Riscado: '+name, 'Feito: '+name, 'Um a menos: '+name]), sub=null, big=false;
+    if(item.date){
+      var list=checklistForDate(item.date), left=list.filter(function(c){ return c.id!==item.id && !c.done; }).length;
+      if(left===0 && list.length>=2){ big=true; title=item.date===todayStr()?'Todos os afazeres de hoje feitos!':'Afazeres do dia zerados!'; sub='Lista limpa.'; }
+      else if(left>0) sub=left===1 ? 'Falta só mais 1 hoje.' : 'Faltam '+left+' no dia.';
+    }
+    celebrate({title:title, sub:sub, big:big});
+  }
+  function celebrateHabit(habitId, dstr){
+    var h=(state.habits||[]).filter(function(x){ return x.id===habitId; })[0]; if(!h) return;
+    var streak=habitStreak(habitId, dstr)+1, wk=habitWeekCount(habitId, dstr)+1;
+    var big=[7,14,21,30,50,75,100,150,200,365].indexOf(streak)>=0;
+    celebrate({title: big ? streak+' dias de '+h.label+'!' : 'Hábito feito: '+h.label, sub: wk+' de 7 dias nesta semana.', big:big});
+  }
+  // depois de uns dias sem abrir o app: boas-vindas, sem cobrança nenhuma
+  function welcomeBackMaybe(){
+    var last=null, t=todayStr(); try{ last=localStorage.getItem('agenda-last-open'); localStorage.setItem('agenda-last-open', t); }catch(_){ return; }
+    if(!last || last===t) return;
+    var p=last.split('-').map(Number), q=t.split('-').map(Number);
+    var gap=Math.round((new Date(q[0],q[1]-1,q[2])-new Date(p[0],p[1]-1,p[2]))/86400000);
+    if(gap>=3) setTimeout(function(){ if(!document.getElementById('intro-ov') && !document.getElementById('guide-ov')) celebrate({title:'Que bom te ver de volta', sub:'Sem cobrança: comece pelo que for mais fácil hoje.'}); }, 2500);
   }
   function saveWhy(patch){ state.why=Object.assign({}, state.why, patch); if(state.db) state.db.collection('settings').doc('why').set(state.why); whySubscribePage(); render(); }
 
@@ -9813,7 +10009,7 @@ window.addEventListener('keydown', function(e){
     if(!state.db) return;
     var endStr = addDays(mondayStr,6);
     unsubWeekB = state.db.collection('blocks').where('date','>=',mondayStr).where('date','<=',endStr).onSnapshot(function(snap){
-      state.weekBlocks = snap.docs.map(docToBlock); syncPlannedChecks(); render();
+      state.weekBlocks = snap.docs.map(docToBlock); syncPlannedChecks(); render(); refreshDetailModal();
     }, function(){});
     unsubWeekC = state.db.collection('checklist').where('date','>=',mondayStr).where('date','<=',endStr).onSnapshot(function(snap){
       state.weekChecklist = snap.docs.map(docToCheck); syncPlannedChecks(); render();
@@ -9832,7 +10028,7 @@ window.addEventListener('keydown', function(e){
     var dates = monthGridDates(monthStr);
     var startD = dates[0], endD = dates[dates.length-1];
     unsubMonthB = state.db.collection('blocks').where('date','>=',startD).where('date','<=',endD).onSnapshot(function(snap){
-      state.monthBlocks = snap.docs.map(docToBlock); render();
+      state.monthBlocks = snap.docs.map(docToBlock); render(); refreshDetailModal();
     }, function(){});
     unsubMonthC = state.db.collection('checklist').where('date','>=',startD).where('date','<=',endD).onSnapshot(function(snap){
       state.monthChecklist = snap.docs.map(docToCheck); render();
@@ -10078,12 +10274,19 @@ window.addEventListener('keydown', function(e){
       var cur=freshBlockById(id), m=Object.assign({}, cur||{}, patch);
       if(!restExempt(m) && m.plannedStart && m.plannedEnd && m.date && restHitsRange(m.date, m.plannedStart, m.plannedEnd)){ restSay(m.date); render(); return false; }
     }
-    state.db.collection('blocks').doc(id).update(patch); return true;
+    state.db.collection('blocks').doc(id).update(patch);
+    /* O banco avisa as telas um instante DEPOIS de gravar. Sem isto, a janela do bloco se redesenhava com a
+       cópia velha (ex.: "Não fiz" → motivo → a janela voltava a mostrar a tarefa pendente, como se nada tivesse
+       acontecido) e o Gabriel marcava tudo de novo. Agora a cópia que a tela usa já muda na hora. */
+    patchBlockLocal(id, patch);
+    var mb = state.modal && state.modal.block;
+    if(mb && mb.id===id && mb!==freshBlockById(id)) Object.assign(mb, patch);
+    return true;
   }
   function deleteBlock(id){ if(state.db) state.db.collection('blocks').doc(id).delete(); }
   function toggleCheck(item){
     if(!state.db) return;
-    if(!item.done) showToast('Afazer concluído!', '✓');
+    if(!item.done) celebrateCheck(item);
     state.db.collection('checklist').doc(item.id).update({done:!item.done});
   }
   function updateCheck(id, patch){ if(state.db) state.db.collection('checklist').doc(id).update(patch); }
@@ -10217,7 +10420,7 @@ window.addEventListener('keydown', function(e){
   }
   function completeBlock(b, actualStartMs, actualEndMs){
     updateBlock(b.id, {status:'done', actualStart:actualStartMs, actualEnd:actualEndMs, pausedAt:null});
-    showToast('Parabéns! Tarefa concluída.', '🎉');
+    celebrateBlock(b, actualStartMs, actualEndMs);
     var dayList = blocksForDate(b.date);
     var endDate = new Date(actualEndMs);
     var next = findNextForOverlap(dayList, b);
@@ -12677,7 +12880,7 @@ window.addEventListener('keydown', function(e){
       return '<div class="habit'+(done?' done':'')+'" data-habit="'+h.id+'">' +
         '<div class="habit-check">'+(done?'✓':'')+'</div>' +
         '<div class="habit-label">'+escapeHtml(h.label)+(h.time?'<span class="habit-time mono">até '+h.time+'</span>':'')+'</div>' +
-        '<div class="habit-streak'+(streak>0?' on':'')+'" title="dias seguidos">'+(streak>0?('🔥 '+streak):'—')+'</div>' +
+        '<div class="habit-streak'+(streak>0?' on':'')+'" title="dias seguidos (uma folga por semana não quebra) · dias feitos nesta semana">'+(streak>0?('🔥 '+streak):'')+'<span class="hw">'+habitWeekCount(h.id, dstr)+'/7</span></div>' +
       '</div>';
     }).join('');
     return '<div class="panel habits-panel'+sideFoldCls('habits')+'" id="habits-panel" data-fold="habits" style="margin-bottom:12px;">' +
@@ -12804,7 +13007,9 @@ window.addEventListener('keydown', function(e){
           '<button class="btn small ghost" id="hero-quickstart" style="margin-top:4px; display:block; width:100%;">+ começar outra coisa</button>' +
         '</div>';
     } else {
-      title = 'Nada mais planejado por hoje';
+      // só compromissos pela frente (eles não entram em "Próxima"): "nada mais planejado" ficava em cima de
+      // "Próximo compromisso: Cross às 18h" e se contradizia (10/11/2026)
+      title = apptNextToday() ? 'Nenhuma tarefa até o próximo compromisso' : 'Nada mais planejado por hoje';
       sub = idleSuggestion();
 
       right = '<div style="text-align:right;"><button class="btn small primary" id="hero-quickstart">▶ Começar uma tarefa agora</button></div>';
@@ -16019,7 +16224,7 @@ window.addEventListener('keydown', function(e){
         return '<div class="cat-row" data-id="'+h.id+'">' +
           '<input type="text" data-act="hab-label" placeholder="ex: Telas off" value="'+escapeHtml(h.label)+'">' +
           '<input type="time" class="rt-time" data-act="hab-time" value="'+(h.time||'')+'" title="Horário-alvo">' +
-          '<span class="habit-streak-lbl mono">'+(habitStreak(h.id)>0?('🔥 '+habitStreak(h.id)+' dia'+(habitStreak(h.id)>1?'s':'')):'sem sequência')+'</span>' +
+          '<span class="habit-streak-lbl mono" title="Uma folga por semana não quebra a sequência">'+(habitStreak(h.id)>0?('🔥 '+habitStreak(h.id)+' dia'+(habitStreak(h.id)>1?'s':'')+' · '):'')+habitWeekCount(h.id)+'/7 nesta semana</span>' +
           '<button class="btn ghost small" data-act="hab-del" style="margin-left:auto;">✕</button></div>';
       }).join('');
       Array.prototype.forEach.call(habList.querySelectorAll('.cat-row'), function(row){
@@ -16290,6 +16495,11 @@ window.addEventListener('keydown', function(e){
     if(focus){ var f=document.getElementById(focus.id); if(f && modal.contains(f)){ f.focus({preventScroll:true}); if(focus.s!=null){ try{ f.setSelectionRange(focus.s, focus.e); }catch(_){} } } }
   }
 
+  // janela de um bloco aberta quando o bloco muda (aqui ou em outro aparelho): redesenha com o estado novo
+  function refreshDetailModal(){
+    var mi=document.getElementById('modal-inner');
+    if(mi && state.modal && state.modal.type==='detail' && !isTypingIn(mi)) renderModalOnly();
+  }
   function freshBlockById(id){
     var i;
     for(i=0;i<state.weekBlocks.length;i++) if(state.weekBlocks[i].id===id) return state.weekBlocks[i];
@@ -16306,6 +16516,7 @@ window.addEventListener('keydown', function(e){
     }
     else if(m.type==='create') buildCreateModal(modal, m);
     else if(m.type==='split') buildSplitModal(modal, m);
+    else if(m.type==='faixa') buildFaixaModal(modal, m);
     else if(m.type==='createLoose') buildCreateLooseModal(modal);
     else if(m.type==='createCheck') buildCheckModal(modal, null);
     else if(m.type==='editCheck') buildCheckModal(modal, m.item);

@@ -687,7 +687,10 @@
       // internet e a cada 30 min com ele aberto
       document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible') check(); });
       window.addEventListener('online', check);
-      setInterval(check, 30 * 60 * 1000);
+      // no PC a janela costuma ficar aberta e visível o dia todo (sem "voltar para o app"): procura também
+      // quando a janela ganha foco e a cada 5 min (10/11/2026 — a versão nova demorava a aparecer no PC)
+      window.addEventListener('focus', check);
+      setInterval(check, 5 * 60 * 1000);
     }).catch(function(e){ console.warn('[agenda] service worker', e); });
     sw.addEventListener('controllerchange', function(){ ask(); sendAuth(); });
     sw.addEventListener('message', function(e){
