@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261110-163000';</script>
+<script>window.AGENDA_BUILD = '20261110-165000';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261110-163000"></script>
+<script src="cloud.js?v=20261110-165000"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -10324,12 +10324,126 @@ window.addEventListener('keydown', function(e){
     if(!b || b.isLoose || isAppt(b) || !b.plannedStart || !b.date) return null;
     return Math.round((Date.now()-parseDT(b.date,b.plannedStart).getTime())/60000);
   }
+
+  /* ================= Janela flutuante (10/11/2026, pedido do Gabriel) =================
+     No PC, uma janelinha que fica POR CIMA de tudo (outros programas também), que dá para arrastar para qualquer
+     canto ou para a outra tela: nome da tarefa em curso, o tempo e a barra. Tocando nela aparecem Pausar/Retomar,
+     Concluir e Abrir o app. Usa a "Picture-in-Picture de documento" do Chrome/Edge (o navegador só deixa abrir a
+     partir de um clique). Depois que ele abre uma vez, ela reabre sozinha ao iniciar uma tarefa, até ele fechar no X.
+     A barra de tarefas do Windows também mostra o tempo: o título da janela vira "▶ 12:34 · Tarefa". */
+  var PIP = {win:null, open:false, actsUntil:0, doneMsg:null, closingByApp:false};
+  function pipSupported(){ return 'documentPictureInPicture' in window && window.matchMedia && !matchMedia('(pointer:coarse)').matches; }
+  function pipWanted(){ try{ return localStorage.getItem('agenda-pip')==='1'; }catch(_){ return false; } }
+  function pipSetWanted(v){ try{ localStorage.setItem('agenda-pip', v?'1':'0'); }catch(_){ } }
+  function pipBtnHtml(cls){ return pipSupported() && !PIP.open ? '<button class="btn ghost small '+(cls||'')+'" data-pip-open="1" title="Janela pequena que fica por cima de tudo, até de outros programas — arraste para onde quiser">⧉ Janela flutuante</button>' : ''; }
+  var PIP_CSS =
+    '*{box-sizing:border-box;margin:0}html,body,#pw-root{height:100%}' +
+    'body{font-family:var(--sans);background:var(--bg);color:var(--ink);overflow:hidden;user-select:none;-webkit-font-smoothing:antialiased}' +
+    '.pw{height:100%;display:flex;flex-direction:column;justify-content:center;gap:6px;padding:12px 14px;cursor:pointer;position:relative;' +
+      'background:linear-gradient(160deg,color-mix(in srgb,var(--c) 22%,transparent),transparent 70%)}' +
+    '.pw-top{display:flex;align-items:center;gap:8px;min-width:0}' +
+    '.pw-dot{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none;box-shadow:0 0 8px var(--c)}' +
+    '.pw-t{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}' +
+    '.pw-mid{display:flex;align-items:baseline;gap:10px}' +
+    '.pw-clock{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:30px;font-weight:700;letter-spacing:-.02em;line-height:1}' +
+    '.pw-clock.over{color:var(--critical)}.pw-clock.paused{color:var(--warning)}' +
+    '.pw-lbl{font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+    '.pw-bar{height:5px;border-radius:5px;background:color-mix(in srgb,var(--ink) 12%,transparent);overflow:hidden;display:flex}' +
+    '.pw-bar i{display:block;height:100%;background:var(--c);border-radius:5px;transition:width .6s cubic-bezier(.32,.72,0,1)}' +
+    '.pw-bar b{display:block;height:100%;background:repeating-linear-gradient(135deg,var(--critical) 0 4px,transparent 4px 8px)}' +
+    '.pw-acts{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;' +
+      'background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .18s ease}' +
+    '.pw.acts .pw-acts{opacity:1;pointer-events:auto}' +
+    '.pw-acts button{flex:1;min-height:44px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--ink);font:inherit;font-size:14px;font-weight:700;cursor:pointer}' +
+    '.pw-acts button.pri{background:var(--accent);color:var(--accent-ink);border-color:transparent}' +
+    '.pw-acts button:active{transform:scale(.97)}' +
+    '.pw-idle .pw-t{font-weight:600;color:var(--ink-soft)}' +
+    '.pw-done{font-size:17px;font-weight:700;text-align:center}' +
+    '@media (prefers-reduced-motion:reduce){.pw-acts,.pw-bar i{transition:none}}';
+  function pipVars(){
+    var cs=getComputedStyle(document.documentElement), out='';
+    ['--bg','--surface','--ink','--ink-soft','--border','--accent','--accent-ink','--critical','--warning','--sans','--mono'].forEach(function(k){ out+=k+':'+cs.getPropertyValue(k)+';'; });
+    return ':root{'+out+'color-scheme:'+(document.documentElement.getAttribute('data-mode')==='light'?'light':'dark')+'}';
+  }
+  function pipOpen(){
+    if(!pipSupported() || PIP.open) return;
+    try{
+      documentPictureInPicture.requestWindow({width:320, height:128}).then(function(w){
+        PIP.win=w; PIP.open=true; pipSetWanted(true);
+        var st=w.document.createElement('style'); st.id='pv'; st.textContent=pipVars()+PIP_CSS; w.document.head.appendChild(st);
+        w.document.title='Agenda';
+        var root=w.document.createElement('div'); root.id='pw-root'; w.document.body.appendChild(root);
+        root.addEventListener('click', pipClick);
+        w.addEventListener('pagehide', function(){
+          PIP.open=false; PIP.win=null;
+          if(!PIP.closingByApp) pipSetWanted(false);
+          PIP.closingByApp=false; render();
+        });
+        pipRender(); render();
+      }).catch(function(){ });
+    }catch(_){ }
+  }
+  function pipClick(e){
+    var a=e.target.closest('[data-pw]');
+    var b=currentTaskInfo();
+    if(a){
+      var k=a.getAttribute('data-pw');
+      if(k==='pause' && b){ if(b.status==='paused') resumeBlock(b); else pauseBlock(b); }
+      else if(k==='done' && b){ PIP.doneMsg={t:(b.title||(catById(b.categoryId)||{}).name||'Tarefa'), until:Date.now()+4000}; completeNow(b); }
+      else if(k==='start'){ var n=nextUpcomingInfo(); if(n) startBlock(n); }
+      else if(k==='app'){ try{ window.focus(); }catch(_){ } if(b && state.view!=='focus') setView('focus'); }
+      PIP.actsUntil=0; setTimeout(pipRender, 60); return;
+    }
+    PIP.actsUntil = PIP.actsUntil>Date.now() ? 0 : Date.now()+6000;
+    pipRender();
+  }
+  function pipRender(){
+    if(!PIP.open || !PIP.win) return;
+    var d=PIP.win.document, root=d.getElementById('pw-root'); if(!root) return;
+    var b=currentTaskInfo(), html, c='var(--accent)', acts=PIP.actsUntil>Date.now();
+    if(PIP.doneMsg && PIP.doneMsg.until>Date.now()){
+      root.innerHTML='<div class="pw" style="--c:var(--accent)"><div class="pw-done">✓ '+escapeHtml(PIP.doneMsg.t)+' feito!</div></div>'; return;
+    }
+    if(b){
+      var cat=catById(b.categoryId); if(cat) c=cat.color;
+      var paused=b.status==='paused', el=elapsedOf(b);
+      var plan=b.isLoose ? (b.targetDurationMin?b.targetDurationMin*60000:null) : (minutesOf(b.plannedEnd)-minutesOf(b.plannedStart))*60000;
+      var over=plan!=null && el>plan;
+      var lbl=paused?'pausada':(over?'além do planejado':(plan==null?'sem meta':'faltam '+fmtClock(plan-el)));
+      var bar = plan==null ? '' : (over ? '<div class="pw-bar"><i style="width:'+Math.round(plan/el*100)+'%"></i><b style="flex:1"></b></div>' : '<div class="pw-bar"><i style="width:'+Math.round(el/plan*100)+'%"></i></div>');
+      html='<div class="pw'+(acts?' acts':'')+'" style="--c:'+c+'" title="Toque para pausar, concluir ou abrir o app">' +
+        '<div class="pw-top"><span class="pw-dot"></span><span class="pw-t">'+escapeHtml(b.title||(cat?cat.name:'Bloco'))+'</span></div>' +
+        '<div class="pw-mid"><span class="pw-clock'+(paused?' paused':(over?' over':''))+'">'+(over?'+':'')+fmtClock(over?el-plan:el)+'</span><span class="pw-lbl">'+lbl+'</span></div>' + bar +
+        '<div class="pw-acts"><button data-pw="pause">'+(paused?'▶ Retomar':'❚❚ Pausar')+'</button><button data-pw="done" class="pri">✓ Concluir</button><button data-pw="app">Abrir app</button></div></div>';
+    } else {
+      var n=nextUpcomingInfo();
+      html='<div class="pw pw-idle'+(acts?' acts':'')+'" style="--c:var(--accent)">' +
+        '<div class="pw-top"><span class="pw-dot"></span><span class="pw-t">Nenhuma tarefa em curso</span></div>' +
+        '<div class="pw-lbl">'+(n ? 'Próxima: '+escapeHtml(n.title||(catById(n.categoryId)||{}).name||'bloco')+' às '+n.plannedStart : 'Nada mais planejado por hoje')+'</div>' +
+        '<div class="pw-acts">'+(n?'<button data-pw="start" class="pri">▶ Começar a próxima</button>':'')+'<button data-pw="app">Abrir app</button></div></div>';
+    }
+    root.innerHTML=html;
+    var st=d.getElementById('pv'); if(st && PIP.varsFor!==document.documentElement.getAttribute('data-mode')){ PIP.varsFor=document.documentElement.getAttribute('data-mode'); st.textContent=pipVars()+PIP_CSS; }
+  }
+  // título da janela (barra de tarefas do Windows / Alt+Tab)
+  var baseTitle=document.title||'Agenda';
+  function taskbarTitle(){
+    var b=currentTaskInfo(), t=baseTitle;
+    if(b){ var cat=catById(b.categoryId), nm=b.title||(cat?cat.name:'Tarefa'), el=elapsedOf(b);
+      var plan=b.isLoose ? (b.targetDurationMin?b.targetDurationMin*60000:null) : (minutesOf(b.plannedEnd)-minutesOf(b.plannedStart))*60000;
+      t = (b.status==='paused' ? '❚❚ ' : '▶ ') + (plan!=null && el<=plan ? fmtClock(plan-el) : fmtClock(el)) + ' · ' + nm; }
+    if(document.title!==t) document.title=t;
+  }
+  setInterval(function(){ pipRender(); taskbarTitle(); }, 1000);
+  document.addEventListener('click', function(e){ var x=e.target.closest && e.target.closest('[data-pip-open]'); if(x){ e.preventDefault(); e.stopPropagation(); pipOpen(); } }, true);
+
   function startBlock(b){
     if(restNowBlocked() && !restExempt(b)){ restSay(); return; }
     whyOnStart(b && b.categoryId);
     var late=startLateMin(b), patch={status:'running', actualStart:Date.now(), pausedAt:null};
     if(late!=null){ patch.lateMin=Math.max(0,late); patch.lateReason=null; }
     updateBlock(b.id, patch); closeModal();
+    if(pipWanted() && !PIP.open) pipOpen();
     if(late!=null && late>=LATE_TOL_MIN) setTimeout(function(){ showLateAsk(b, late); }, 80);
   }
 
@@ -13207,6 +13321,7 @@ window.addEventListener('keydown', function(e){
             '<button class="btn small" id="hero-pause">'+(paused?'▶ Retomar':'❚❚ Pausar')+'</button>' +
             '<button class="btn primary small" id="hero-complete">Concluir</button>' +
           '</div>' +
+          (pipSupported() && !PIP.open ? '<div style="margin-top:4px;">'+pipBtnHtml('hero-pip')+'</div>' : '') +
         '</div>' +
       '</div>' +
       barHtml +
@@ -15327,6 +15442,7 @@ window.addEventListener('keydown', function(e){
         '</div>' +
         '<div class="focus-actions" style="margin-top:8px;">' +
           '<button class="btn ghost small" id="focus-detail">Abrir detalhes</button>' +
+          pipBtnHtml() +
           '<button class="btn ghost small" id="focus-cancel" style="color:var(--critical);">Cancelar início</button>' +
         '</div>' +
       '</div>' +
