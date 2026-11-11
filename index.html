@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261110-172200';</script>
+<script>window.AGENDA_BUILD = '20261111-163007';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261110-172200"></script>
+<script src="cloud.js?v=20261111-163007"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -16605,7 +16605,7 @@ window.addEventListener('keydown', function(e){
     }
     return {check:check, suggest:suggest};
   }
-  var PT={spell:null, loading:false, ta:null, layer:null, inner:null, raf:0, lastVal:null, lastInput:0, bad:[], menu:null, ignore:{}};
+  var PT={spell:null, loading:false, ta:null, layer:null, inner:null, raf:0, idleT:0, hot:0, lastVal:null, lastInput:0, bad:[], menu:null, ignore:{}};
   try{ (JSON.parse(localStorage.getItem('agenda-pt-ignore')||'[]')||[]).forEach(function(w){ PT.ignore[w]=1; }); }catch(_){}
   function ptLoad(){
     if(PT.spell || PT.loading) return; PT.loading=true;
@@ -16657,11 +16657,14 @@ window.addEventListener('keydown', function(e){
     PT.inner.innerHTML=h+ptEsc(v.slice(at))+'​';
     ptPlace(true);
   }
+  function ptKick(){ PT.hot=Date.now()+700; if(PT.idleT){ clearTimeout(PT.idleT); PT.idleT=0; } if(!PT.raf && PT.ta) PT.raf=requestAnimationFrame(ptLoop); }
   function ptLoop(){
-    PT.raf=0; if(!PT.ta) return;
+    PT.raf=0; PT.idleT=0; if(!PT.ta) return;
     ptPlace(false); if(!PT.ta) return;
     if(PT.spell && (PT.ta.value!==PT.lastVal || PT.pending) && Date.now()-PT.lastInput>(PT.pending && PT.ta.value===PT.lastVal ? 1000 : 350)) ptRender();
-    PT.raf=requestAnimationFrame(ptLoop);
+    if(Date.now()<PT.hot){ PT.raf=requestAnimationFrame(ptLoop); return; }
+    if(document.activeElement!==PT.ta && !PT.menu){ ptDetach(); return; }
+    PT.idleT=setTimeout(ptLoop, 400);
   }
   function ptAttach(ta){
     if(PT.ta===ta) return; ptDetach();
@@ -16669,9 +16672,9 @@ window.addEventListener('keydown', function(e){
     var L=document.createElement('div'); L.className='pt-layer'; var I=document.createElement('div'); I.className='pt-inner'; L.appendChild(I); document.body.appendChild(L);
     PT.layer=L; PT.inner=I; PT.lastVal=null;
     if(PT.spell) ptRender(); else ptLoad();
-    if(!PT.raf) PT.raf=requestAnimationFrame(ptLoop);
+    ptKick();
   }
-  function ptDetach(){ if(PT.layer) PT.layer.remove(); PT.layer=PT.inner=null; PT.ta=null; PT.bad=[]; if(PT.raf){ cancelAnimationFrame(PT.raf); PT.raf=0; } }
+  function ptDetach(){ if(PT.layer) PT.layer.remove(); PT.layer=PT.inner=null; PT.ta=null; PT.bad=[]; if(PT.raf){ cancelAnimationFrame(PT.raf); PT.raf=0; } if(PT.idleT){ clearTimeout(PT.idleT); PT.idleT=0; } }
   function ptCloseMenu(){ if(PT.menu){ PT.menu.remove(); PT.menu=null; } }
   function ptReplace(ta, s, e, txt){
     ta.focus({preventScroll:true}); ta.setSelectionRange(s, e);
@@ -16700,7 +16703,10 @@ window.addEventListener('keydown', function(e){
     if(ptEligible(el)) ptAttach(el); else if(PT.ta && el!==PT.menu) ptDetach();
   }, true);
   document.addEventListener('focusout', function(e){ if(e.target===PT.ta) setTimeout(function(){ if(PT.ta && document.activeElement!==PT.ta && !PT.menu) ptDetach(); }, 0); }, true);
-  document.addEventListener('input', function(e){ if(e.target===PT.ta){ PT.lastInput=Date.now(); ptCloseMenu(); } }, true);
+  document.addEventListener('input', function(e){ if(e.target===PT.ta){ PT.lastInput=Date.now(); ptCloseMenu(); ptKick(); } }, true);
+  document.addEventListener('scroll', function(){ if(PT.ta) ptKick(); }, {capture:true, passive:true});
+  window.addEventListener('resize', function(){ if(PT.ta) ptKick(); });
+  document.addEventListener('pointermove', function(e){ if(PT.ta && e.buttons) ptKick(); }, {capture:true, passive:true});
   document.addEventListener('keyup', function(e){ if(e.target===PT.ta && /^(Arrow|Home|End|Enter| )/.test(e.key) && PT.spell) setTimeout(ptRender, 0); }, true);
   document.addEventListener('pointerdown', function(e){ if(PT.menu && !PT.menu.contains(e.target)) ptCloseMenu(); }, true);
   document.addEventListener('keydown', function(e){ if(e.key==='Escape' && PT.menu){ ptCloseMenu(); e.stopPropagation(); } }, true);
