@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261111-163007';</script>
+<script>window.AGENDA_BUILD = '20261111-165047';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261111-163007"></script>
+<script src="cloud.js?v=20261111-165047"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -2864,7 +2864,7 @@ html[data-mode="dark"] .ck-round.green{color:#30D158;} html[data-mode="dark"] .c
 .sb-foco .sbf-t{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:0 1 auto;}
 .sb-foco.live .sbf-t{flex:1; text-align:left;}
 .sb-foco .sbf-clk{flex:none; font-size:0.7778rem; color:var(--accent);}
-.sbf-dot{width:9px; height:9px; border-radius:50%; flex:none; background:var(--c); box-shadow:0 0 0 0 var(--c); animation:sbf-pulse 2.4s ease-in-out infinite;}
+.sbf-dot{width:9px; height:9px; border-radius:50%; flex:none; background:var(--c); box-shadow:0 0 0 3px color-mix(in srgb, var(--c) 32%, transparent);}
 .sbf-dot.paused{animation:none; opacity:.5;}
 @keyframes sbf-pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb, var(--c) 60%, transparent);} 50%{box-shadow:0 0 0 5px transparent;}}
 @media (prefers-reduced-motion:reduce){ .sbf-dot{animation:none;} }
@@ -9967,6 +9967,21 @@ window.addEventListener('keydown', function(e){
     if(ob) ob.onclick = function(){ if(openAlertTarget(entry)) dismiss(); };
   }
 
+  function looseAlerts(b, fired, now){
+    if(b.status!=='running' || !b.targetDurationMin) return;
+    var label=(b.project ? b.project+' — ' : '') + (b.title || (catById(b.categoryId)||{}).name || 'Tarefa');
+    var goalMs=b.targetDurationMin*60000, el=elapsedOf(b), left=Math.round((goalMs-el)/60000);
+    [5,1].forEach(function(m){
+      var key=b.id+'-lnear-'+m;
+      if(b.targetDurationMin>m && left===m && !fired[key]){ fired[key]=now; fireAlert('Faltam '+m+' min', label+' — meta de '+fmtDuration(b.targetDurationMin)+'.', {kind:'nearend', key:key, blockId:b.id}); }
+    });
+    if(el>=goalMs-30000){
+      var keyEnd=b.id+'-lend';
+      if(!fired[keyEnd]){ fired[keyEnd]=now; fireAlert('Acabou o tempo planejado', label+' chegou à meta de '+fmtDuration(b.targetDurationMin)+'. Concluir ou continuar?', {urgent:true, kind:'over', key:keyEnd, blockId:b.id}); }
+      var overMin=Math.floor((el-goalMs)/60000), bucket=Math.floor(overMin/10), keyOver=b.id+'-lover-'+bucket;
+      if(bucket>=1 && !fired[keyOver]){ fired[keyOver]=now; fireAlert('Ainda rodando', label+' já passou '+fmtDuration(overMin)+' da meta.', {urgent:true, kind:'over', key:keyOver, blockId:b.id}); }
+    }
+  }
   function checkAlerts(){
     if(!state.alertsEnabled) return;
     var now = Date.now();
@@ -9974,7 +9989,8 @@ window.addEventListener('keydown', function(e){
     if(state._lastAlertDay !== today){ state._alertsFired = {}; state._lastAlertDay = today; }
     var fired = state._alertsFired;
     blocksForDate(today).forEach(function(b){
-      if(b.isLoose || !b.plannedStart) return;
+      if(b.isLoose){ looseAlerts(b, fired, now); return; }
+      if(!b.plannedStart) return;
       var label = (b.project ? b.project+' — ' : '') + (b.title || (catById(b.categoryId)||{}).name || 'Bloco');
 
       if(isAppt(b)){
