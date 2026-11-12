@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261112-141827';</script>
+<script>window.AGENDA_BUILD = '20261112-142200';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261112-141827"></script>
+<script src="cloud.js?v=20261112-142200"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -453,6 +453,11 @@
   .chip-check{position:absolute; top:2px; right:2px; width:19px; height:19px; border-radius:3px; border:1.5px solid rgba(31,27,24,0.3); background:rgba(255,255,255,0.5); display:flex; align-items:center; justify-content:center; font-size:0.6667rem; font-weight:800; line-height:1; flex-shrink:0; z-index:2;}
   .chip-check.done{background:var(--success); border-color:var(--success); color:#fff;}
   .chip .t{padding-right:18px;}
+  .chip.chip-compact{display:flex; align-items:center; gap:7px; padding-top:1px; padding-bottom:1px; padding-right:28px;}
+  .chip.chip-compact > .t{flex:0 1 auto; min-width:0; padding-right:0;}
+  .chip.chip-compact > .s-time, .chip.chip-compact > .live{flex:none; overflow:visible; text-overflow:clip;}
+  .chip.chip-compact > .s:not(.s-time){display:none;}
+  .chip.chip-compact[data-narrow]{padding-right:20px;}
   .chip-lock{position:absolute; top:3px; right:3px; font-size:0.6111rem; opacity:0.6;}
   .chip.appt{box-shadow:inset 0 0 0 1px var(--appt-color, var(--ink-faint));}
   .chip.appt.status-done{opacity:.6;}
@@ -13654,10 +13659,11 @@ window.addEventListener('keydown', function(e){
       if(it.kind==='check'){
         var c=it.c;
         chip.className='chip check-marker'+(c.done?' status-done':'');
-        chip.innerHTML = '<div class="t">'+escapeHtml(c.title)+'</div>' + (height>32?'<div class="s">'+c.timeLabel+'</div>':'') +
+        chip.innerHTML = '<div class="t">'+escapeHtml(c.title)+'</div>' + '<div class="s s-time">'+c.timeLabel+'</div>' +
           '<div class="chip-check'+(c.done?' done':'')+'" data-act="quickcheck">'+(c.done?'✓':'')+'</div>';
         chip.title = 'Afazer · '+c.title+' · '+c.timeLabel;
         col.appendChild(chip);
+        fitChipTime(chip, narrow);
         wireChipInteraction(chip, it);
         wireQuickCheck(chip, function(){ toggleCheck(c); });
         return;
@@ -13693,12 +13699,13 @@ window.addEventListener('keydown', function(e){
       var checkHtml = (!isActiveStatus(b.status) && b.status!=='skipped') ? '<div class="chip-check'+(b.status==='done'?' done':'')+'" data-act="quickcheck">'+(b.status==='done'?'✓':'')+'</div>' : (b.status==='skipped' ? '<div class="chip-skip">✗</div>' : '');
       var shortTime = narrow ? (b.isLoose ? timeLabel : b.plannedStart) : timeLabel;
       chip.innerHTML = '<div class="t">'+(appt?'📍 ':catIconPrefix(cat))+escapeHtml(b.title||(cat?cat.name:'Bloco'))+'</div>' +
-        (height>32 && b.project && !narrow ? '<div class="s" style="font-weight:600;">'+escapeHtml(b.project)+'</div>' : '') +
-        (height>32 ? '<div class="s">'+shortTime+'</div>' : '') + extra + checkHtml;
+        (height>32 && b.project && !narrow ? '<div class="s s-proj" style="font-weight:600;">'+escapeHtml(b.project)+'</div>' : '') +
+        '<div class="s s-time">'+shortTime+'</div>' + extra + checkHtml;
       chip.title = (appt?'Compromisso · ':'')+(cat?cat.name:'')+' · '+timeLabel+(overdue?' · horário vencido (arrastar cria uma cópia, não move o original)':'')+
         (b.project?' · Projeto: '+b.project:'')+(b.note?' · Anotação: '+b.note:'')+
         ((b.tags&&b.tags.length)?' · #'+b.tags.join(' #'):'') + (offC ? ' · no horário reservado para '+offC.name : '');
       col.appendChild(chip);
+      fitChipTime(chip, narrow);
       wireChipInteraction(chip, it);
       if(!isActiveStatus(b.status) && b.status!=='skipped'){
         wireQuickCheck(chip, function(){
@@ -13710,6 +13717,13 @@ window.addEventListener('keydown', function(e){
     });
   }
 
+  function fitChipTime(chip, narrow){
+    if(chip.scrollHeight <= chip.clientHeight + 1) return;
+
+    var pj=chip.querySelector('.s-proj'); if(pj){ pj.remove(); if(chip.scrollHeight <= chip.clientHeight + 1) return; }
+    chip.classList.add('chip-compact');
+    if(narrow){ var st=chip.querySelector('.s-time'); if(st) st.remove(); }
+  }
   function wireQuickCheck(chip, onToggle){
     var box=chip.querySelector('[data-act=quickcheck]'); if(!box) return;
     box.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
