@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261112-142200';</script>
+<script>window.AGENDA_BUILD = '20261112-142631';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261112-142200"></script>
+<script src="cloud.js?v=20261112-142631"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -1653,6 +1653,8 @@ button.pn-crumb-root:hover{background:var(--accent-soft); color:var(--ink);}
 .pn-empty p{color:var(--ink-soft); font-size:0.8333rem; line-height:1.55; margin:0 0 18px;}
 .pn-overlay{z-index:60; padding:3vh 3vw;}
 .overlay.pn-overlay, :root[data-sky] .overlay.pn-overlay{backdrop-filter:none; -webkit-backdrop-filter:none; background:rgba(12,14,24,.42);}
+:root[data-sky] .overlay{backdrop-filter:none; -webkit-backdrop-filter:none; background:rgba(12,14,24,.42);}
+.detail-catpick .cat-pick{display:inline-block; width:auto;}
 .pn-dlg{width:min(1120px,100%); height:min(860px,94vh); display:flex; flex-direction:column; overflow:hidden; border-radius:24px; background:linear-gradient(var(--glass-bg-strong),var(--glass-bg-strong)), var(--sky-base, var(--bg)); border:1px solid var(--glass-border); contain:layout paint; box-shadow:var(--shadow-lg), inset 0 1px 0 var(--panel-highlight); color:var(--ink);}
 .pn-dlg-head{display:flex; align-items:center; gap:6px; padding:12px 14px 12px 22px; border-bottom:1px solid var(--border-soft); position:relative; flex:none;}
 .pn-dlg-crumb{font-size:0.8333rem; color:var(--ink-soft); font-weight:600; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:flex; align-items:center; gap:7px;}
@@ -1940,6 +1942,11 @@ button.sb-pn-stat:hover{background:var(--hover-glass, rgba(239,231,216,.1));}
 .grid-time-tip{position:fixed; z-index:300; pointer-events:none; display:flex; align-items:center; gap:10px; padding:8px 14px; border-radius:14px; background:var(--glass-bg-strong); backdrop-filter:blur(20px) saturate(1.6); -webkit-backdrop-filter:blur(20px) saturate(1.6); border:1px solid var(--border); color:var(--ink); font-size:0.8333rem; box-shadow:var(--shadow-lg); white-space:nowrap; font-variant-numeric:tabular-nums;}
 .grid-time-tip b{font-weight:800; color:var(--accent);}
 .grid-time-tip .gtt-dur{color:var(--ink-soft); font-weight:700; padding-left:10px; border-left:1px solid var(--border);}
+.grid-time-tip .gtt-mode{font-weight:800; padding-right:10px; border-right:1px solid var(--border);}
+.chip-resize{position:absolute; left:0; right:0; bottom:0; height:9px; cursor:ns-resize; z-index:3; touch-action:none; display:flex; align-items:center; justify-content:center;}
+.chip-resize::after{content:''; width:26px; height:4px; border-radius:2px; background:currentColor; opacity:0; transition:opacity .15s ease;}
+.chip:hover .chip-resize::after{opacity:.45;}
+@media (hover:none){ .chip-resize{height:14px;} .chip-resize::after{opacity:.35;} }
 .pn-due-line{color:var(--critical);}
 .pn-hero-hours{font-weight:600; color:var(--ink-soft);}
 @media (max-width:860px){
@@ -13745,6 +13752,9 @@ window.addEventListener('keydown', function(e){
     var durMin = Math.max(it.eMin - it.sMin, 15);
     var dragging=false, moved=false, startX=0, startY=0, ghost=null, ghostCol=null, lastDate=null, lastStartMin=null, isCopy=false;
 
+    var grabOff=0;
+    function setGrab(y){ var c=chip.parentNode; if(!c || !c.getBoundingClientRect) { grabOff=0; return; } grabOff=Math.max(0, Math.min(minuteForY(y-c.getBoundingClientRect().top)-it.sMin, durMin)); }
+
     function effectiveCopy(){ return isCopy || !canMove; }
 
     var lpT=null, armed=false, tPt=null, dragged=false;
@@ -13763,14 +13773,14 @@ window.addEventListener('keydown', function(e){
         tPt={x:e.clientX, y:e.clientY, id:e.pointerId};
         lpT=setTimeout(function(){
           if(!tPt) return;
-          armed=true; dragging=true; moved=false; startX=tPt.x; startY=tPt.y; isCopy=false; chip.dataset.tapOpen='';
+          armed=true; dragging=true; moved=false; startX=tPt.x; startY=tPt.y; isCopy=false; chip.dataset.tapOpen=''; setGrab(tPt.y);
           try{ chip.setPointerCapture(tPt.id); }catch(_){}
           chip.classList.add('chip-lift'); try{ if(navigator.vibrate) navigator.vibrate(8); }catch(_){}
         }, 380);
         return;
       }
       e.preventDefault();
-      dragging=true; moved=false; startX=e.clientX; startY=e.clientY; isCopy=!!e.shiftKey;
+      dragging=true; moved=false; startX=e.clientX; startY=e.clientY; isCopy=!!e.shiftKey; setGrab(e.clientY);
       chip.setPointerCapture(e.pointerId);
     });
     chip.addEventListener('pointermove', function(e){
@@ -13791,7 +13801,7 @@ window.addEventListener('keydown', function(e){
       var rect=col.getBoundingClientRect();
       var rel=e.clientY-rect.top;
       var maxStart=Math.max((DAY_END-DAY_START)*60-durMin, 0);
-      var startMin=snapMin(Math.max(0,Math.min(minuteForY(rel), maxStart)),15);
+      var startMin=snapMin(Math.max(0,Math.min(minuteForY(rel)-grabOff, maxStart)),15);
       if(ghostCol!==col){
         if(ghost) ghost.remove();
         ghost=document.createElement('div'); ghost.className='ghost-range';
@@ -13802,6 +13812,7 @@ window.addEventListener('keydown', function(e){
       ghost.style.top=yForMinute(startMin)+'px';
       ghost.style.height=(yForMinute(startMin+durMin)-yForMinute(startMin))+'px';
       lastDate=d; lastStartMin=startMin;
+      gridTipShow(e.clientX, e.clientY, copyNow ? 'Copiar' : 'Mover', startMin, startMin+durMin);
     });
     function finish(){
       if(!dragging) return;
@@ -13809,6 +13820,7 @@ window.addEventListener('keydown', function(e){
       dragActive=false;
       chip.style.opacity='';
       if(ghost){ ghost.remove(); ghost=null; ghostCol=null; }
+      gridTipClear();
       var wasTouch=armed; armed=false; chip.classList.remove('chip-lift');
       if(wasTouch){ dragged=true; if(!moved){ openFn(); return; } }
       else if(!moved){ openFn(); return; }
@@ -13824,11 +13836,62 @@ window.addEventListener('keydown', function(e){
       }
     }
     chip.addEventListener('pointerup', function(e){ if(tPt && !armed){ disarm(); return; } disarm(); finish(e); });
-    chip.addEventListener('pointercancel', function(){ disarm(); armed=false; chip.dataset.tapOpen=''; chip.classList.remove('chip-lift'); dragging=false; dragActive=false; chip.style.opacity=''; if(ghost){ghost.remove(); ghost=null; ghostCol=null;} });
+    chip.addEventListener('pointercancel', function(){ disarm(); armed=false; chip.dataset.tapOpen=''; chip.classList.remove('chip-lift'); dragging=false; dragActive=false; chip.style.opacity=''; if(ghost){ghost.remove(); ghost=null; ghostCol=null;} gridTipClear(); });
+    if(canMove && it.kind==='block') wireChipResize(chip, it);
   }
 
+  function wireChipResize(chip, it){
+    if(chip.offsetHeight < 30) return;
+    var hdl=document.createElement('div'); hdl.className='chip-resize'; hdl.title='Arraste pra mudar a duração';
+    chip.appendChild(hdl);
+    var on=false, col=null, ghost=null, endMin=it.eMin;
+    function endAt(y){
+      var r=col.getBoundingClientRect();
+      return Math.min(Math.max(snapMin(minuteForY(y-r.top),15), it.sMin+15), 24*60);
+    }
+    hdl.addEventListener('pointerdown', function(e){
+      e.stopPropagation(); e.preventDefault();
+      col=chip.parentNode; if(!col) return;
+      on=true; dragActive=true; endMin=it.eMin;
+      try{ hdl.setPointerCapture(e.pointerId); }catch(_){}
+      ghost=document.createElement('div'); ghost.className='ghost-range'; col.appendChild(ghost);
+      move(e);
+    });
+    function move(e){
+      if(!on) return;
+      e.preventDefault(); e.stopPropagation();
+      endMin=endAt(e.clientY);
+      ghost.style.top=yForMinute(it.sMin)+'px';
+      ghost.style.height=(yForMinute(endMin)-yForMinute(it.sMin))+'px';
+      gridTipShow(e.clientX, e.clientY, 'Duração', it.sMin, endMin);
+    }
+    hdl.addEventListener('pointermove', move);
+    function end(e, cancel){
+      if(!on) return;
+      on=false; dragActive=false;
+      if(ghost){ ghost.remove(); ghost=null; } gridTipClear();
+      if(cancel || endMin===it.eMin) return;
+      updateBlock(it.b.id, {plannedEnd:endMin>=1440?'23:59':timeOfMinutes(endMin), overlapEatenMin:null, overlapAcknowledged:false});
+      showToast('Agora termina às '+(endMin>=1440?'23:59':timeOfMinutes(endMin))+' ('+fmtDuration(endMin-it.sMin)+').', '⏱');
+    }
+    hdl.addEventListener('pointerup', function(e){ e.stopPropagation(); end(e, false); });
+    hdl.addEventListener('pointercancel', function(e){ end(e, true); });
+    hdl.addEventListener('click', function(e){ e.stopPropagation(); });
+  }
+
+  var GRID_TIP=null;
+  function gridTipShow(cx, cy, mode, s, e){
+    function hm(m){ return m>=1440 ? '23:59' : timeOfMinutes(m); }
+    if(!GRID_TIP){ GRID_TIP=document.createElement('div'); GRID_TIP.className='grid-time-tip'; GRID_TIP.setAttribute('role','status'); document.body.appendChild(GRID_TIP); }
+    GRID_TIP.innerHTML='<span class="gtt-mode">'+mode+'</span><span>Início <b>'+hm(s)+'</b></span><span>Fim <b>'+hm(e)+'</b></span><span class="gtt-dur">'+fmtDuration(e-s)+'</span>';
+    var w=GRID_TIP.offsetWidth||220, x=Math.max(8, Math.min(cx-w/2, window.innerWidth-w-8));
+    var y=cy-62; if(y<8) y=cy+28;
+    GRID_TIP.style.left=x+'px'; GRID_TIP.style.top=y+'px';
+  }
+  function gridTipClear(){ if(GRID_TIP){ GRID_TIP.remove(); GRID_TIP=null; } }
+
   function wireColumnCreate(col, d){
-    var dragging=false, startY=0, ghost=null, tip=null, moved=false;
+    var dragging=false, startY=0, ghost=null, moved=false;
     function minFromY(y){
       var rect=col.getBoundingClientRect();
       var rel = y-rect.top;
@@ -13854,13 +13917,9 @@ window.addEventListener('keydown', function(e){
       ghost.style.top=yForMinute(r.s)+'px';
       ghost.style.height=Math.max(yForMinute(r.e)-yForMinute(r.s), 14)+'px';
       ghost.setAttribute('data-label', hhmm(r.s)+'–'+hhmm(r.e));
-      if(!tip){ tip=document.createElement('div'); tip.className='grid-time-tip'; tip.setAttribute('role','status'); document.body.appendChild(tip); }
-      tip.innerHTML='<span>Início <b>'+hhmm(r.s)+'</b></span><span>Fim <b>'+hhmm(r.e)+'</b></span><span class="gtt-dur">'+fmtDuration(r.e-r.s)+'</span>';
-      var w=tip.offsetWidth||200, x=Math.max(8, Math.min(cx-w/2, window.innerWidth-w-8));
-      var y=cy-62; if(y<8) y=cy+28;
-      tip.style.left=x+'px'; tip.style.top=y+'px';
+      gridTipShow(cx, cy, 'Novo bloco', r.s, r.e);
     }
-    function clearPreview(){ if(ghost){ ghost.remove(); ghost=null; } if(tip){ tip.remove(); tip=null; } }
+    function clearPreview(){ if(ghost){ ghost.remove(); ghost=null; } gridTipClear(); }
     col.addEventListener('pointerdown', function(e){
       if(e.target!==col) return;
       e.preventDefault();
@@ -16855,7 +16914,7 @@ window.addEventListener('keydown', function(e){
     var canEditTime = !b.isLoose && b.status==='pending';
     var appt = isAppt(b);
 
-    var body = '<div class="detail-catchip" style="background:'+color+';">'+catIconPrefix(cat)+(cat?escapeHtml(cat.name):'—')+'</div>' +
+    var body = '<div class="detail-catpick"><select data-cats="1" id="d-cat" style="width:auto;">'+catOptionsHtml(b.categoryId)+'</select></div>' +
       '<h3 style="margin:10px 0 0; font-size:1.05rem;">'+escapeHtml(b.title||(cat?cat.name:'Bloco'))+'</h3>' +
       (canEditTime ?
         '<div class="field-row" style="margin-top:8px;"><div class="field"><label>Início</label><input id="d-start" type="time" value="'+b.plannedStart+'"></div><div class="field"><label>Fim</label><input id="d-end" type="time" value="'+b.plannedEnd+'"></div></div>'
@@ -16880,7 +16939,7 @@ window.addEventListener('keydown', function(e){
         '<button class="btn small ghost" data-act="rename">✎ Trocar nome</button>' +
       '</div>' +
       (state.renameFor===b.id ? renamePanelHtml(b) : '') +
-      (b.isLoose?'':'<div class="empty-hint" style="padding:4px 2px 0; font-size:0.72rem;">dica: segure Shift e arraste o bloco na grade pra copiar direto pra outro dia/horário</div>') +
+      (b.isLoose?'':'<div class="empty-hint" style="padding:4px 2px 0; font-size:0.72rem;">Na grade: arraste o bloco pra mudar o horário (a duração fica igual) · puxe a alcinha de baixo pra mudar a duração · segure Shift pra copiar</div>') +
       (b.isLoose?'':
 
         (state.routineMarkFor===b.id ? routineMarkPanelHtml(b) : '')
@@ -17054,6 +17113,14 @@ window.addEventListener('keydown', function(e){
 
     var unskipBtn = modal.querySelector('[data-act="unskip"]');
     if(unskipBtn) wireArmConfirm(unskipBtn, 'Confirma? apaga o motivo', function(){ unskipBlock(b); closeModal(); });
+    var catSel = modal.querySelector('#d-cat');
+    if(catSel) catSel.addEventListener('change', function(){
+      if(!catSel.value || catSel.value===b.categoryId) return;
+      var nc=catById(catSel.value);
+      updateBlock(b.id, {categoryId:catSel.value}); patchBlockLocal(b.id, {categoryId:catSel.value});
+      showToast('Categoria trocada para '+(nc?nc.name:'—')+'.', '✓');
+      renderModalOnly();
+    });
     var tagsInput = modal.querySelector('#d-tags');
     if(tagsInput) tagsInput.addEventListener('change', function(e){ updateBlock(b.id, {tags: parseTags(e.target.value)}); showToast('Alteração salva!', '💾'); });
     var projectInput = modal.querySelector('#d-project');
