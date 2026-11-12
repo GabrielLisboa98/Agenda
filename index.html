@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261112-150802';</script>
+<script>window.AGENDA_BUILD = '20261112-152840';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261112-150802"></script>
+<script src="cloud.js?v=20261112-152840"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -271,6 +271,14 @@
   .navbtn:hover{background:#fff;}
   .today-btn{background:var(--surface); border:1px solid var(--border); color:var(--ink); padding:0 12px; height:30px; border-radius:3px; font-size:0.8333rem; font-weight:700;}
   .today-btn:hover{background:#fff;}
+  .navstep{display:inline-flex; align-items:center; gap:2px; padding:2px; border-radius:999px; background:var(--surface-3); border:1px solid var(--border);}
+  .navstep .navbtn{border:none!important; background:transparent!important; box-shadow:none!important;}
+  .navstep .navbtn:hover{background:var(--surface-2)!important;}
+  .navstep-lbl{min-width:92px; text-align:center; font-weight:800; font-size:0.8889rem; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .daytop-nav .today-btn{margin-left:8px;}
+  .today-btn.is-here{opacity:.55;}
+  .sel-chip{display:inline-flex; align-items:center; gap:6px; margin-top:6px; padding:3px 10px; border-radius:999px; background:var(--accent-soft); color:var(--ink); font-size:0.7778rem; font-weight:700;}
+  .sel-chip i{width:7px; height:7px; border-radius:50%; background:var(--accent);}
   .datenav .label, .label{font-weight:700; font-size:0.9444rem; min-width:0; font-family:var(--serif);}
   .btn{border:1px solid var(--border); background:var(--surface); color:var(--ink); padding:8px 14px; border-radius:3px; font-size:0.8333rem; font-weight:700;}
   .btn:hover{background:var(--surface-2);}
@@ -2923,6 +2931,16 @@ html[data-mode="dark"] .ck-round.green{color:#30D158;} html[data-mode="dark"] .c
 .ck-wi{height:40px; line-height:40px; text-align:center; scroll-snap-align:center; font:400 1.3333rem var(--sans); font-variant-numeric:tabular-nums; color:var(--ink);}
 .ck-unit{font-size:.8333rem; font-weight:600; color:var(--ink-soft); margin-left:-8px; width:28px; position:relative;}
 .ck-wheel:focus-visible{outline:2px solid var(--accent); outline-offset:-2px; border-radius:10px;}
+.tw-pop{position:fixed; z-index:400; padding:10px 12px 12px; border-radius:18px; background:var(--glass-bg-strong); backdrop-filter:blur(24px) saturate(1.6); -webkit-backdrop-filter:blur(24px) saturate(1.6); border:1px solid var(--glass-border); box-shadow:var(--shadow-lg); color:var(--ink); animation:tw-in .16s ease-out;}
+.tw-pop .ck-wheels{padding:4px 0;}
+.tw-pop .ck-wheel:focus, .tw-pop .ck-wheel:focus-visible{outline:none;}
+.tw-pop .ck-wheel{height:160px;}
+.tw-pop .ck-wpad{height:60px;}
+.tw-pop .tw-one .ck-wheel{width:110px;}
+.tw-acts{display:flex; justify-content:flex-end; gap:6px; margin-top:6px;}
+@keyframes tw-in{from{opacity:0; transform:translateY(-4px) scale(.98);}}
+input[type="time"].tw-on, select.tw-on{outline:2px solid var(--accent); outline-offset:1px;}
+@media (hover:hover) and (pointer:fine){ input[type="time"], select[data-wheel]{cursor:pointer;} }
 .ck-presets{display:flex; flex-wrap:wrap; gap:8px; justify-content:center;}
 .ck-chip{min-height:36px; padding:0 14px; border-radius:999px; border:none; background:var(--surface); color:var(--ink); font:500 .8333rem var(--sans); cursor:pointer;}
 .ck-ring{position:relative; width:min(76vw,290px); margin:8px auto 0; aspect-ratio:1; max-width:100%;}
@@ -3271,9 +3289,16 @@ html.lay-off-progress.lay-off-budget #mobile-metrics, html.lay-off-progress.lay-
 .hero-current.hero-tap{cursor:pointer; transition:transform .16s cubic-bezier(.32,.72,0,1);}
 .hero-current.hero-tap:active:not(:has(button:active)){transform:scale(.985);}
 .hero-current.hero-tap:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
-.plan-mode{display:flex; padding:3px; border-radius:12px; background:color-mix(in srgb, var(--ink) 8%, transparent);}
-.plan-mode button{min-height:34px; padding:0 14px; border:none; border-radius:9px; background:transparent; color:var(--ink-soft); font-size:14px; font-weight:600; font-family:inherit; cursor:pointer;}
-.plan-mode button.on{background:var(--accent); color:var(--accent-ink);}
+.plan-mode-row{display:flex; justify-content:center; margin:2px 0 14px;}
+.plan-mode{position:relative; display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; width:min(560px,100%); border-radius:18px; background:color-mix(in srgb, var(--ink) 8%, transparent); border:1px solid var(--border-soft);}
+.plan-mode button{position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; min-height:52px; padding:6px 14px; border:none; border-radius:14px; background:transparent; color:var(--ink-soft); font-family:inherit; cursor:pointer; transition:color .2s ease;}
+.plan-mode button b{font-size:0.9444rem; font-weight:800;}
+.plan-mode button small{font-size:0.7222rem; font-weight:600; opacity:.8;}
+.plan-mode button.on{color:var(--accent-ink);}
+.plan-mode button:not(.on):hover{color:var(--ink);}
+.pm-pill{position:absolute; left:0; top:0; z-index:0; border-radius:14px; pointer-events:none; background:var(--accent); box-shadow:0 6px 16px -8px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.25); will-change:transform;}
+.pm-pill.moving{transition:transform .32s cubic-bezier(.32,.72,0,1), width .32s cubic-bezier(.32,.72,0,1);}
+@media (prefers-reduced-motion:reduce){ .pm-pill.moving{transition:none;} }
 @media (pointer:coarse){ .plan-mode button{min-height:40px;} }
 .hz-scope{display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:13px; color:var(--ink-soft);}
 .hz-seg{display:flex; padding:2px; border-radius:10px; background:color-mix(in srgb, var(--ink) 8%, transparent);}
@@ -3309,6 +3334,8 @@ html.lay-off-progress.lay-off-budget #mobile-metrics, html.lay-off-progress.lay-
 .hz-ghost{position:absolute; left:1px; right:1px; border-radius:5px; border:1.5px dashed var(--c, var(--accent)); background:color-mix(in srgb, var(--c, var(--accent)) 30%, transparent); pointer-events:none; z-index:2;}
 .hz-ghost.erase{border-color:var(--critical); background:var(--critical-soft);}
 .hz-ghost:not([data-lbl])::after{display:none;}
+.hz-hover, .cal-hover{position:absolute; left:0; right:0; height:0; border-top:1.5px solid var(--accent); pointer-events:none; z-index:3;}
+.hz-hover::after, .cal-hover::after{content:attr(data-lbl); position:absolute; left:4px; top:-9px; padding:1px 6px; border-radius:6px; background:var(--accent); color:var(--accent-ink); font:800 11px/16px var(--sans); font-variant-numeric:tabular-nums; white-space:nowrap;}
 .hz-ghost::after{content:attr(data-lbl); position:absolute; left:50%; top:-20px; transform:translateX(-50%); white-space:nowrap; font-size:11px; font-weight:700; padding:2px 6px; border-radius:6px; background:var(--ink); color:var(--bg, #111);}
 .faixa-zone{position:absolute; left:0; right:0; pointer-events:none; z-index:0; border-radius:10px;
   background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--c) 15%, transparent) 0 8px, color-mix(in srgb, var(--c) 9%, transparent) 8px 16px);
@@ -3319,6 +3346,7 @@ html.lay-off-faixas .faixa-zone{display:none;}
 .chip.off-plan{outline:1.5px dashed color-mix(in srgb, var(--ink) 45%, transparent); outline-offset:-1px;}
 .faixa-hint{display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 12px; margin-bottom:12px; border-radius:12px; background:color-mix(in srgb, var(--c) 14%, transparent); border:1px solid color-mix(in srgb, var(--c) 35%, transparent); font-size:14px;}
 .faixa-hint span{flex:1; min-width:150px;}
+.faixa-hint .fh-acts{flex:0 0 auto; min-width:0; display:flex; gap:6px; flex-wrap:wrap;}
 .fx-times .field{flex:1;}
 .fx-dur{margin:2px 0 4px; font-size:14px; color:var(--ink-soft);}
 .fx-dur.bad{color:var(--critical);}
@@ -8648,10 +8676,22 @@ window.addEventListener('keydown', function(e){
     var t={}; for(var i=0;i<7;i++) horasListFor(i).forEach(function(f){ t[f.cat]=(t[f.cat]||0)+(f.e-f.s); }); return t;
   }
   function fmtH(min){ var h=min/60; return (Math.round(h*10)/10).toString().replace('.', ','); }
+
   function planModeHtml(){
-    return '<div class="plan-mode" role="tablist" aria-label="O que planejar">' +
-      '<button type="button" role="tab" data-pmode="afazeres" class="'+(state.planMode!=='horas'?'on':'')+'">Afazeres</button>' +
-      '<button type="button" role="tab" data-pmode="horas" class="'+(state.planMode==='horas'?'on':'')+'">Por categoria</button></div>';
+    var hz=state.planMode==='horas';
+    return '<div class="plan-mode-row"><div class="plan-mode" role="tablist" aria-label="O que planejar">' +
+      '<button type="button" role="tab" aria-selected="'+(!hz)+'" data-pmode="afazeres" class="'+(!hz?'on':'')+'"><b>☑ Afazeres</b><small>o que fazer em cada dia</small></button>' +
+      '<button type="button" role="tab" aria-selected="'+hz+'" data-pmode="horas" class="'+(hz?'on':'')+'"><b>▦ Por categoria</b><small>horários reservados da semana</small></button></div></div>';
+  }
+  var PM_LAST=null;
+  function planModePill(app){
+    var sw=app.querySelector('.plan-mode'), on=sw&&sw.querySelector('button.on'); if(!sw||!on) return;
+    var p=document.createElement('span'); p.className='pm-pill'; p.setAttribute('aria-hidden','true'); sw.insertBefore(p, sw.firstChild);
+    var to={x:on.offsetLeft, w:on.offsetWidth, h:on.offsetHeight, y:on.offsetTop};
+    function put(r){ p.style.width=r.w+'px'; p.style.height=r.h+'px'; p.style.transform='translate('+r.x+'px,'+r.y+'px)'; }
+    var from = (PM_LAST && PM_LAST.x!==to.x) ? PM_LAST : null;
+    put(from||to); PM_LAST=to;
+    if(from){ void p.offsetWidth; p.classList.add('moving'); put(to); }
   }
   function wirePlanMode(app){
     Array.prototype.forEach.call(app.querySelectorAll('[data-pmode]'), function(b){
@@ -8690,11 +8730,11 @@ window.addEventListener('keydown', function(e){
     var hint = state.horasCat==='erase' ? 'Apagar: arraste por cima das faixas que quer tirar.' :
       selCat ? escapeHtml(selCat.name)+' escolhido: arraste na grade para reservar — pra cima/baixo escolhe o horário, pro lado leva pros outros dias. Um toque (sem arrastar) abre para digitar o horário ou editar a faixa.' :
       'Escolha uma categoria e arraste na grade para reservar o horário, ou toque num horário para digitar. Toque numa faixa para mudar ou excluir.';
-    app.innerHTML =
+    app.innerHTML = planModeHtml() +
       '<div class="daytop">' +
         '<div class="daytop-left"><div class="daytop-label">'+(molde?'Molde da semana':'Planejamento · semana de '+longDateLabel(mon))+'</div>' +
           '<div class="daytop-sub mono">'+(molde?'VALE PARA TODA SEMANA':'SÓ ESTA SEMANA · '+isoWeekNum(mon))+'</div></div>' +
-        '<div class="daytop-nav">'+planModeHtml()+
+        '<div class="daytop-nav">'+
           (molde?'':'<button class="navbtn" id="hz-prev" aria-label="Semana anterior">‹</button><button class="today-btn" id="hz-today">Esta semana</button><button class="navbtn" id="hz-next" aria-label="Próxima semana">›</button>') +
         '</div>' +
       '</div>' +
@@ -8707,7 +8747,7 @@ window.addEventListener('keydown', function(e){
         '<div class="hz-grid'+(state.horasCat?' painting':'')+'" style="height:'+(24*HORAS_PX)+'px"><div class="hz-gut">'+hours+'</div>'+cols+'</div></div>' +
         '<button type="button" class="btn hz-add" id="hz-add">＋ Reservar horário digitando</button>' +
       '</div></div>';
-    wirePlanMode(app);
+    wirePlanMode(app); planModePill(app);
     Array.prototype.forEach.call(app.querySelectorAll('[data-hcat]'), function(b){
       b.onclick=function(){ var k=b.getAttribute('data-hcat'); state.horasCat = state.horasCat===k ? null : k; if(window.uiSound) uiSound('pop'); render(); };
     });
@@ -8764,6 +8804,16 @@ window.addEventListener('keydown', function(e){
       if(n>1 && ghosts[i]) ghosts[i].setAttribute('data-lbl', timeOfMinutes(r[0])+'–'+(r[1]>=1440?'24:00':timeOfMinutes(r[1]))+' · '+n+' dias');
     }
     col.addEventListener('pointermove', move);
+
+    var hov=null;
+    col.addEventListener('pointermove', function(e){
+      if(e.pointerType!=='mouse' || e.buttons || startMin!=null){ if(hov){ hov.remove(); hov=null; } return; }
+      var m=Math.min(1425, minAt(e.clientY));
+      if(!hov){ hov=document.createElement('div'); hov.className='hz-hover'; col.appendChild(hov); }
+      hov.style.top=(m/60*HORAS_PX)+'px'; hov.setAttribute('data-lbl', timeOfMinutes(m));
+    });
+    col.addEventListener('pointerleave', function(){ if(hov){ hov.remove(); hov=null; } });
+    col.addEventListener('pointerdown', function(){ if(hov){ hov.remove(); hov=null; } }, true);
     function end(e){
       if(tapY!=null && (Math.abs(e.clientY-tapY)>8 || Math.abs(e.clientX-tapX)>12)) moved=true;
       var wasTap=!moved, tm=tapMin; tapY=null;
@@ -8800,8 +8850,8 @@ window.addEventListener('keydown', function(e){
     modal.innerHTML='<div class="modal-head"><h3>'+(m.orig?'Editar horário':'Reservar horário')+'</h3><button class="iconbtn" id="fx-x" aria-label="Fechar">✕</button></div>' +
       '<div class="modal-body fx-body">' +
         '<div class="field"><label for="fx-cat">Categoria</label><select id="fx-cat" data-cats="1" class="rt-select">'+catOptionsHtml(m.cat)+'</select></div>' +
-        '<div class="field-row fx-times"><div class="field"><label for="fx-s">Começa</label><select id="fx-s" class="rt-select">'+timeOptsHtml(m.s, 0, 1425)+'</select></div>' +
-          '<div class="field"><label for="fx-e">Termina</label><select id="fx-e" class="rt-select">'+timeOptsHtml(m.e, 15, 1440)+'</select></div></div>' +
+        '<div class="field-row fx-times"><div class="field"><label for="fx-s">Começa</label><select id="fx-s" class="rt-select" data-wheel="1">'+timeOptsHtml(m.s, 0, 1425)+'</select></div>' +
+          '<div class="field"><label for="fx-e">Termina</label><select id="fx-e" class="rt-select" data-wheel="1">'+timeOptsHtml(m.e, 15, 1440)+'</select></div></div>' +
         '<p class="fx-dur'+(dur>0?'':' bad')+'">'+(dur>0 ? fmtDuration(dur) : 'O fim precisa ser depois do começo')+'</p>' +
         '<div class="spl-lbl">'+(m.orig?'Também aplicar em':'Em quais dias')+'</div>' +
         '<div class="dow-picker fx-days">'+[0,1,2,3,4,5,6].map(function(j){ return '<button type="button" class="dow-btn'+(m.days[j]?' active':'')+(j===m.i?' own-day':'')+'" data-fxd="'+j+'">'+DOW[DOW_ORDER[j]]+(molde?'':'<small> '+dayNum(dates[j])+'</small>')+'</button>'; }).join('')+'</div>' +
@@ -12635,6 +12685,70 @@ window.addEventListener('keydown', function(e){
   }
   function ckWheelVal(w){ return w ? Math.max(0, Math.round(w.scrollTop/CK_ROW)) : 0; }
 
+  var TW=null;
+  function twClose(apply){
+    if(!TW) return; var t=TW; TW=null;
+    if(apply) t.apply();
+    t.el.remove();
+  }
+  function twFire(el){ el.__edited=true; el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true})); }
+  function twListHtml(id, labels, sel){
+    var items=''; labels.forEach(function(l){ items+='<div class="ck-wi">'+l+'</div>'; });
+    return '<div class="ck-wheel-box"><div class="ck-wheel" id="'+id+'" data-sel="'+sel+'" tabindex="0">'+'<div class="ck-wpad"></div>'+items+'<div class="ck-wpad"></div></div></div>';
+  }
+  function twOpen(field){
+    twClose(true);
+    var isSel = field.tagName==='SELECT', html, apply;
+    var pop=document.createElement('div'); pop.className='tw-pop'; pop.setAttribute('role','dialog'); pop.setAttribute('aria-label','Escolher horário');
+    if(isSel){
+      var labels=Array.prototype.map.call(field.options, function(o){ return o.text; });
+      html='<div class="ck-wheels tw-one">'+twListHtml('tw-l', labels, Math.max(0, field.selectedIndex))+'</div>';
+      apply=function(){ var i=ckWheelVal(pop.querySelector('#tw-l')); if(field.options[i] && field.selectedIndex!==i){ field.selectedIndex=i; twFire(field); } };
+    } else {
+      var v=(field.value||'').split(':'), hh, mm;
+      if(v.length>=2){ hh=+v[0]||0; mm=+v[1]||0; }
+      else { var n=new Date(); hh=n.getHours(); mm=Math.ceil(n.getMinutes()/15)*15; if(mm>=60){ mm=0; hh=(hh+1)%24; } }
+      html='<div class="ck-wheels">'+ckWheelHtml('tw-h',24,hh,'h')+ckWheelHtml('tw-m',60,mm,'min')+'</div>';
+      apply=function(){ var nv=pad2(ckWheelVal(pop.querySelector('#tw-h')))+':'+pad2(ckWheelVal(pop.querySelector('#tw-m'))); if(nv!==field.value){ field.value=nv; twFire(field); } };
+    }
+    pop.innerHTML=html+'<div class="tw-acts"><button type="button" class="btn ghost small" data-tw="x">Cancelar</button><button type="button" class="btn primary small" data-tw="ok">OK</button></div>';
+    document.body.appendChild(pop);
+    Array.prototype.forEach.call(pop.querySelectorAll('.ck-wheel'), ckWheelInit);
+    pop.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+    pop.addEventListener('click', function(e){ e.stopPropagation(); });
+    pop.querySelector('[data-tw="ok"]').onclick=function(){ twClose(true); };
+    pop.querySelector('[data-tw="x"]').onclick=function(){ twClose(false); };
+    var r=field.getBoundingClientRect(), W=pop.offsetWidth, H=pop.offsetHeight;
+    pop.style.left=Math.max(8, Math.min(r.left + r.width/2 - W/2, innerWidth-W-8))+'px';
+    pop.style.top=(r.bottom+H+8>innerHeight ? Math.max(8, r.top-H-6) : r.bottom+6)+'px';
+    TW={el:pop, field:field, apply:apply};
+    field.classList.add('tw-on');
+    var w0=pop.querySelector('.ck-wheel'); if(w0) try{ w0.focus({preventScroll:true}); }catch(_){}
+    var orig=TW.el; var rm=function(){ field.classList.remove('tw-on'); };
+    var obs=setInterval(function(){ if(!orig.isConnected){ clearInterval(obs); rm(); } else if(!field.isConnected){ clearInterval(obs); twClose(false); } }, 250);
+  }
+  function twTarget(t){
+    if(!t || !t.closest) return null;
+    var el=t.closest('input[type="time"], select[data-wheel]');
+    if(!el || el.disabled || el.readOnly) return null;
+    return el;
+  }
+  document.addEventListener('pointerdown', function(e){
+    if(TW && !TW.el.contains(e.target)){ var same=twTarget(e.target)===TW.field; twClose(true); if(same){ e.preventDefault(); return; } }
+    if(e.pointerType==='touch' || e.button!==0) return;
+    var f=twTarget(e.target); if(!f) return;
+    e.preventDefault();
+    twOpen(f);
+  }, true);
+
+  document.addEventListener('mousedown', function(e){ if(twTarget(e.target) && e.button===0 && !(e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents)) e.preventDefault(); }, true);
+  document.addEventListener('keydown', function(e){
+    if(!TW) return;
+    if(e.key==='Escape'){ e.preventDefault(); e.stopPropagation(); twClose(false); }
+    else if(e.key==='Enter'){ e.preventDefault(); e.stopPropagation(); twClose(true); }
+  }, true);
+  window.addEventListener('resize', function(){ twClose(true); });
+
   function wireClock(app){
     [].forEach.call(app.querySelectorAll('[data-ckgo]'), function(b){ b.onclick=function(){ setView('ck-'+b.getAttribute('data-ckgo')); }; });
     var t=CK.tab;
@@ -13479,15 +13593,23 @@ window.addEventListener('keydown', function(e){
     var holidayHtml = badges.length ? '<div class="daytop-badges">'+badges.map(function(b){
       return '<div class="daytop-badge" style="color:'+b.color+'; background:'+b.soft+';">'+b.icon+' '+escapeHtml(b.label)+'</div>';
     }).join('')+'</div>' : '';
+
+    var selChip = '<span class="sel-chip"><i></i>'+(d===todayStr()?'Hoje · ':'Selecionado: ')+weekdayLabel(d).toLowerCase()+', '+dayNum(d)+' de '+monthNameOf(d)+'</span>';
     var left = isWeek ?
-      ('<div class="daytop-label">Semana de '+longDateLabel(startOfWeek(d))+'</div><div class="daytop-sub mono">'+weekLabel+'</div>') :
+      ('<div class="daytop-label">Semana de '+longDateLabel(startOfWeek(d))+'</div><div class="daytop-sub mono">'+weekLabel+'</div>'+selChip) :
       ('<div class="daytop-num">'+dayNum(d)+'</div><div><div class="daytop-label">'+weekdayLabel(d)+', '+monthNameOf(d)+'</div><div class="daytop-sub mono">'+weekLabel+'</div>'+holidayHtml+'</div>');
     var shift = (!isWeek && d===todayStr()) ? dayShiftInfo() : null;
     return '<div class="daytop">' +
       '<div class="daytop-left">'+left+'</div>' +
       '<div class="daytop-nav">' +
         (shift ? '<button class="btn small" id="nav-reflow" title="'+escapeHtml(shift.title)+'">↻ Reencaixar o dia ('+shift.label+')</button>' : '') +
-        '<button class="navbtn" id="nav-prev">‹</button><button class="today-btn" id="nav-today">Hoje</button><button class="navbtn" id="nav-next">›</button>' +
+
+        '<div class="navstep" role="group" aria-label="'+(isWeek?'Trocar de semana':'Trocar de dia')+'">' +
+          '<button class="navbtn" id="nav-prev" aria-label="'+(isWeek?'Semana anterior':'Dia anterior')+'">‹</button>' +
+          '<span class="navstep-lbl">'+(isWeek ? 'Semana '+isoWeekNum(d) : weekdayLabel(d).slice(0,3).toLowerCase()+' '+dayNum(d))+'</span>' +
+          '<button class="navbtn" id="nav-next" aria-label="'+(isWeek?'Próxima semana':'Próximo dia')+'">›</button>' +
+        '</div>' +
+        '<button class="today-btn'+(d===todayStr()?' is-here':'')+'" id="nav-today">'+(d===todayStr()?'Hoje':'Ir para hoje')+'</button>' +
       '</div>' +
     '</div>';
   }
@@ -14178,9 +14300,8 @@ window.addEventListener('keydown', function(e){
         var m2=minFromY(y); s=Math.min(m1,m2); e=Math.max(m1,m2);
         if(e-s<15) e=s+15;
       } else {
+
         s=m1; e=m1+60;
-        var fx=faixaAt(d, s), gap=fx ? faixaGap(d, s) : null;
-        if(gap){ s=gap.s; e=gap.e; }
       }
       return {s:s, e:e};
     }
@@ -14203,12 +14324,20 @@ window.addEventListener('keydown', function(e){
       showPreview(e.clientX, e.clientY);
     });
     col.addEventListener('pointermove', function(e){
-      if(!dragging){ if(e.pointerType==='mouse' && e.target===col) GRID_HOVER={col:col, d:d, min:minFromY(e.clientY)}; return; }
+      if(!dragging){
+        if(e.pointerType==='mouse' && e.target===col && !e.buttons){
+          var hm=minFromY(e.clientY); GRID_HOVER={col:col, d:d, min:hm};
+          if(!col.__hov){ col.__hov=document.createElement('div'); col.__hov.className='cal-hover'; col.appendChild(col.__hov); }
+          col.__hov.style.top=yForMinute(hm)+'px'; col.__hov.setAttribute('data-lbl', timeOfMinutes(hm));
+        } else if(col.__hov){ col.__hov.remove(); col.__hov=null; }
+        return;
+      }
       if(Math.abs(e.clientY-startY)>4){ moved=true; dragActive=true; }
       showPreview(e.clientX, e.clientY);
       if(moved) gasUpdate(e.clientX, e.clientY, function(x, y){ showPreview(x, y); });
     });
-    col.addEventListener('pointerleave', function(){ if(GRID_HOVER && GRID_HOVER.col===col) GRID_HOVER=null; });
+    col.addEventListener('pointerleave', function(){ if(GRID_HOVER && GRID_HOVER.col===col) GRID_HOVER=null; if(col.__hov){ col.__hov.remove(); col.__hov=null; } });
+    col.addEventListener('pointerdown', function(){ if(col.__hov){ col.__hov.remove(); col.__hov=null; } }, true);
     col.addEventListener('contextmenu', function(e){
       if(e.target!==col) return;
       e.preventDefault();
@@ -14222,9 +14351,9 @@ window.addEventListener('keydown', function(e){
       clearPreview();
       if(restHits(d, startMin, endMin)){ restSay(d); return; }
 
-      var fx = faixaAt(d, startMin);
+      var fx = faixaAt(d, startMin), gap = fx ? faixaGap(d, startMin) : null;
       openModal({type:'create', date:d, start:timeOfMinutes(startMin), end:endMin>=1440?'23:59':timeOfMinutes(endMin), fromGrid:true,
-        faixa: fx ? {cat:fx.cat, s:startMin, e:endMin} : null});
+        faixa: fx ? {cat:fx.cat, s:startMin, e:endMin, gs:gap?gap.s:null, ge:gap?gap.e:null} : null});
     }
     col.addEventListener('pointerup', finish);
     col.addEventListener('pointercancel', function(){ dragging=false; dragActive=false; clearPreview(); });
@@ -14902,11 +15031,11 @@ window.addEventListener('keydown', function(e){
           '<button class="pl-add" data-pd="'+d+'" data-pp="'+bd.k+'" title="Novo afazer aqui">+</button></div>';
       });
     });
-    app.innerHTML =
+    app.innerHTML = planModeHtml() +
       '<div class="daytop">' +
         '<div class="daytop-left"><div class="daytop-label">Planejamento · semana de '+longDateLabel(monday)+'</div>' +
           '<div class="daytop-sub mono">SEMANA '+isoWeekNum(monday)+' · '+isoWeekYear(monday)+'</div></div>' +
-        '<div class="daytop-nav">'+planModeHtml()+planCarryBtnHtml(monday)+'<button class="btn primary pl-newcheck" id="pl-newcheck" title="Novo afazer no &quot;sem dia&quot; desta semana — depois é só arrastar pro dia e período">+ Novo afazer</button><button class="navbtn" id="pl-prev">‹</button><button class="today-btn" id="pl-today">Esta semana</button><button class="navbtn" id="pl-next">›</button></div>' +
+        '<div class="daytop-nav">'+planCarryBtnHtml(monday)+'<button class="btn primary pl-newcheck" id="pl-newcheck" title="Novo afazer no &quot;sem dia&quot; desta semana — depois é só arrastar pro dia e período">+ Novo afazer</button><button class="navbtn" id="pl-prev">‹</button><button class="today-btn" id="pl-today">Esta semana</button><button class="navbtn" id="pl-next">›</button></div>' +
       '</div>' +
       '<div class="panel"><div class="plan-scroll"><div class="plan-grid" style="--pl-nd-w:'+lsNum('agenda-plan-nd-w', 132)+'px;">'+cells+'</div></div>' +
         '<div class="plan-legend"><span>afazer = borda tracejada, arrasta pela alça ⋮⋮</span><span>bloco = barra colorida da categoria</span><span>📍 compromisso</span><span>clique numa célula vazia pra criar um afazer ali</span></div>' +
@@ -14916,7 +15045,7 @@ window.addEventListener('keydown', function(e){
       max:function(){ var sc=app.querySelector('.plan-scroll'); return Math.max(132, Math.min(520, (sc?sc.clientWidth:900)-58-7*96)); },
       widthAt:function(x, r){ return x - r.left; }});
 
-    wirePlanMode(app);
+    wirePlanMode(app); planModePill(app);
     document.getElementById('pl-newcheck').onclick=function(){ openModal({type:'createCheck', preDate:null, prePeriod:null}); };
     var plCarry=document.getElementById('pl-carry');
     if(plCarry) plCarry.onclick=function(){ openModal({type:'carry', monday:monday}); };
@@ -14944,11 +15073,40 @@ window.addEventListener('keydown', function(e){
         if(ttl) ttl.onclick=function(e){ e.stopPropagation(); openModal({type:'editCheck', item:c}); };
         var grip=card.querySelector('.drag-grip');
         if(grip) wirePlanDrag(grip, {id:c.id, title:c.title, card:card});
+        card.addEventListener('contextmenu', function(e){ e.preventDefault(); e.stopPropagation(); planCheckMenu(c, e.clientX, e.clientY); });
       } else {
         var b = state.weekBlocks.filter(function(x){return x.id===id;})[0];
         if(!b) return;
         card.onclick=function(){ openModal({type:'detail', block:b}); };
+
+        card.addEventListener('contextmenu', function(e){
+          e.preventDefault(); e.stopPropagation();
+          var canMove = b.status==='pending' && !b.isLoose && !isOverdue(b), canCopy = b.status!=='running';
+          gridChipMenu({kind:'block', b:b}, canMove, canCopy, e.clientX, e.clientY);
+        });
       }
+    });
+  }
+
+  function planCheckMenu(c, x, y){
+    var mon=startOfWeek(state.selectedDate), ds=weekDates(mon);
+    var dias = ds.map(function(d){ return '<button type="button" class="nt-mi ag-cat'+(c.date===d?' on':'')+'" data-gd="'+d+'"><span class="nt-mi-i">'+dayNum(d)+'</span><span class="nt-mi-t">'+weekdayLabel(d)+(d===todayStr()?' · hoje':'')+'</span></button>'; }).join('') +
+      '<button type="button" class="nt-mi ag-cat'+(!c.date?' on':'')+'" data-gd="nd"><span class="nt-mi-i">—</span><span class="nt-mi-t">Sem dia definido</span></button>';
+    var html = gmi('open','✎','Editar') +
+      gmi('done', c.done?'↺':'✓', c.done?'Desmarcar feito':'Marcar como feito') +
+      gmi('move','→','Mover para ▸') + '<div class="ag-catlist ag-days" hidden>'+dias+'</div>' +
+      '<div class="nt-pop-sep"></div>' + gmi('del','🗑','Excluir',' danger');
+    gridMenuOpen(x, y, html, function(m){
+      var q=function(k){ return m.querySelector('[data-gm="'+k+'"]'); };
+      q('open').onclick=function(){ gridMenuClose(); openModal({type:'editCheck', item:c}); };
+      q('done').onclick=function(){ gridMenuClose(); toggleCheck(c); };
+      q('move').onclick=function(){ var l=m.querySelector('.ag-days'); l.hidden=!l.hidden; };
+      Array.prototype.forEach.call(m.querySelectorAll('[data-gd]'), function(bt){ bt.onclick=function(){
+        gridMenuClose(); var d=bt.getAttribute('data-gd');
+        if(d==='nd'){ if(c.date) updateCheck(c.id, {date:null, week:mon}); showToast('Movido para "Sem dia definido".', '→'); }
+        else if(d!==c.date){ updateCheck(c.id, {date:d}); showToast('Movido para '+weekdayLabel(d).toLowerCase()+', '+dayNum(d)+'.', '→'); }
+      }; });
+      wireArmConfirm(q('del'), 'Excluir? Clique de novo', function(){ gridMenuClose(); deleteCheck(c.id); showToast('Excluído.', '🗑'); });
     });
   }
 
@@ -17665,7 +17823,8 @@ window.addEventListener('keydown', function(e){
     modal.innerHTML = '<div class="modal-head"><h3>Novo bloco</h3><button class="iconbtn" data-act="close">✕</button></div>' +
       '<div class="modal-body">' +
         (m.fromGrid && !from ? gridKindSwitchHtml('block') : '') +
-        (fxCat ? '<div class="faixa-hint" style="--c:'+fxCat.color+'"><span>Horário reservado para <b>'+escapeHtml(fxCat.name)+'</b></span><button type="button" class="btn small" id="f-split">Dividir em blocos</button></div>' : '') +
+        (fxCat ? '<div class="faixa-hint" style="--c:'+fxCat.color+'"><span>Horário reservado para <b>'+escapeHtml(fxCat.name)+'</b>'+(m.faixa.gs!=null?' · livre '+timeOfMinutes(m.faixa.gs)+'–'+(m.faixa.ge>=1440?'24:00':timeOfMinutes(m.faixa.ge)):'')+'</span>' +
+          '<span class="fh-acts">'+(m.faixa.gs!=null ? '<button type="button" class="btn small" id="f-fill">Ocupar o horário livre</button>' : '')+'<button type="button" class="btn small" id="f-split">Dividir em blocos</button></span></div>' : '') +
         (from ? '<div class="create-from-list">'+(from.kind==='check' ? '☑ Vindo dos afazeres — continua na lista, marcado como planejado.' : '↳ Tarefa solta ganhando horário — continua sendo a mesma tarefa.')+'</div>' : '') +
         '<div class="field"><label>Categoria</label><select data-cats="1" id="f-cat">'+catOptionsHtml(firstCat)+'</select></div>' +
         '<div class="field"><label>Título (opcional)</label><input id="f-title" type="text" placeholder="ex: Renders FarmShow" value="'+escapeHtml(preTitle)+'"></div>' +
@@ -17688,9 +17847,18 @@ window.addEventListener('keydown', function(e){
       '</div>';
     Array.prototype.forEach.call(modal.querySelectorAll('[data-act=close]'), function(x){ x.onclick=closeModal; });
     wireGridKindSwitch(modal, m);
+    var fill=modal.querySelector('#f-fill');
+    if(fill) fill.onclick=function(){
+      var fs=modal.querySelector('#f-start'), fe=modal.querySelector('#f-end');
+      fs.value=timeOfMinutes(m.faixa.gs); fe.value=m.faixa.ge>=1440?'23:59':timeOfMinutes(m.faixa.ge);
+      [fs,fe].forEach(function(x){ x.__edited=true; x.dispatchEvent(new Event('input',{bubbles:true})); x.dispatchEvent(new Event('change',{bubbles:true})); });
+      showToast('Ocupando '+fs.value+'–'+fe.value+'.', '✓');
+    };
     var spb=modal.querySelector('#f-split');
     if(spb) spb.onclick=function(){
       var d=modal.querySelector('#f-date').value||m.date, s=minutesOf(modal.querySelector('#f-start').value||m.start), e=minutesOf(modal.querySelector('#f-end').value||m.end);
+
+      if(m.faixa && m.faixa.gs!=null){ s=m.faixa.gs; e=m.faixa.ge; }
       if(e<=s) e=1440;
       openModal({type:'split', date:d, s:s, e:e, cat:modal.querySelector('#f-cat').value||m.faixa.cat, title:(modal.querySelector('#f-title').value||'')});
     };
