@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261112-144830';</script>
+<script>window.AGENDA_BUILD = '20261112-150027';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261112-144830"></script>
+<script src="cloud.js?v=20261112-150027"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -13765,10 +13765,20 @@ window.addEventListener('keydown', function(e){
     });
   }
 
-  function fitChipTime(chip, narrow){
-    if(chip.scrollHeight <= chip.clientHeight + 1) return;
+  function chipFits(chip){
+    var r=chip.getBoundingClientRect(), lim=r.bottom-1, ok=true;
+    Array.prototype.forEach.call(chip.children, function(el){
+      if(!ok || el.classList.contains('chip-check') || el.classList.contains('chip-skip') || el.classList.contains('chip-resize') || el.classList.contains('chip-lock')) return;
+      if(getComputedStyle(el).display==='none') return;
 
-    var pj=chip.querySelector('.s-proj'); if(pj){ pj.remove(); if(chip.scrollHeight <= chip.clientHeight + 1) return; }
+      if(el.getBoundingClientRect().bottom > lim || el.scrollHeight > el.clientHeight + 1) ok=false;
+    });
+    return ok && chip.scrollHeight <= chip.clientHeight + 1;
+  }
+  function fitChipTime(chip, narrow){
+    if(chipFits(chip)) return;
+
+    var pj=chip.querySelector('.s-proj'); if(pj){ pj.remove(); if(chipFits(chip)) return; }
     chip.classList.add('chip-compact');
     if(narrow){ var st=chip.querySelector('.s-time'); if(st) st.remove(); }
   }
