@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261112-142631';</script>
+<script>window.AGENDA_BUILD = '20261112-143507';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261112-142631"></script>
+<script src="cloud.js?v=20261112-143507"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -286,6 +286,17 @@
   .iconbtn:hover{background:var(--border-soft); filter:brightness(0.98);}
   .iconbtn.accent{background:var(--accent); color:var(--accent-ink);}
   .main-grid{display:grid; grid-template-columns:1fr 300px; gap:16px; align-items:start;}
+  .main-grid:not(.week){grid-template-columns:minmax(0,1fr) var(--side-w,300px); position:relative;}
+  .split-handle{position:absolute; z-index:5; touch-action:none; display:flex; align-items:center; justify-content:center;}
+  .split-v{top:0; bottom:0; width:16px; cursor:ew-resize;}
+  .split-v::before{content:''; position:absolute; top:6px; bottom:6px; left:50%; width:2px; margin-left:-1px; border-radius:1px; background:var(--border); opacity:0; transition:opacity .15s ease;}
+  .split-v:hover::before, .split-v.on::before{opacity:1; background:var(--accent);}
+  .split-handle > span{position:sticky; top:45vh; width:8px; height:36px; border-radius:4px; background:var(--ink-faint); opacity:.5; box-shadow:0 0 0 3px var(--surface); transition:opacity .15s ease, background .15s ease;}
+  .split-handle:hover > span, .split-handle.on > span{opacity:1; background:var(--accent);}
+  .day-split{right:calc(var(--side-w,300px) + 0px); width:16px;}
+  body.splitting, body.splitting *{cursor:ew-resize!important; user-select:none!important; -webkit-user-select:none!important;}
+  .pl-nd-split{right:-9px; width:16px;}
+  @media (max-width:860px){ .split-handle{display:none!important;} }
   @media (max-width:860px){ .main-grid{grid-template-columns:1fr;} }
   .main-grid.week{grid-template-columns:1fr;}
   .main-grid.week .side{display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start; margin-top:12px;}
@@ -657,7 +668,7 @@
   .check-band[data-band="n"]{border-left-color:var(--sky-rose); background-image:linear-gradient(180deg, color-mix(in srgb, var(--sky-dusk) var(--sky-a), transparent), color-mix(in srgb, var(--sky-rose) var(--sky-a), transparent) 45%, color-mix(in srgb, var(--sky-night) var(--sky-a), transparent));}
   .check-band.drop-target{background-image:none;}
   .plan-scroll{overflow-x:auto; overflow-y:visible; -webkit-overflow-scrolling:touch;}
-  .plan-grid{display:grid; grid-template-columns:132px 58px repeat(7, minmax(126px,1fr)); min-width:min-content; align-items:stretch;}
+  .plan-grid{display:grid; grid-template-columns:var(--pl-nd-w,132px) 58px repeat(7, minmax(126px,1fr)); min-width:min-content; align-items:stretch;}
   .pl-corner{position:sticky; left:0; z-index:3; background:var(--surface); border-bottom:1px solid var(--border);}
   .pl-dayhead{padding:7px 8px; border-bottom:1px solid var(--border); border-left:1px solid var(--border-soft); background:var(--surface); text-align:left; display:flex; flex-direction:column; gap:1px; min-width:0;}
   .pl-dayhead .pd-dow{font-family:var(--mono);font-variant-numeric:tabular-nums; font-size:0.6111rem; text-transform:none; letter-spacing:0; color:var(--ink-faint); font-weight:700;}
@@ -685,6 +696,8 @@
   @media (max-width:700px){ .daytop-nav{flex-wrap:wrap; row-gap:6px;} }
   .pl-card{display:flex; align-items:flex-start; gap:4px; padding:4px 5px; border-radius:8px; background:var(--surface); border:1px solid var(--border-soft); font-size:0.7222rem; line-height:1.25; min-width:0;}
   .pl-card .pl-title{flex:1; min-width:0; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow-wrap:anywhere;}
+  .pl-cell.nd .pl-card .pl-title{-webkit-line-clamp:unset; display:block;}
+  .pl-cell.nd .pl-card{font-size:0.8333rem; line-height:1.3;}
   .pl-card .pl-t{font-size:0.6667rem; color:var(--ink-faint);}
   .pl-card.block{border-left:3px solid var(--pl-c, var(--border));}
   .pl-card.block.status-done{background:var(--success-soft);}
@@ -13039,7 +13052,8 @@ window.addEventListener('keydown', function(e){
       (isWeek ? '' : wakeStripHtml(state.selectedDate)) +
       (isWeek ? '' : habitsStripHtml(state.selectedDate)) +
       (isWeek ? weekStatCardsHtml() : dayPieHtml(state.selectedDate)) +
-      '<div class="main-grid'+(isWeek?' week':'')+'">' +
+      '<div class="main-grid'+(isWeek?' week':'')+'"'+(isWeek?'':' style="--side-w:'+lsNum('agenda-day-side-w', 300)+'px;"')+'>' +
+        (isWeek ? '' : '<div class="split-handle split-v day-split" title="Arraste pra dar mais espaço à grade ou aos afazeres · duplo clique volta ao padrão"><span></span></div>') +
         '<div>' +
           '<div class="cal-shell">' +
             '<div class="cal-scroll" id="cal-scroll">' +
@@ -13057,6 +13071,12 @@ window.addEventListener('keydown', function(e){
       '</div>' +
       '<div class="notes-strip" id="notes-strip"></div>';
     wireNav(isWeek);
+    if(!isWeek){
+      var mg=app.querySelector('.main-grid');
+      wireSplitter(app.querySelector('.day-split'), {host:mg, cssVar:'--side-w', key:'agenda-day-side-w', min:260,
+        max:function(hw){ return Math.max(260, hw-356); },
+        widthAt:function(x, r){ return r.right - x - 8; }});
+    }
     if(!isWeek){ wireDayPie(app, state.selectedDate); wireHabitsStrip(app, state.selectedDate); wireWakeStrip(app, state.selectedDate); }
     document.getElementById('btn-add-loose').onclick=function(){ openModal({type:'createLoose'}); };
     pnWireTray(app);
@@ -14557,6 +14577,36 @@ window.addEventListener('keydown', function(e){
     var n = carryCandidates(monday).length; if(!n) return '';
     return '<button class="btn pl-carry" id="pl-carry" title="Pendentes da semana de '+longDateLabel(addDays(monday,-7))+' que ainda não foram feitos nem trazidos">📥 '+n+(n===1?' pendente':' pendentes')+' da semana passada</button>';
   }
+
+  function lsNum(k, def){ try{ var v=parseFloat(localStorage.getItem(k)); return isFinite(v) ? v : def; }catch(_){ return def; } }
+  function lsPut(k, v){ try{ if(v==null) localStorage.removeItem(k); else localStorage.setItem(k, String(Math.round(v))); }catch(_){} }
+  function wireSplitter(handle, o){
+
+    if(!handle) return;
+    var on=false;
+    function clamp(w, hw){ return Math.max(o.min, Math.min(w, o.max(hw))); }
+    handle.addEventListener('pointerdown', function(e){
+      e.preventDefault(); e.stopPropagation();
+      on=true; dragActive=true; handle.__w=null; handle.classList.add('on'); document.body.classList.add('splitting');
+      try{ handle.setPointerCapture(e.pointerId); }catch(_){}
+    });
+    handle.addEventListener('pointermove', function(e){
+      if(!on) return;
+      var r=o.host.getBoundingClientRect();
+      var w=clamp(o.widthAt(e.clientX, r), r.width);
+      o.host.style.setProperty(o.cssVar, w+'px'); handle.__w=w;
+    });
+    function end(){
+      if(!on) return;
+      on=false; dragActive=false; handle.classList.remove('on'); document.body.classList.remove('splitting');
+
+      if(handle.__w!=null){ lsPut(o.key, handle.__w); render(); }
+    }
+    handle.addEventListener('pointerup', end);
+    handle.addEventListener('pointercancel', end);
+    handle.addEventListener('dblclick', function(e){ e.preventDefault(); lsPut(o.key, null); render(); });
+  }
+
   function renderPlan(app){
     if(state.planMode==='horas'){ renderHoras(app); return; }
 
@@ -14578,6 +14628,7 @@ window.addEventListener('keydown', function(e){
     });
     var ndItems = planNdItems(monday);
     cells += '<div class="pl-cell nd" data-pd="nd" data-pp="">' +
+      '<div class="split-handle split-v pl-nd-split" title="Arraste pra alargar o &quot;Sem dia definido&quot; · duplo clique volta ao padrão"><span></span></div>' +
       (ndItems.length ? ndItems.map(function(x){ return planCardHtml(x.kind, x.it); }).join('') : '<div class="empty-hint" style="font-size:.7rem;">nada solto</div>') +
       '<button class="pl-add nd-add" data-pd="nd" data-pp="">+ afazer</button></div>';
     bands.forEach(function(bd, bi){
@@ -14595,9 +14646,13 @@ window.addEventListener('keydown', function(e){
           '<div class="daytop-sub mono">SEMANA '+isoWeekNum(monday)+' · '+isoWeekYear(monday)+'</div></div>' +
         '<div class="daytop-nav">'+planModeHtml()+planCarryBtnHtml(monday)+'<button class="btn primary pl-newcheck" id="pl-newcheck" title="Novo afazer no &quot;sem dia&quot; desta semana — depois é só arrastar pro dia e período">+ Novo afazer</button><button class="navbtn" id="pl-prev">‹</button><button class="today-btn" id="pl-today">Esta semana</button><button class="navbtn" id="pl-next">›</button></div>' +
       '</div>' +
-      '<div class="panel"><div class="plan-scroll"><div class="plan-grid">'+cells+'</div></div>' +
+      '<div class="panel"><div class="plan-scroll"><div class="plan-grid" style="--pl-nd-w:'+lsNum('agenda-plan-nd-w', 132)+'px;">'+cells+'</div></div>' +
         '<div class="plan-legend"><span>afazer = borda tracejada, arrasta pela alça ⋮⋮</span><span>bloco = barra colorida da categoria</span><span>📍 compromisso</span><span>clique numa célula vazia pra criar um afazer ali</span></div>' +
       '</div>';
+    var pg=app.querySelector('.plan-grid');
+    wireSplitter(app.querySelector('.pl-nd-split'), {host:pg, cssVar:'--pl-nd-w', key:'agenda-plan-nd-w', min:132,
+      max:function(){ var sc=app.querySelector('.plan-scroll'); return Math.max(132, Math.min(520, (sc?sc.clientWidth:900)-58-2*126)); },
+      widthAt:function(x, r){ return x - r.left; }});
 
     wirePlanMode(app);
     document.getElementById('pl-newcheck').onclick=function(){ openModal({type:'createCheck', preDate:null, prePeriod:null}); };
