@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261112-141322';</script>
+<script>window.AGENDA_BUILD = '20261112-141827';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261112-141322"></script>
+<script src="cloud.js?v=20261112-141827"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -1932,6 +1932,9 @@ button.sb-pn-stat:hover{background:var(--hover-glass, rgba(239,231,216,.1));}
 .pn-tray-hint{font-size:0.6667rem; color:var(--ink-faint); padding:6px 4px 0; line-height:1.4;}
 .pn-tray-ghost{position:fixed; z-index:300; pointer-events:none; max-width:240px; padding:7px 12px; border-radius:12px; background:var(--accent); color:var(--accent-ink); font-size:0.7222rem; font-weight:700; box-shadow:var(--shadow-lg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .ghost-range[data-label]::after{content:attr(data-label); position:absolute; left:6px; top:3px; font-family:var(--mono);font-variant-numeric:tabular-nums; font-size:0.6111rem; font-weight:700; color:var(--ink);}
+.grid-time-tip{position:fixed; z-index:300; pointer-events:none; display:flex; align-items:center; gap:10px; padding:8px 14px; border-radius:14px; background:var(--glass-bg-strong); backdrop-filter:blur(20px) saturate(1.6); -webkit-backdrop-filter:blur(20px) saturate(1.6); border:1px solid var(--border); color:var(--ink); font-size:0.8333rem; box-shadow:var(--shadow-lg); white-space:nowrap; font-variant-numeric:tabular-nums;}
+.grid-time-tip b{font-weight:800; color:var(--accent);}
+.grid-time-tip .gtt-dur{color:var(--ink-soft); font-weight:700; padding-left:10px; border-left:1px solid var(--border);}
 .pn-due-line{color:var(--critical);}
 .pn-hero-hours{font-weight:600; color:var(--ink-soft);}
 @media (max-width:860px){
@@ -13811,47 +13814,65 @@ window.addEventListener('keydown', function(e){
   }
 
   function wireColumnCreate(col, d){
-    var dragging=false, startY=0, ghost=null, moved=false;
+    var dragging=false, startY=0, ghost=null, tip=null, moved=false;
     function minFromY(y){
       var rect=col.getBoundingClientRect();
       var rel = y-rect.top;
       var min = minuteForY(rel);
       return snapMin(Math.max(0,Math.min(min,(DAY_END-DAY_START)*60-5)),15);
     }
+    function createRange(y){
+      var m1=minFromY(startY), s, e;
+      if(moved){
+        var m2=minFromY(y); s=Math.min(m1,m2); e=Math.max(m1,m2);
+        if(e-s<15) e=s+15;
+      } else {
+        s=m1; e=m1+60;
+        var fx=faixaAt(d, s), gap=fx ? faixaGap(d, s) : null;
+        if(gap){ s=gap.s; e=gap.e; }
+      }
+      return {s:s, e:e};
+    }
+    function hhmm(m){ return m>=1440 ? '23:59' : timeOfMinutes(m); }
+    function showPreview(cx, cy){
+      var r=createRange(cy);
+      if(!ghost){ ghost=document.createElement('div'); ghost.className='ghost-range'; col.appendChild(ghost); }
+      ghost.style.top=yForMinute(r.s)+'px';
+      ghost.style.height=Math.max(yForMinute(r.e)-yForMinute(r.s), 14)+'px';
+      ghost.setAttribute('data-label', hhmm(r.s)+'–'+hhmm(r.e));
+      if(!tip){ tip=document.createElement('div'); tip.className='grid-time-tip'; tip.setAttribute('role','status'); document.body.appendChild(tip); }
+      tip.innerHTML='<span>Início <b>'+hhmm(r.s)+'</b></span><span>Fim <b>'+hhmm(r.e)+'</b></span><span class="gtt-dur">'+fmtDuration(r.e-r.s)+'</span>';
+      var w=tip.offsetWidth||200, x=Math.max(8, Math.min(cx-w/2, window.innerWidth-w-8));
+      var y=cy-62; if(y<8) y=cy+28;
+      tip.style.left=x+'px'; tip.style.top=y+'px';
+    }
+    function clearPreview(){ if(ghost){ ghost.remove(); ghost=null; } if(tip){ tip.remove(); tip=null; } }
     col.addEventListener('pointerdown', function(e){
       if(e.target!==col) return;
       e.preventDefault();
       dragging=true; moved=false; startY=e.clientY;
       col.setPointerCapture(e.pointerId);
+      showPreview(e.clientX, e.clientY);
     });
     col.addEventListener('pointermove', function(e){
       if(!dragging) return;
       if(Math.abs(e.clientY-startY)>4){ moved=true; dragActive=true; }
-      var m1=minFromY(startY), m2=minFromY(e.clientY);
-      var lo=Math.min(m1,m2), hi=Math.max(m1,m2);
-      if(hi-lo<15) hi=lo+15;
-      if(!ghost){ ghost=document.createElement('div'); ghost.className='ghost-range'; col.appendChild(ghost); }
-      ghost.style.top=yForMinute(lo)+'px';
-      ghost.style.height=(yForMinute(hi)-yForMinute(lo))+'px';
+      showPreview(e.clientX, e.clientY);
     });
     function finish(e){
       if(!dragging) return;
       dragging=false;
       dragActive=false;
-      var startMin = minFromY(startY);
-      var endMin;
-      if(moved && ghost){ var m2=minFromY(e.clientY); endMin=Math.max(startMin,m2); if(endMin-startMin<15) endMin=startMin+15; }
-      else { endMin=startMin+60; }
-      if(ghost){ ghost.remove(); ghost=null; }
+      var r=createRange(e.clientY), startMin=r.s, endMin=r.e;
+      clearPreview();
       if(restHits(d, startMin, endMin)){ restSay(d); return; }
 
-      var fx = faixaAt(d, startMin), gap = (!moved && fx) ? faixaGap(d, startMin) : null;
-      if(gap){ startMin=gap.s; endMin=gap.e; }
+      var fx = faixaAt(d, startMin);
       openModal({type:'create', date:d, start:timeOfMinutes(startMin), end:endMin>=1440?'23:59':timeOfMinutes(endMin), fromGrid:true,
         faixa: fx ? {cat:fx.cat, s:startMin, e:endMin} : null});
     }
     col.addEventListener('pointerup', finish);
-    col.addEventListener('pointercancel', function(){ dragging=false; dragActive=false; if(ghost){ghost.remove(); ghost=null;} });
+    col.addEventListener('pointercancel', function(){ dragging=false; dragActive=false; clearPreview(); });
   }
 
   function sidebarProgressHtml(){
