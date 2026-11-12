@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261112-150027';</script>
+<script>window.AGENDA_BUILD = '20261112-150802';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261112-150027"></script>
+<script src="cloud.js?v=20261112-150802"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -3308,6 +3308,7 @@ html.lay-off-progress.lay-off-budget #mobile-metrics, html.lay-off-progress.lay-
 .hz-f span{font-size:10px; font-weight:700; line-height:1.1; color:var(--ink); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .hz-ghost{position:absolute; left:1px; right:1px; border-radius:5px; border:1.5px dashed var(--c, var(--accent)); background:color-mix(in srgb, var(--c, var(--accent)) 30%, transparent); pointer-events:none; z-index:2;}
 .hz-ghost.erase{border-color:var(--critical); background:var(--critical-soft);}
+.hz-ghost:not([data-lbl])::after{display:none;}
 .hz-ghost::after{content:attr(data-lbl); position:absolute; left:50%; top:-20px; transform:translateX(-50%); white-space:nowrap; font-size:11px; font-weight:700; padding:2px 6px; border-radius:6px; background:var(--ink); color:var(--bg, #111);}
 .faixa-zone{position:absolute; left:0; right:0; pointer-events:none; z-index:0; border-radius:10px;
   background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--c) 15%, transparent) 0 8px, color-mix(in srgb, var(--c) 9%, transparent) 8px 16px);
@@ -8233,7 +8234,7 @@ window.addEventListener('keydown', function(e){
     ['check',    'Afazeres da semana',         'Lista de afazeres ao lado da grade',                     'Dia e Semana'],
     ['loose',    'Tarefas soltas',             'Tarefas com cronômetro, sem hora marcada',               'Dia e Semana'],
     ['tray',     'Planner ao lado da grade',   'Tarefas dos seus planos, prontas para arrastar',         'Dia e Semana'],
-    ['faixas',   'Horas reservadas',           'Fundo com as faixas do molde (Planejamento › Horas)',   'Dia e Semana'],
+    ['faixas',   'Horas reservadas',           'Fundo com as faixas do molde (Planejamento › Por categoria)',   'Dia e Semana'],
     ['noteday',  'Anotações do dia',           'Texto livre abaixo da grade',                            'Dia e Semana'],
     ['noteweek', 'Anotações da semana',        'Texto livre da semana inteira',                          'Dia e Semana'],
     ['weekstats','Resumo da semana',           'Concluído, tempo registrado e estouros',                 'Semana'],
@@ -8450,7 +8451,7 @@ window.addEventListener('keydown', function(e){
       {v:'month', t:'Mês', a:'month', p:'O mês inteiro com feriados, aniversários e lembretes. Toque num dia para abrir.'},
       {v:'metrics', t:'Painel', a:'bars', p:'Seus números: horas por categoria contra a meta, sequência dos hábitos e as noites de sono.'},
       {v:'categories', t:'Categorias', a:'cats', p:'Trabalho, estudo, lazer… Cada uma com cor, ícone e meta de horas por dia ou de vezes por semana. É o que o Painel mede.'},
-      {v:'plan-horas', go:'Abrir as Horas', t:'Horas reservadas', a:'paint', p:'Em Planejamento › Horas você pinta a semana: das 8 ao meio-dia trabalho, do meio-dia à 1h30 almoço… Vira o fundo do Dia, e o contador mostra se cabe na sua meta.'},
+      {v:'plan-horas', go:'Abrir Por categoria', t:'Horas reservadas', a:'paint', p:'Em Planejamento › Por categoria você pinta a semana: das 8 ao meio-dia trabalho, do meio-dia à 1h30 almoço… Vira o fundo do Dia, e o contador mostra se cabe na sua meta.'},
       {v:'diagram', t:'Diagramas', a:'diag', p:'Um quadro livre para organizar ideias: cartões ligados por setas, que você arrasta para onde quiser.'}
     ]},
     planner: {name:'Planner', slides:[
@@ -8650,7 +8651,7 @@ window.addEventListener('keydown', function(e){
   function planModeHtml(){
     return '<div class="plan-mode" role="tablist" aria-label="O que planejar">' +
       '<button type="button" role="tab" data-pmode="afazeres" class="'+(state.planMode!=='horas'?'on':'')+'">Afazeres</button>' +
-      '<button type="button" role="tab" data-pmode="horas" class="'+(state.planMode==='horas'?'on':'')+'">Horas</button></div>';
+      '<button type="button" role="tab" data-pmode="horas" class="'+(state.planMode==='horas'?'on':'')+'">Por categoria</button></div>';
   }
   function wirePlanMode(app){
     Array.prototype.forEach.call(app.querySelectorAll('[data-pmode]'), function(b){
@@ -8687,7 +8688,7 @@ window.addEventListener('keydown', function(e){
     var heads=''; for(var j=0;j<7;j++) heads+='<div class="hz-dh'+(!molde && dates[j]===today?' is-today':'')+'">'+DOW[DOW_ORDER[j]]+(molde?'':'<small>'+dayNum(dates[j])+'</small>')+'</div>';
     var selCat = state.horasCat && state.horasCat!=='erase' ? catById(state.horasCat) : null;
     var hint = state.horasCat==='erase' ? 'Apagar: arraste por cima das faixas que quer tirar.' :
-      selCat ? escapeHtml(selCat.name)+' escolhido: arraste na grade para reservar. Um toque (sem arrastar) abre para digitar o horário ou editar a faixa.' :
+      selCat ? escapeHtml(selCat.name)+' escolhido: arraste na grade para reservar — pra cima/baixo escolhe o horário, pro lado leva pros outros dias. Um toque (sem arrastar) abre para digitar o horário ou editar a faixa.' :
       'Escolha uma categoria e arraste na grade para reservar o horário, ou toque num horário para digitar. Toque numa faixa para mudar ou excluir.';
     app.innerHTML =
       '<div class="daytop">' +
@@ -8722,41 +8723,64 @@ window.addEventListener('keydown', function(e){
     horasGuideMaybe();
   }
   function faixaHit(i, min){ return horasListFor(i).some(function(x){ return min>=x.s && min<x.e; }); }
+
   function wireHorasPaint(col, i){
-    var startMin=null, ghost=null;
+    var startMin=null, ghosts={}, lastE=null, endDay=i;
     function minAt(y){ var r=col.getBoundingClientRect(); var m=(y-r.top)/HORAS_PX*60; return Math.max(0, Math.min(1440, Math.round(m/15)*15)); }
-    var tapY=null, tapMin=null, moved=false;
+    function dayAt(x){
+      var cols=col.parentNode ? col.parentNode.querySelectorAll('.hz-col') : [], best=i, bd=1e9;
+      Array.prototype.forEach.call(cols, function(c){ var r=c.getBoundingClientRect(), k=+c.getAttribute('data-hi');
+        if(x>=r.left && x<r.right){ best=k; bd=-1; } else if(bd>=0){ var dd=Math.min(Math.abs(x-r.left), Math.abs(x-r.right)); if(dd<bd){ bd=dd; best=k; } } });
+      return best;
+    }
+    var tapY=null, tapX=null, tapMin=null, moved=false;
     col.addEventListener('pointerdown', function(e){
-      tapY=e.clientY; tapMin=Math.floor(((e.clientY-col.getBoundingClientRect().top)/HORAS_PX*60)); moved=false;
+      tapY=e.clientY; tapX=e.clientX; tapMin=Math.floor(((e.clientY-col.getBoundingClientRect().top)/HORAS_PX*60)); moved=false; endDay=i;
       if(!state.horasCat) return;
       e.preventDefault(); horasPainting=true; startMin=minAt(e.clientY);
       try{ col.setPointerCapture(e.pointerId); }catch(_){}
-      ghost=document.createElement('div'); ghost.className='hz-ghost'+(state.horasCat==='erase'?' erase':'');
-      var c=catById(state.horasCat); if(c) ghost.style.setProperty('--c', c.color);
-      col.appendChild(ghost); move(e);
+      move(e);
     });
     function range(e){ var m=minAt(e.clientY), a=Math.min(startMin,m), b=Math.max(startMin,m); if(b-a<15){ b=Math.min(1440,a+15); a=Math.min(a, b-15); } return [a,b]; }
+    function days(){ var out=[]; for(var k=Math.min(i,endDay); k<=Math.max(i,endDay); k++) out.push(k); return out; }
+    function clearGhosts(){ Object.keys(ghosts).forEach(function(k){ ghosts[k].remove(); }); ghosts={}; }
     function move(e){
-      if(tapY!=null && Math.abs(e.clientY-tapY)>8) moved=true;
-      if(startMin==null || !ghost) return; if(!moved){ ghost.style.height='0'; ghost.removeAttribute('data-lbl'); return; } var r=range(e);
-      ghost.style.top=(r[0]/60*HORAS_PX)+'px'; ghost.style.height=((r[1]-r[0])/60*HORAS_PX)+'px';
-      ghost.setAttribute('data-lbl', timeOfMinutes(r[0])+'–'+(r[1]>=1440?'24:00':timeOfMinutes(r[1])));
+      lastE={clientX:e.clientX, clientY:e.clientY};
+      if(tapY!=null && (Math.abs(e.clientY-tapY)>8 || Math.abs(e.clientX-tapX)>12)) moved=true;
+      if(startMin==null) return;
+      if(!moved){ clearGhosts(); return; }
+      endDay=dayAt(e.clientX);
+      var r=range(e), want={}, c=catById(state.horasCat), grid=col.parentNode;
+      days().forEach(function(k){ want[k]=1;
+        var g=ghosts[k];
+        if(!g){ var cc=grid.querySelector('.hz-col[data-hi="'+k+'"]'); if(!cc) return;
+          g=document.createElement('div'); g.className='hz-ghost'+(state.horasCat==='erase'?' erase':''); if(c) g.style.setProperty('--c', c.color); cc.appendChild(g); ghosts[k]=g; }
+        g.style.top=(r[0]/60*HORAS_PX)+'px'; g.style.height=((r[1]-r[0])/60*HORAS_PX)+'px';
+
+        if(k===i) g.setAttribute('data-lbl', timeOfMinutes(r[0])+'–'+(r[1]>=1440?'24:00':timeOfMinutes(r[1]))); else g.removeAttribute('data-lbl');
+      });
+      Object.keys(ghosts).forEach(function(k){ if(!want[k]){ ghosts[k].remove(); delete ghosts[k]; } });
+      var n=days().length;
+      if(n>1 && ghosts[i]) ghosts[i].setAttribute('data-lbl', timeOfMinutes(r[0])+'–'+(r[1]>=1440?'24:00':timeOfMinutes(r[1]))+' · '+n+' dias');
     }
     col.addEventListener('pointermove', move);
     function end(e){
-      if(tapY!=null && Math.abs(e.clientY-tapY)>8) moved=true;
+      if(tapY!=null && (Math.abs(e.clientY-tapY)>8 || Math.abs(e.clientX-tapX)>12)) moved=true;
       var wasTap=!moved, tm=tapMin; tapY=null;
       if(startMin==null){ if(wasTap && tm!=null && !state.horasCat) openFaixaEditor(i, tm); return; }
-      var r=range(e); startMin=null; if(ghost){ ghost.remove(); ghost=null; } horasPainting=false;
+      var r=range(e); startMin=null; clearGhosts(); horasPainting=false;
       if(wasTap){ if(state.horasCat==='erase' && !faixaHit(i, tm)) return; openFaixaEditor(i, tm); return; }
-      var cat = state.horasCat==='erase' ? null : state.horasCat;
-      var list = paintRange(horasListFor(i), r[0], r[1], cat);
-      if(state.horasScope==='molde') saveMoldeDay(DOW_ORDER[i], list); else saveWeekDay(horasWeekDates()[i], list);
+      var cat = state.horasCat==='erase' ? null : state.horasCat, ds=days();
+      ds.forEach(function(k){
+        var list = paintRange(horasListFor(k), r[0], r[1], cat);
+        if(state.horasScope==='molde') saveMoldeDay(DOW_ORDER[k], list); else saveWeekDay(horasWeekDates()[k], list);
+      });
+      if(ds.length>1) showToast((cat?'Reservado ':'Apagado ')+timeOfMinutes(r[0])+'–'+(r[1]>=1440?'24:00':timeOfMinutes(r[1]))+' em '+ds.length+' dias ('+DOW[DOW_ORDER[ds[0]]]+' a '+DOW[DOW_ORDER[ds[ds.length-1]]]+').', cat?'✓':'🗑');
       if(window.uiSound) uiSound(cat?'add':'trash'); if(window.uiHaptic) uiHaptic(8);
       render();
     }
     col.addEventListener('pointerup', end);
-    col.addEventListener('pointercancel', function(){ startMin=null; tapY=null; horasPainting=false; if(ghost){ ghost.remove(); ghost=null; } });
+    col.addEventListener('pointercancel', function(){ startMin=null; tapY=null; horasPainting=false; clearGhosts(); });
   }
 
   function timeOptsHtml(sel, from, to){
@@ -8945,9 +8969,9 @@ window.addEventListener('keydown', function(e){
     '</div></div>';
   }
 
-  GUIDES.horas = {name:'Horas', slides:[
-    {v:'plan-horas', go:'Abrir as Horas', t:'Reserve as horas', a:'paint', p:'Escolha uma categoria em cima e arraste na semana. O contador vai gastando a meta que você pôs em Categorias: verde quando bate, laranja quando passa.'},
-    {v:'plan-horas', go:'Abrir as Horas', t:'Um molde para toda semana', a:'molde', p:'O que você pinta vale para todas as semanas. Semana diferente? Troque para "Só esta semana" e ajuste só ela; o molde continua igual.'},
+  GUIDES.horas = {name:'Por categoria', slides:[
+    {v:'plan-horas', go:'Abrir Por categoria', t:'Reserve as horas', a:'paint', p:'Escolha uma categoria em cima e arraste na semana — pra baixo escolhe o horário, pro lado leva a mesma faixa pros outros dias. O contador vai gastando a meta que você pôs em Categorias: verde quando bate, laranja quando passa.'},
+    {v:'plan-horas', go:'Abrir Por categoria', t:'Um molde para toda semana', a:'molde', p:'O que você pinta vale para todas as semanas. Semana diferente? Troque para "Só esta semana" e ajuste só ela; o molde continua igual.'},
     {v:'day', go:'Abrir o Dia', t:'As faixas no seu dia', a:'faixas', p:'No Dia e na Semana a reserva aparece de fundo, bem de leve. Toque num pedaço livre dela e o bloco já nasce com a categoria e o horário certos.'},
     {v:'day', go:'Abrir o Dia', t:'Dividir em blocos', a:'split', p:'Ao criar o bloco numa faixa, toque em "Dividir em blocos": 25 + 5 (Pomodoro), 45 + 15 e outros ritmos, com a pausa que você quiser.'},
     {v:'metrics', go:'Abrir o Painel', t:'Fora do plano, sem bronca', a:'bars', p:'Bloco de outra categoria dentro da faixa fica só marcado. No Painel você vê meta, reservado e feito, e o que saiu do plano.'}
