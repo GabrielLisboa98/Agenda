@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261112-155809';</script>
+<script>window.AGENDA_BUILD = '20261112-221118';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261112-155809"></script>
+<script src="cloud.js?v=20261112-221118"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -752,7 +752,13 @@
   .check-item .checkbox{width:16px; height:16px; border-radius:2px; border:1.5px solid var(--ink-faint); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:0.6667rem;}
   .check-item .checkbox.done{background:var(--ink); border-color:var(--ink); color:var(--surface);}
   .check-item.done .title{text-decoration:line-through; color:var(--ink-faint);}
-  .overlay{position:fixed; inset:0; background:rgba(31,27,24,0.45); display:flex; align-items:center; justify-content:center; z-index:50; padding:16px;}
+  .overlay{position:fixed; inset:0; background:rgba(31,27,24,0.45); display:flex; align-items:center; justify-content:center; z-index:50; padding:16px; overscroll-behavior:contain;}
+  html.modal-lock, html.modal-lock body{overflow:hidden;}
+  .modal{overscroll-behavior:contain; -webkit-overflow-scrolling:touch;}
+  @media (hover:none) and (pointer:coarse){
+    .modal, :root[data-sky] .modal{backdrop-filter:none!important; -webkit-backdrop-filter:none!important;
+      background:linear-gradient(var(--glass-bg-strong),var(--glass-bg-strong)), var(--sky-base, var(--surface))!important;}
+  }
   .modal{background:var(--glass-bg-strong); backdrop-filter:blur(var(--glass-blur)) saturate(1.4); -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4); border:1px solid var(--glass-border); border-radius:8px; box-shadow:var(--shadow-lg), inset 0 1px 0 var(--panel-highlight); width:100%; max-width:440px; max-height:88vh; overflow-y:auto;}
   .modal-head{display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--border); background:linear-gradient(180deg, var(--accent-soft), transparent 70%);}
   .modal-head h3{margin:0; font-family:var(--serif); font-size:1.1111rem; font-weight:700;}
@@ -17029,6 +17035,7 @@ window.addEventListener('keydown', function(e){
     var existing=document.getElementById('modal-overlay');
     if(existing && state.modal && lastRenderedModal===state.modal) return;
     if(existing) existing.remove();
+    document.documentElement.classList.toggle('modal-lock', !!state.modal);
     if(!state.modal){ lastRenderedModal=null; return; }
     var overlay=document.createElement('div'); overlay.className='overlay'; overlay.id='modal-overlay';
 
@@ -17043,6 +17050,27 @@ window.addEventListener('keydown', function(e){
   }
 
   document.addEventListener('input', function(e){ var t=e.target; if(t && t.closest && t.closest('#modal-inner')) t.__edited=true; }, true);
+
+  (function(){
+    var y0=0;
+    function scroller(el, stop){
+      for(; el && el!==stop; el=el.parentElement){
+        var cs=getComputedStyle(el);
+        if(/(auto|scroll)/.test(cs.overflowY) && el.scrollHeight>el.clientHeight+1) return el;
+      }
+      return null;
+    }
+    document.addEventListener('touchstart', function(e){ if(e.touches.length===1) y0=e.touches[0].clientY; }, {passive:true});
+    document.addEventListener('touchmove', function(e){
+      var ov=document.getElementById('modal-overlay'); if(!ov || e.touches.length!==1) return;
+      if(!ov.contains(e.target)){ if(e.cancelable) e.preventDefault(); return; }
+      var sc=scroller(e.target, ov);
+      if(!sc){ if(e.cancelable) e.preventDefault(); return; }
+      var dy=e.touches[0].clientY-y0;
+      var noTopo = sc.scrollTop<=0 && dy>0, noFim = sc.scrollTop+sc.clientHeight>=sc.scrollHeight-1 && dy<0;
+      if((noTopo || noFim) && e.cancelable) e.preventDefault();
+    }, {passive:false});
+  })();
 
   try{ document.documentElement.lang='pt-BR'; }catch(_){}
 
