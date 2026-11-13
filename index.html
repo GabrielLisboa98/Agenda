@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261113-115353';</script>
+<script>window.AGENDA_BUILD = '20261113-120130';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261113-115353"></script>
+<script src="cloud.js?v=20261113-120130"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -1283,6 +1283,13 @@ textarea.c-autogrow{resize:none; overflow:hidden; min-height:38px; line-height:1
 .appt-count{display:inline-flex; align-items:center; gap:4px; flex:none; height:28px; padding:0 9px; border-radius:999px; border:1px dashed var(--border); background:transparent; color:var(--ink-faint); font-size:0.6667rem; font-weight:700; white-space:nowrap;}
 .appt-count.on{border-style:solid; border-color:var(--success); color:var(--success); background:var(--success-soft);}
 .btn.retro-planned{width:100%; margin-top:8px; justify-content:center;}
+.start-choice{position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); z-index:320; width:min(440px, calc(100vw - 24px)); padding:14px 16px 16px; border-radius:18px; background:var(--glass-bg-strong); backdrop-filter:blur(24px) saturate(1.6); -webkit-backdrop-filter:blur(24px) saturate(1.6); border:1px solid var(--glass-border); box-shadow:var(--shadow-lg); color:var(--ink); animation:tw-in .18s ease-out;}
+.start-choice .sc-h{font-weight:800; font-size:0.9444rem; padding-right:28px; margin-bottom:10px;}
+.start-choice .sc-opts{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+.start-choice .sc-opts .btn{display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 8px; border-radius:14px;}
+.start-choice .sc-opts small{font-size:0.7778rem; font-weight:600; opacity:.8;}
+.start-choice .sc-x{position:absolute; top:10px; right:10px; width:28px; height:28px; border:none; border-radius:50%; background:transparent; color:var(--ink-soft); cursor:pointer;}
+.start-choice .sc-x:hover{background:var(--surface-2);}
 .late-ask{position:fixed; left:50%; bottom:76px; transform:translateX(-50%); z-index:210; width:min(560px, calc(100vw - 24px)); padding:14px 40px 14px 16px; border-radius:20px; background:var(--glass-bg-strong); border:1px solid var(--glass-border); backdrop-filter:blur(30px) saturate(1.6); -webkit-backdrop-filter:blur(30px) saturate(1.6); box-shadow:var(--shadow-lg); color:var(--ink); animation:rd-in .25s ease;}
 .late-ask .la-h{font-weight:700; font-size:0.8333rem; margin-bottom:10px;}
 .late-ask .la-opts{display:flex; flex-wrap:wrap; gap:6px;}
@@ -3319,6 +3326,9 @@ html.lay-off-progress.lay-off-budget #mobile-metrics, html.lay-off-progress.lay-
 .plan-mode{position:relative; display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; width:min(560px,100%); border-radius:18px; background:color-mix(in srgb, var(--ink) 8%, transparent); border:1px solid var(--border-soft);}
 .plan-mode button{position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; min-height:52px; padding:6px 14px; border:none; border-radius:14px; background:transparent; color:var(--ink-soft); font-family:inherit; cursor:pointer; transition:color .2s ease;}
 .plan-mode button b{font-size:0.9444rem; font-weight:800;}
+html.lay-off-tips .lay-tip, html.lay-off-tips .plan-mode button small{display:none!important;}
+html.lay-off-stats .lay-stat{display:none!important;}
+html.lay-off-tips .plan-mode button{min-height:42px;}
 .plan-mode button small{font-size:0.7222rem; font-weight:600; opacity:.8;}
 .plan-mode button.on{color:var(--accent-ink);}
 .plan-mode button:not(.on):hover{color:var(--ink);}
@@ -8294,13 +8304,16 @@ window.addEventListener('keydown', function(e){
     ['weekstats','Resumo da semana',           'Concluído, tempo registrado e estouros',                 'Semana'],
     ['progress', 'Progresso',                  'Barras de hoje e da semana',                             'Barra lateral'],
     ['budget',   'Orçamento da semana',        'Horas por categoria contra a meta',                      'Barra lateral'],
-    ['why',      'Lembretes dos seus porquês', 'Seus motivos aparecendo ao longo do dia',                'Avisos']
+    ['why',      'Lembretes dos seus porquês', 'Seus motivos aparecendo ao longo do dia',                'Avisos'],
+
+    ['tips',     'Dicas e explicações',        'Textinhos que explicam como cada coisa funciona',         'App inteiro'],
+    ['stats',    'Totais e contagens',         'Números ao lado das coisas: horas na tarefa, quantos feitos','App inteiro']
   ];
   var LAYOUT_MODES = {
     simples:     {name:'Simples',     on:['check'],
-      desc:'Só a grade de horários e os afazeres. Para começar sem distração ou para dias corridos.'},
-    equilibrado: {name:'Equilibrado', on:['night','habits','check','tray','faixas','noteday','progress','why'],
-      desc:'O essencial do dia: sono, hábitos, afazeres, Planner, anotações do dia e seu progresso.'},
+      desc:'Só a grade de horários e os afazeres, sem dicas nem números extras. O mais limpo possível.'},
+    equilibrado: {name:'Equilibrado', on:['night','habits','check','tray','faixas','noteday','progress','why','tips','stats'],
+      desc:'O essencial do dia: sono, hábitos, afazeres, Planner, anotações do dia e seu progresso, com dicas.'},
     completo:    {name:'Completo',    on:LAYOUT_PANELS.map(function(p){ return p[0]; }),
       desc:'Tudo à vista: distribuição do dia, tarefas soltas, resumo e orçamento da semana.'}
   };
@@ -8768,7 +8781,7 @@ window.addEventListener('keydown', function(e){
         '<div class="hz-scope"><span>Vale para</span><div class="hz-seg"><button type="button" data-hscope="molde" class="'+(molde?'on':'')+'">Toda semana (molde)</button><button type="button" data-hscope="semana" class="'+(!molde?'on':'')+'">Só esta semana</button></div>' +
           (!molde && weekHasOverride(mon) ? '<button type="button" class="btn small ghost" id="hz-reset">Voltar ao molde</button>' : '') + '</div>' +
         '<div class="hz-pills">'+pills+'</div>' +
-        '<p class="hz-hint">'+hint+'</p>' +
+        '<p class="hz-hint lay-tip">'+hint+'</p>' +
         '<div class="hz-grid-wrap"><div class="hz-heads"><div class="hz-gut"></div>'+heads+'</div>' +
         '<div class="hz-grid'+(state.horasCat?' painting':'')+'" style="height:'+(24*HORAS_PX)+'px"><div class="hz-gut">'+hours+'</div>'+cols+'</div></div>' +
         '<button type="button" class="btn hz-add" id="hz-add">＋ Reservar horário digitando</button>' +
@@ -10569,10 +10582,40 @@ window.addEventListener('keydown', function(e){
   setInterval(function(){ pipRender(); taskbarTitle(); sbFocusTick(); }, 1000);
   document.addEventListener('click', function(e){ var x=e.target.closest && e.target.closest('[data-pip-open]'); if(x){ e.preventDefault(); e.stopPropagation(); pipOpen(); } }, true);
 
-  function startBlock(b){
-    if(restNowBlocked() && !restExempt(b)){ restSay(); return; }
+  function startChoiceNeeded(b){
+    var late=startLateMin(b); if(late==null || late<LATE_TOL_MIN || b.status!=='pending' || !b.plannedEnd) return null;
+    var now=new Date(), nowMin=now.getHours()*60+now.getMinutes();
+    if(b.date!==todayStr()) return null;
+    var endMin=minutesOf(b.plannedEnd), dur=endMin-minutesOf(b.plannedStart), rest=endMin-nowMin;
+    if(rest<1 || dur<=0) return null;
+    return {nowMin:nowMin, endMin:endMin, dur:dur, rest:rest};
+  }
+  function showStartChoice(b, c){
+    var old=document.getElementById('start-choice'); if(old) old.remove();
+    var hm=function(m){ return timeOfMinutes(Math.min(m,1439)); };
+    var el=document.createElement('div'); el.id='start-choice'; el.className='start-choice'; el.setAttribute('role','dialog');
+    el.innerHTML='<div class="sc-h">Começando '+fmtDuration(startLateMin(b))+' atrasado. Quanto tempo?</div>' +
+      '<div class="sc-opts">' +
+        '<button class="btn primary" data-sc="full"><b>'+fmtDuration(c.dur)+' inteiros</b><small>até '+hm(c.nowMin+c.dur)+'</small></button>' +
+        '<button class="btn" data-sc="rest"><b>Só o que sobrou</b><small>'+fmtDuration(c.rest)+', até '+hm(c.endMin)+'</small></button>' +
+      '</div><button class="sc-x" data-sc="" title="Cancelar" aria-label="Cancelar">'+xIcon()+'</button>';
+    document.body.appendChild(el);
+    el.addEventListener('click', function(e){
+      var bt=e.target.closest('[data-sc]'); if(!bt) return;
+      var v=bt.getAttribute('data-sc'); el.remove();
+      var fb=freshBlockById(b.id)||b;
+      if(v) startBlock(fb, {lateChoice:v});
+    });
+  }
+  function startBlock(b, opt){
+    if(restNowBlocked() && !restExempt(b)){ restSay(); return false; }
+    var sc = (!opt || !opt.lateChoice) ? startChoiceNeeded(b) : null;
+    if(sc){ closeModal(); showStartChoice(b, sc); return false; }
     whyOnStart(b && b.categoryId);
     var late=startLateMin(b), patch={status:'running', actualStart:Date.now(), pausedAt:null};
+    if(opt && opt.lateChoice==='rest'){
+      var nw=new Date(); patch.plannedStartOrig=b.plannedStart; patch.plannedStart=timeOfMinutes(nw.getHours()*60+nw.getMinutes());
+    }
     if(late!=null){ patch.lateMin=Math.max(0,late); patch.lateReason=null; }
     updateBlock(b.id, patch); closeModal();
     if(pipWanted() && !PIP.open) pipOpen();
@@ -12088,7 +12131,7 @@ window.addEventListener('keydown', function(e){
   function pnCreateFieldHtml(m, catId){
     if(!PN.tasks.length) return '';
     return '<div class="field pn-link-field"><label>Tarefa do Planner (opcional)</label>'+pnTaskSelectHtml('f-task', m.taskId||'', catId)+
-      '<div class="pn-link-hint">Quando o bloco for concluído, o tempo dele soma nas horas da tarefa.</div></div>';
+      '<div class="pn-link-hint lay-tip">Quando o bloco for concluído, o tempo dele soma nas horas da tarefa.</div></div>';
   }
   function pnWireCreateField(modal){
     var ts=modal.querySelector('#f-task'); if(!ts) return;
@@ -12130,8 +12173,8 @@ window.addEventListener('keydown', function(e){
     var t = b.taskId && pnTaskById(b.taskId), h = t ? pnTaskHours(t.id) : null;
     return '<div class="field pn-link-field" style="margin-top:10px;"><label>Tarefa do Planner</label>' +
       '<div class="pn-link-row">'+pnTaskSelectHtml('d-task', t?t.id:'', b.categoryId||null)+(t?'<button class="btn small" id="d-task-open" type="button">Abrir</button>':'')+'</div>' +
-      (t ? '<div class="pn-link-hint">'+(h.total?fmtDuration(h.total)+' no total nesta tarefa · '+h.count+' bloco'+(h.count>1?'s':'')+' concluído'+(h.count>1?'s':''):'Nenhum bloco concluído nesta tarefa ainda')+'</div>'
-         : '<div class="pn-link-hint">Sem vínculo: o tempo deste bloco não entra em nenhuma tarefa.</div>') +
+      (t ? '<div class="pn-link-hint lay-stat">'+(h.total?fmtDuration(h.total)+' no total nesta tarefa · '+h.count+' bloco'+(h.count>1?'s':'')+' concluído'+(h.count>1?'s':''):'Nenhum bloco concluído nesta tarefa ainda')+'</div>'
+         : '<div class="pn-link-hint lay-tip">Sem vínculo: o tempo deste bloco não entra em nenhuma tarefa.</div>') +
     '</div>';
   }
   function pnWireBlockLink(modal, b){
@@ -13632,7 +13675,7 @@ window.addEventListener('keydown', function(e){
     if(startFlexBtn) startFlexBtn.onclick=function(e){
       e.stopPropagation();
       var t=state.weekBlocks.filter(function(x){ return x.id===startFlexBtn.getAttribute('data-target'); })[0];
-      if(t){ if(window.uiSound) uiSound('pop'); startBlock(t); showToast('Começou: '+(t.title||(catById(t.categoryId)||{}).name||'tarefa'), '▶'); }
+      if(t){ if(window.uiSound) uiSound('pop'); if(startBlock(t)!==false) showToast('Começou: '+(t.title||(catById(t.categoryId)||{}).name||'tarefa'), '▶'); }
     };
     var pushFlexBtn=document.getElementById('hero-push-flex');
     if(pushFlexBtn){
@@ -13650,7 +13693,7 @@ window.addEventListener('keydown', function(e){
         e.stopPropagation();
         var targetId=startNextBtn.getAttribute('data-target');
         var target=state.weekBlocks.filter(function(x){return x.id===targetId;})[0];
-        if(target){ startBlock(target); showToast('Tarefa iniciada!', '▶'); }
+        if(target){ if(startBlock(target)!==false) showToast('Tarefa iniciada!', '▶'); }
       };
     }
 
@@ -14363,7 +14406,7 @@ window.addEventListener('keydown', function(e){
         var keys = (canMove ? '<b>Arrastar</b>: mover · <b>Ctrl</b> ou <b>Shift</b> + arrastar: copiar' : (canCopy ? '<b>Arrastar</b>: copiar (este não dá pra mover)' : ''));
         var el=document.createElement('div'); el.className='grid-hover-tip';
         el.innerHTML=(info?'<div class="ght-info">'+escapeHtml(info)+'</div>':'') +
-          '<div class="ght-keys"><b>Clique</b>: abrir'+(keys?' · '+keys:'')+' · <b>Botão direito</b>: opções'+(canMove?' · alça de baixo: duração':'')+'</div>';
+          '<div class="ght-keys lay-tip"><b>Clique</b>: abrir'+(keys?' · '+keys:'')+' · <b>Botão direito</b>: opções'+(canMove?' · alça de baixo: duração':'')+'</div>';
         document.body.appendChild(el); GH.el=el; GM_POS=gmPos();
         var r=chip.getBoundingClientRect(), W=el.offsetWidth, H=el.offsetHeight;
         var x=Math.max(8, Math.min(r.left, innerWidth-W-8)), y=r.top-H-6; if(y<8) y=r.bottom+6;
@@ -14692,7 +14735,7 @@ window.addEventListener('keydown', function(e){
       var allDone = g.items.length && g.items.every(function(x){ return x.done; });
       var head = '<div class="check-group-label cg-head'+(g.items.length?'':' empty')+(allDone?' all-done':'')+'">' +
         (g.items.length ? '<button class="cg-toggle" data-cg="'+g.key+'" title="'+(closed?'Mostrar':'Esconder')+(g.backlog?' as tarefas sem dia':' as tarefas do dia')+'">'+(closed?'+':'−')+'</button>' : '<span class="cg-toggle-spacer"></span>') +
-        '<span class="cg-name">'+g.label+'</span><span class="cg-count">'+countLabel(g)+'</span></div>';
+        '<span class="cg-name">'+g.label+'</span><span class="cg-count lay-stat">'+countLabel(g)+'</span></div>';
       if(closed) return '<div class="check-group collapsed" data-cg-key="'+g.key+'">'+head+'</div>';
       var shown = g.items, doneFold = '';
       if(g.backlog){
@@ -15111,13 +15154,13 @@ window.addEventListener('keydown', function(e){
       return {k:p.k, label:p.label, icon:p.icon, range:(p.k==='m'?'até 11:59':(p.k==='t'?'12h–17:59':'18h em diante'))};
     }));
     var cells = '';
-    cells += '<div class="pl-dayhead nd-head" style="grid-column:1; grid-row:1;"><span class="pd-dow">sem dia</span><span class="pd-n">'+planNdItems(monday).length+' afazeres</span></div>';
+    cells += '<div class="pl-dayhead nd-head" style="grid-column:1; grid-row:1;"><span class="pd-dow">sem dia</span><span class="pd-n lay-stat">'+planNdItems(monday).length+' afazeres</span></div>';
     cells += '<div class="pl-corner" style="grid-column:2; grid-row:1;"></div>';
     dates.forEach(function(d, i){
       var hol=holidayFor(d);
       cells += '<button class="pl-dayhead'+(d===today?' is-today':'')+(hol?' is-holiday':'')+'" data-pday="'+d+'" style="grid-column:'+(i+3)+'; grid-row:1;" title="Abrir o dia '+dayNum(d)+'">' +
         '<span class="pd-dow">'+weekdayLabel(d)+'</span><span class="pd-num">'+dayNum(d)+'</span>' +
-        '<span class="pd-n">'+planCountLabel(d)+'</span></button>';
+        '<span class="pd-n lay-stat">'+planCountLabel(d)+'</span></button>';
     });
     var ndItems = planNdItems(monday);
     cells += '<div class="pl-cell nd" data-pd="nd" data-pp="">' +
@@ -15140,7 +15183,7 @@ window.addEventListener('keydown', function(e){
         '<div class="daytop-nav">'+planCarryBtnHtml(monday)+'<button class="btn primary pl-newcheck" id="pl-newcheck" title="Novo afazer no &quot;sem dia&quot; desta semana — depois é só arrastar pro dia e período">+ Novo afazer</button><button class="navbtn" id="pl-prev">‹</button><button class="today-btn" id="pl-today">Esta semana</button><button class="navbtn" id="pl-next">›</button></div>' +
       '</div>' +
       '<div class="panel"><div class="plan-scroll"><div class="plan-grid" style="--pl-nd-w:'+lsNum('agenda-plan-nd-w', 132)+'px;">'+cells+'</div></div>' +
-        '<div class="plan-legend"><span>afazer = borda tracejada, arrasta pela alça ⋮⋮</span><span>bloco = barra colorida da categoria</span><span>📍 compromisso</span><span>clique numa célula vazia pra criar um afazer ali</span></div>' +
+        '<div class="plan-legend lay-tip"><span>afazer = borda tracejada, arrasta pela alça ⋮⋮</span><span>bloco = barra colorida da categoria</span><span>📍 compromisso</span><span>clique numa célula vazia pra criar um afazer ali</span></div>' +
       '</div>';
     var pg=app.querySelector('.plan-grid');
     wireSplitter(app.querySelector('.pl-nd-split'), {host:pg, cssVar:'--pl-nd-w', key:'agenda-plan-nd-w', min:132,
@@ -16289,7 +16332,7 @@ window.addEventListener('keydown', function(e){
       Array.prototype.forEach.call(app.querySelectorAll('[data-fq-start]'), function(btn){
         btn.onclick=function(){
           var target = blocksForDate(todayStr()).filter(function(x){ return x.id===btn.getAttribute('data-fq-start'); })[0];
-          if(target){ startBlock(target); showToast('Tarefa iniciada!', '▶'); }
+          if(target){ if(startBlock(target)!==false) showToast('Tarefa iniciada!', '▶'); }
         };
       });
       Array.prototype.forEach.call(app.querySelectorAll('[data-fq-push]'), function(btn){
@@ -17524,11 +17567,11 @@ window.addEventListener('keydown', function(e){
       (canEditTime && !appt ? '<div class="flex-toggle-field" style="margin-top:8px;"><label><input id="d-inflex" type="checkbox" '+(b.flexible===false?'checked':'')+'><span>Inadiável — avisa forte se passar da hora</span></label></div>' : '') +
 
       (canEditTime ? '<div class="appt-toggle-field"><label><input id="d-appt" type="checkbox" '+(appt?'checked':'')+'><span>📍 É um compromisso</span></label>' +
-        '<div class="appt-toggle-hint">Sem cronômetro: só marcar feito ou não feito. Não conta nas métricas, a não ser que a categoria esteja com 📍 conta (em Categorias).</div>' +
+        '<div class="appt-toggle-hint lay-tip">Sem cronômetro: só marcar feito ou não feito. Não conta nas métricas, a não ser que a categoria esteja com 📍 conta (em Categorias).</div>' +
         (appt ? '<div style="margin-top:8px;">'+reminderEditorHtml('d-rem', b.reminders)+'</div>' : '') +
       '</div>' : '') +
       (canEditTime && isStartOverdue(b) && b.flexible!==false ?
-        '<div class="flex-note">↳ atrasada, mas adiável — sem alarme.</div>' : '') +
+        '<div class="flex-note lay-tip">↳ atrasada, mas adiável — sem alarme.</div>' : '') +
       (isAppt(b) ? '' : pnBlockLinkHtml(b)) +
       (function(){ var lm=blockLateMin(b); if(lm==null || lm<LATE_TOL_MIN) return '';
         return '<div class="field late-field"><label>Começou '+fmtDuration(lm)+' depois do planejado</label><select id="d-late">' +
