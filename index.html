@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261113-120752';</script>
+<script>window.AGENDA_BUILD = '20261113-121009';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261113-120752"></script>
+<script src="cloud.js?v=20261113-121009"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -8328,8 +8328,8 @@ window.addEventListener('keydown', function(e){
     ['budget',   'Orçamento da semana',        'Horas por categoria contra a meta',                      'Barra lateral'],
     ['why',      'Lembretes dos seus porquês', 'Seus motivos aparecendo ao longo do dia',                'Avisos'],
 
-    ['tips',     'Dicas e explicações',        'Textinhos que explicam como cada coisa funciona',         'App inteiro'],
-    ['stats',    'Totais e contagens',         'Números ao lado das coisas: horas na tarefa, quantos feitos','App inteiro']
+    ['tips',     'Dicas e explicações',        'Ex.: "Sem cronômetro: só marcar feito…", a frase do topo, a legenda do Planejamento. A dica ao passar o mouse continua.', 'App inteiro'],
+    ['stats',    'Totais e contagens',         'Ex.: "4h57 na tarefa", "início real", "30min ✓", "1 tarefa · 1 concluída", "8 blocos concluídos".', 'App inteiro']
   ];
   var LAYOUT_MODES = {
     simples:     {name:'Simples',     on:['check'],
@@ -8465,6 +8465,9 @@ window.addEventListener('keydown', function(e){
         LAYOUT_PANELS.forEach(function(p){ c[p[0]]=cur.indexOf(p[0])>=0; });
         c[i.getAttribute('data-lay-k')]=i.checked;
         saveLayout({mode:'custom', custom:c}); paintLayoutPanel();
+
+        var pn=LAYOUT_PANELS.filter(function(p){ return p[0]===i.getAttribute('data-lay-k'); })[0];
+        showToast((i.checked?'Ligado: ':'Desligado: ')+(pn?pn[1]:'')+' · já salvo', '✓');
       };
     });
     var ib=root.querySelector('#lay-intro'); if(ib) ib.onclick=function(){ introOpen(); };
@@ -12253,7 +12256,7 @@ window.addEventListener('keydown', function(e){
     if(!b || !b.taskId) return '';
     var t=pnTaskById(b.taskId); if(!t) return '';
     var h=pnTaskHours(t.id);
-    return '<span class="pn-hero-hours"> · '+(h.total?fmtDuration(h.total)+' na tarefa':'1º bloco da tarefa')+'</span>';
+    return '<span class="pn-hero-hours lay-stat"> · '+(h.total?fmtDuration(h.total)+' na tarefa':'1º bloco da tarefa')+'</span>';
   }
 
   function pnTrayHtml(d){
@@ -13644,7 +13647,7 @@ window.addEventListener('keydown', function(e){
     var elapsedMs = elapsedOf(b);
     var plannedMs = b.isLoose ? (b.targetDurationMin?b.targetDurationMin*60000:null) : (minutesOf(b.plannedEnd)-minutesOf(b.plannedStart))*60000;
     var over = plannedMs!=null && elapsedMs>plannedMs;
-    var timeLabel = b.isLoose ? ('início real '+timeStr(new Date(b.actualStart))) : (b.plannedStart+'–'+b.plannedEnd+' planejado · início real '+timeStr(new Date(b.actualStart)));
+    var timeLabel = b.isLoose ? ('<span class="lay-stat">início real </span>'+timeStr(new Date(b.actualStart))) : (b.plannedStart+'–'+b.plannedEnd+'<span class="lay-stat"> planejado · início real '+timeStr(new Date(b.actualStart))+'</span>');
     if(paused) timeLabel += ' · pausada desde '+timeStr(new Date(b.pausedAt||Date.now()));
     var barHtml = '';
     if(plannedMs!=null){
@@ -13663,7 +13666,7 @@ window.addEventListener('keydown', function(e){
           '<div class="hero-title">'+catIconPrefix(cat)+escapeHtml(b.title||(cat?cat.name:'Bloco'))+'</div>' +
           (b.project?'<div class="hero-project">'+escapeHtml(b.project)+pnHeroSuffix(b)+'</div>':'') +
           (b.note?'<div class="hero-note">'+escapeHtml(b.note)+'</div>':'') +
-          '<div class="hero-sub mono">'+timeLabel+(b.lateMin!=null && b.lateMin>=LATE_TOL_MIN ? ' · <span class="late-tag">começou '+fmtDuration(b.lateMin)+' depois'+(b.lateReason?' · '+lateReasonMeta(b.lateReason).label.toLowerCase():'')+'</span>' : '')+'</div>' +
+          '<div class="hero-sub mono">'+timeLabel+(b.lateMin!=null && b.lateMin>=LATE_TOL_MIN ? '<span class="lay-stat"> · </span><span class="late-tag lay-stat">começou '+fmtDuration(b.lateMin)+' depois'+(b.lateReason?' · '+lateReasonMeta(b.lateReason).label.toLowerCase():'')+'</span>' : '')+'</div>' +
         '</div>' +
         '<div style="text-align:right;">' +
 
@@ -14452,7 +14455,7 @@ window.addEventListener('keydown', function(e){
         var keys = (canMove ? '<b>Arrastar</b>: mover · <b>Ctrl</b> ou <b>Shift</b> + arrastar: copiar' : (canCopy ? '<b>Arrastar</b>: copiar (este não dá pra mover)' : ''));
         var el=document.createElement('div'); el.className='grid-hover-tip';
         el.innerHTML=(info?'<div class="ght-info">'+escapeHtml(info)+'</div>':'') +
-          '<div class="ght-keys lay-tip"><b>Clique</b>: abrir'+(keys?' · '+keys:'')+' · <b>Botão direito</b>: opções'+(canMove?' · alça de baixo: duração':'')+'</div>';
+          '<div class="ght-keys"><b>Clique</b>: abrir'+(keys?' · '+keys:'')+' · <b>Botão direito</b>: opções'+(canMove?' · alça de baixo: duração':'')+'</div>';
         document.body.appendChild(el); GH.el=el; GM_POS=gmPos();
         var r=chip.getBoundingClientRect(), W=el.offsetWidth, H=el.offsetHeight;
         var x=Math.max(8, Math.min(r.left, innerWidth-W-8)), y=r.top-H-6; if(y<8) y=r.bottom+6;
@@ -16148,10 +16151,10 @@ window.addEventListener('keydown', function(e){
     var pct = plannedMs ? (over?1:elapsedMs/plannedMs) : 0;
     var icon = (cat && cat.icon) ? cat.icon : '⏱️';
     var metaBits = [];
-    if(!b.isLoose) metaBits.push(b.plannedStart+'–'+b.plannedEnd+' planejado');
+    if(!b.isLoose) metaBits.push(b.plannedStart+'–'+b.plannedEnd);
     else if(b.targetDurationMin) metaBits.push('meta de '+fmtDuration(b.targetDurationMin));
     else metaBits.push('sem meta de tempo');
-    metaBits.push('início real '+timeStr(new Date(b.actualStart)));
+    metaBits.push('\u0001início real '+timeStr(new Date(b.actualStart)));
     if(paused) metaBits.push('pausada desde '+timeStr(new Date(b.pausedAt||Date.now())));
     if(b.tags && b.tags.length) metaBits.push('#'+b.tags.join(' #'));
 
@@ -16162,7 +16165,7 @@ window.addEventListener('keydown', function(e){
         '</div>' +
         '<h1 class="focus-title">'+escapeHtml(b.title||(cat?cat.name:'Tarefa'))+'</h1>' +
         (b.project?'<div class="focus-project">'+escapeHtml(b.project)+pnHeroSuffix(b)+'</div>':'') +
-        '<div class="focus-meta mono" id="focus-meta">'+escapeHtml(metaBits.join(' · '))+'</div>' +
+        '<div class="focus-meta mono" id="focus-meta">'+metaBits.map(function(x){ var st=x.charAt(0)==='\u0001'; return '<span'+(st?' class="lay-stat"':'')+'>'+(st?' · ':'')+escapeHtml(st?x.slice(1):x)+'</span>'; }).map(function(s,i){ return (i>0 && s.indexOf('lay-stat')<0)?'<span> · </span>'+s:s; }).join('')+'</div>' +
         '<div class="focus-ringwrap" id="focus-ringwrap">'+focusRingSvg(pct, over, paused, color)+
           '<div class="focus-ring-center"><span class="focus-ring-icon">'+(paused?'❚❚':icon)+'</span></div>' +
         '</div>' +
