@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261113-114952';</script>
+<script>window.AGENDA_BUILD = '20261113-115353';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261113-114952"></script>
+<script src="cloud.js?v=20261113-115353"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -428,6 +428,11 @@
   .chip-skip{position:absolute; top:2px; right:2px; width:19px; height:19px; border-radius:3px; display:flex;
     align-items:center; justify-content:center; line-height:1; font-size:0.6667rem; font-weight:800; z-index:2;
     color:#fff; background:var(--critical); border:1.5px solid var(--critical); box-shadow:0 1px 2px rgba(0,0,0,.25);}
+.x-ic{display:inline-block; width:1em; height:1em; vertical-align:-0.14em; fill:none; stroke:currentColor; stroke-width:2.6; stroke-linecap:round;}
+  .chip-skip .x-ic{width:12px; height:12px; stroke-width:2.8;}
+  .chip .chip-skip{border-radius:50%;}
+  .chip[data-narrow] .chip-skip .x-ic{width:10px; height:10px;}
+  .btn .x-ic{margin-right:2px;}
   .chip[data-narrow] .chip-skip{width:16px; height:16px; top:2px; right:2px; font-size:0.6111rem;}
   .chip.status-skipped{border-left-color:var(--critical)!important;}
   .chip.status-skipped .skip-s{color:var(--critical);}
@@ -13488,7 +13493,7 @@ window.addEventListener('keydown', function(e){
 
   function apptCheckBtnsHtml(b){
     return '<button class="btn ghost small" data-appt-done="'+b.id+'" style="padding:1px 8px;">✓ Feito</button>' +
-      '<button class="btn ghost small" data-appt-skip="'+b.id+'" style="padding:1px 8px;">✗ Não feito</button>';
+      '<button class="btn ghost small" data-appt-skip="'+b.id+'" style="padding:1px 8px;">'+xIcon()+' Não feito</button>';
   }
   function apptHeroNotesHtml(){
     var html = '';
@@ -13516,7 +13521,7 @@ window.addEventListener('keydown', function(e){
           '<div class="hero-timer mono appt-timer">'+fmtDuration(minsLeft)+'</div>' +
           '<div class="hero-timer-label">até '+b.plannedEnd+'</div>' +
           '<div style="display:flex; gap:6px; justify-content:flex-end; margin-top:6px;">' +
-            '<button class="btn small" data-appt-skip="'+b.id+'">✗ Não feito</button>' +
+            '<button class="btn small" data-appt-skip="'+b.id+'">'+xIcon()+' Não feito</button>' +
             '<button class="btn primary small" data-appt-done="'+b.id+'">✓ Feito</button>' +
           '</div>' +
         '</div>' +
@@ -13977,7 +13982,7 @@ window.addEventListener('keydown', function(e){
       } else if(appt && b.status==='done'){
         extra = '<div class="s">✓ feito</div>';
       } else if(appt && b.status==='skipped'){
-        extra = '<div class="s skip-s">✗ não feito</div>';
+        extra = '<div class="s skip-s">'+xIcon()+' não feito</div>';
       } else if(b.status==='done'){
         var realMin=Math.round((b.actualEnd-b.actualStart)/60000);
         extra = '<div class="s">'+fmtDuration(realMin)+' ✓</div>';
@@ -13985,7 +13990,7 @@ window.addEventListener('keydown', function(e){
         var sMeta=skipReasonMeta(b.skipReason);
         extra = '<div class="s skip-s">'+sMeta.icon+' '+escapeHtml(sMeta.label)+'</div>';
       }
-      var checkHtml = (!isActiveStatus(b.status) && b.status!=='skipped') ? '<div class="chip-check'+(b.status==='done'?' done':'')+'" data-act="quickcheck">'+(b.status==='done'?'✓':'')+'</div>' : (b.status==='skipped' ? '<div class="chip-skip">✗</div>' : '');
+      var checkHtml = (!isActiveStatus(b.status) && b.status!=='skipped') ? '<div class="chip-check'+(b.status==='done'?' done':'')+'" data-act="quickcheck">'+(b.status==='done'?'✓':'')+'</div>' : (b.status==='skipped' ? '<div class="chip-skip" title="Não feito">'+xIcon()+'</div>' : '');
       var shortTime = narrow ? (b.isLoose ? timeLabel : b.plannedStart) : timeLabel;
       chip.innerHTML = '<div class="t">'+(appt?'📍 ':catIconPrefix(cat))+escapeHtml(b.title||(cat?cat.name:'Bloco'))+'</div>' +
         (height>32 && b.project && !narrow ? '<div class="s s-proj" style="font-weight:600;">'+escapeHtml(b.project)+'</div>' : '') +
@@ -15054,7 +15059,7 @@ window.addEventListener('keydown', function(e){
     var appt=isAppt(it);
     var titulo = it.title || (cat?cat.name:(appt?'Compromisso':'Bloco'));
     var hora = it.isLoose ? '' : (it.plannedStart||'');
-    var marca = it.status==='done' ? '<span class="pl-ck">✓</span>' : (it.status==='skipped' ? '<span class="pl-ck bad">✗</span>' : (isActiveStatus(it.status) ? '<span class="pl-ck" style="color:var(--accent);">▶</span>' : ''));
+    var marca = it.status==='done' ? '<span class="pl-ck">✓</span>' : (it.status==='skipped' ? '<span class="pl-ck bad">'+xIcon()+'</span>' : (isActiveStatus(it.status) ? '<span class="pl-ck" style="color:var(--accent);">▶</span>' : ''));
     return '<div class="pl-card block status-'+it.status+(appt?' appt':'')+'" data-pk="block" data-pi="'+it.id+'" style="--pl-c:'+(cat?cat.color:'#8A8F98')+';" data-act="open" title="'+escapeHtml((hora?hora+' · ':'')+titulo)+'">' +
       '<span class="pl-title">'+(appt?'📍 ':'')+(hora?'<span class="mono pl-t">'+hora+'</span> ':'')+escapeHtml(titulo)+'</span>' + marca +
     '</div>';
@@ -17499,6 +17504,8 @@ window.addEventListener('keydown', function(e){
       '</div>' +
     '</div>';
   }
+
+  function xIcon(cls){ return '<svg class="x-ic'+(cls?' '+cls:'')+'" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.2 4.2l7.6 7.6M11.8 4.2l-7.6 7.6"/></svg>'; }
   function buildDetailModal(modal, bRef){
     var b = state.weekBlocks.filter(function(x){return x.id===bRef.id;})[0] || bRef;
     var cat = catById(b.categoryId);
@@ -17549,7 +17556,7 @@ window.addEventListener('keydown', function(e){
     if(appt){
 
       if(b.status==='done' || b.status==='skipped'){
-        body += '<div class="appt-status-note '+b.status+'"><b>'+(b.status==='done'?'✓ Feito':'✗ Não feito')+'</b></div>';
+        body += '<div class="appt-status-note '+b.status+'"><b>'+(b.status==='done'?'✓ Feito':xIcon()+' Não feito')+'</b></div>';
         if(b.status==='skipped'){
           body += '<div class="field" style="margin-top:12px;"><label>O que aconteceu? (opcional)</label>' +
             '<textarea id="skip-note-txt" placeholder="ex: remarquei pra semana que vem">'+escapeHtml(b.skipNote||'')+'</textarea></div>';
@@ -17561,7 +17568,7 @@ window.addEventListener('keydown', function(e){
       } else {
         body += '<div class="action-col">' +
           '<button class="btn primary" data-act="appt-done">✓ Feito</button>' +
-          '<button class="btn" data-act="appt-skip">✗ Não feito</button>' +
+          '<button class="btn" data-act="appt-skip">'+xIcon()+' Não feito</button>' +
           '<button class="btn ghost" data-act="del" style="color:var(--critical);">Excluir</button>' +
         '</div>';
       }
@@ -17578,7 +17585,7 @@ window.addEventListener('keydown', function(e){
             '<button class="btn small" data-act="retro-exact" style="margin-bottom:1px;">Aplicar</button>' +
           '</div>'
         : '') +
-        '<button class="btn" data-act="skip">✗ Não fiz…</button>' +
+        '<button class="btn" data-act="skip">'+xIcon()+' Não fiz…</button>' +
         (state.skipFor===b.id ?
           '<div class="skip-picker">' +
             '<div class="skip-q">Por quê? O motivo é o que vira padrão depois.</div>' +
