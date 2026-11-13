@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261112-221118';</script>
+<script>window.AGENDA_BUILD = '20261113-114952';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261112-221118"></script>
+<script src="cloud.js?v=20261113-114952"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -1690,6 +1690,16 @@ button.pn-crumb-root:hover{background:var(--accent-soft); color:var(--ink);}
 .overlay.pn-overlay, :root[data-sky] .overlay.pn-overlay{backdrop-filter:none; -webkit-backdrop-filter:none; background:rgba(12,14,24,.42);}
 :root[data-sky] .overlay{backdrop-filter:none; -webkit-backdrop-filter:none; background:rgba(12,14,24,.42);}
 .detail-catpick .cat-pick{display:inline-block; width:auto;}
+.detail-title-edit{display:flex; align-items:center; gap:6px; margin:10px 0 0; cursor:text;}
+.detail-title-edit .dte-measure{position:absolute; visibility:hidden; white-space:pre; font:700 1.05rem/1.3 var(--sans);}
+.detail-title-edit input{flex:0 1 auto; min-width:60px; max-width:calc(100% - 24px); border:1px solid transparent; background:transparent; color:var(--ink); font:700 1.05rem/1.3 var(--sans); padding:3px 6px; margin-left:-7px; border-radius:8px; transition:border-color .15s ease, background .15s ease;}
+.detail-title-edit input::placeholder{color:var(--ink); opacity:1;}
+.detail-title-edit:hover input{border-color:var(--border-soft);}
+.detail-title-edit input:focus{outline:none; border-color:var(--accent); background:var(--surface-3);}
+.detail-title-edit input:focus::placeholder{opacity:.4;}
+.detail-title-edit .dte-pen{flex:none; font-size:0.9rem; color:var(--ink-faint); transition:color .15s ease;}
+.detail-title-edit:hover .dte-pen{color:var(--accent);}
+.detail-title-edit input:focus + .dte-pen{opacity:0;}
 .pn-dlg{width:min(1120px,100%); height:min(860px,94vh); display:flex; flex-direction:column; overflow:hidden; border-radius:24px; background:linear-gradient(var(--glass-bg-strong),var(--glass-bg-strong)), var(--sky-base, var(--bg)); border:1px solid var(--glass-border); contain:layout paint; box-shadow:var(--shadow-lg), inset 0 1px 0 var(--panel-highlight); color:var(--ink);}
 .pn-dlg-head{display:flex; align-items:center; gap:6px; padding:12px 14px 12px 22px; border-bottom:1px solid var(--border-soft); position:relative; flex:none;}
 .pn-dlg-crumb{font-size:0.8333rem; color:var(--ink-soft); font-weight:600; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:flex; align-items:center; gap:7px;}
@@ -13382,15 +13392,15 @@ window.addEventListener('keydown', function(e){
       right = '<div style="text-align:right;">' +
           '<div class="hero-timer mono idle">'+fmtDuration(minsUntil)+'</div>' +
           '<div class="hero-timer-label">até a próxima</div>' +
-          '<button class="btn small primary" id="hero-start-next" data-target="'+next.id+'" style="margin-top:6px; display:block; width:100%;">▶ Iniciar agora</button>' +
-          '<button class="btn small ghost" id="hero-quickstart" style="margin-top:4px; display:block; width:100%;">+ começar outra coisa</button>' +
+          '<button class="btn small primary" id="hero-start-next" title="Começa o cronômetro da próxima tarefa agora, mesmo antes do horário" data-target="'+next.id+'" style="margin-top:6px; display:block; width:100%;">▶ Iniciar agora</button>' +
+          '<button class="btn small ghost" id="hero-quickstart" style="margin-top:4px; display:block; width:100%;" title="Começa algo que não estava planejado — escolha o nome e a categoria">+ começar outra coisa</button>' +
         '</div>';
     } else {
 
       title = apptNextToday() ? 'Nenhuma tarefa até o próximo compromisso' : 'Nada mais planejado por hoje';
       sub = idleSuggestion();
 
-      right = '<div style="text-align:right;"><button class="btn small primary" id="hero-quickstart">▶ Começar uma tarefa agora</button></div>';
+      right = '<div style="text-align:right;"><button class="btn small primary" id="hero-quickstart" title="Começa algo que não estava planejado — escolha o nome e a categoria">▶ Começar uma tarefa agora</button></div>';
     }
 
     var flexOverdue = overdueFlexibleList();
@@ -13399,12 +13409,12 @@ window.addEventListener('keydown', function(e){
       flexHtml = '<div class="hero-flex-note">' +
         (flexOverdue.length===1 ? '↳ 1 tarefa adiável atrasada: ' : '↳ '+flexOverdue.length+' tarefas adiáveis atrasadas — a mais antiga: ') +
         '<button class="hero-link" data-goto="'+flexOverdue[0].id+'" title="Ver o bloco na grade">'+escapeHtml(flexOverdue[0].title||(catById(flexOverdue[0].categoryId)?catById(flexOverdue[0].categoryId).name:'bloco'))+' ('+flexOverdue[0].plannedStart+')</button>' +
-        ' <button class="btn primary small" id="hero-start-flex" data-target="'+flexOverdue[0].id+'" style="padding:2px 10px; margin-left:4px;">▶ Iniciar agora</button>' +
-        ' <button class="btn ghost small" id="hero-push-flex" data-target="'+flexOverdue[0].id+'" style="padding:2px 8px;">Empurrar pra agora</button>' +
+
+        ' <button class="btn primary small" id="hero-start-flex" data-target="'+flexOverdue[0].id+'" style="padding:2px 10px; margin-left:4px;" title="Começa o cronômetro desta tarefa agora">▶ Iniciar agora</button>' +
       '</div>';
 
       if(right) right=right.replace('class="btn small primary" id="hero-quickstart"', 'class="btn small" id="hero-quickstart"');
-      if(title==='Nada mais planejado por hoje'){ title=flexOverdue.length===1?'Ficou uma tarefa para trás':'Ficaram tarefas para trás'; sub='Sem problema: comece agora ou empurre o horário.'; }
+      if(title==='Nada mais planejado por hoje'){ title=flexOverdue.length===1?'Ficou uma tarefa para trás':'Ficaram tarefas para trás'; sub='Sem problema: comece agora ou arraste o bloco pra outro horário.'; }
     }
     return '<div class="panel hero-current idle" id="hero-current">' +
       '<div class="panel-body" style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;">' +
@@ -13469,8 +13479,8 @@ window.addEventListener('keydown', function(e){
           '<div class="hero-sub mono">deveria ter começado às '+b.plannedStart+' · atrasado há '+fmtDuration(minsLate)+'</div>' +
         '</div>' +
         '<div style="text-align:right; display:flex; flex-direction:column; gap:6px; align-items:flex-end;">' +
-          '<button class="btn primary small" id="hero-start-overdue">Iniciar agora</button>' +
-          '<button class="btn ghost small" id="hero-skip-overdue">Não vou fazer</button>' +
+          '<button class="btn primary small" id="hero-start-overdue" title="Começa o cronômetro desta tarefa agora">Iniciar agora</button>' +
+          '<button class="btn ghost small" id="hero-skip-overdue" title="Marca como não feita e pergunta o motivo">Não vou fazer</button>' +
         '</div>' +
       '</div>' +
     '</div>';
@@ -13566,8 +13576,8 @@ window.addEventListener('keydown', function(e){
           '<div class="hero-timer mono'+(over&&!paused?' over':'')+(paused?' paused':'')+'" id="hero-clock">'+(over?'+':'')+fmtClock(over?elapsedMs-plannedMs:elapsedMs)+'</div>' +
           '<div class="hero-timer-label" id="hero-clock-lbl">'+(paused?'cronômetro parado':(over?'além do planejado':(plannedMs==null?'sem meta':'restante '+fmtClock(plannedMs-elapsedMs))))+'</div>' +
           '<div style="display:flex; gap:6px; justify-content:flex-end; margin-top:6px;">' +
-            '<button class="btn small" id="hero-pause">'+(paused?'▶ Retomar':'❚❚ Pausar')+'</button>' +
-            '<button class="btn primary small" id="hero-complete">Concluir</button>' +
+            '<button class="btn small" id="hero-pause" title="Pausa o cronômetro (o tempo parado não conta)">'+(paused?'▶ Retomar':'❚❚ Pausar')+'</button>' +
+            '<button class="btn primary small" id="hero-complete" title="Termina a tarefa e guarda o tempo feito">Concluir</button>' +
           '</div>' +
           (pipSupported() && !PIP.open ? '<div style="margin-top:4px;">'+pipBtnHtml('hero-pip')+'</div>' : '') +
         '</div>' +
@@ -17499,7 +17509,8 @@ window.addEventListener('keydown', function(e){
     var appt = isAppt(b);
 
     var body = '<div class="detail-catpick"><select data-cats="1" id="d-cat" style="width:auto;">'+catOptionsHtml(b.categoryId)+'</select></div>' +
-      '<h3 style="margin:10px 0 0; font-size:1.05rem;">'+escapeHtml(b.title||(cat?cat.name:'Bloco'))+'</h3>' +
+
+      '<label class="detail-title-edit" title="Clique para trocar o nome"><input id="d-title" type="text" value="'+escapeHtml(b.title||'')+'" placeholder="'+escapeHtml(cat?cat.name:'Bloco')+'" aria-label="Nome do bloco" autocomplete="off"><span class="dte-pen" aria-hidden="true">✎</span></label>' +
       (canEditTime ?
         '<div class="field-row" style="margin-top:8px;"><div class="field"><label>Início</label><input id="d-start" type="time" value="'+b.plannedStart+'"></div><div class="field"><label>Fim</label><input id="d-end" type="time" value="'+b.plannedEnd+'"></div></div>'
         : '<div class="detail-time mono">'+timeLabel+'</div>') +
@@ -17510,7 +17521,7 @@ window.addEventListener('keydown', function(e){
         (appt ? '<div style="margin-top:8px;">'+reminderEditorHtml('d-rem', b.reminders)+'</div>' : '') +
       '</div>' : '') +
       (canEditTime && isStartOverdue(b) && b.flexible!==false ?
-        '<div class="flex-note">↳ atrasada, mas adiável — sem alarme. <button class="btn ghost small" data-act="push-flex" style="padding:1px 8px;">Empurrar pra agora</button></div>' : '') +
+        '<div class="flex-note">↳ atrasada, mas adiável — sem alarme.</div>' : '') +
       (isAppt(b) ? '' : pnBlockLinkHtml(b)) +
       (function(){ var lm=blockLateMin(b); if(lm==null || lm<LATE_TOL_MIN) return '';
         return '<div class="field late-field"><label>Começou '+fmtDuration(lm)+' depois do planejado</label><select id="d-late">' +
@@ -17518,12 +17529,7 @@ window.addEventListener('keydown', function(e){
       (isWorkCategory(b.categoryId) ? '<div class="field" style="margin-top:10px;"><label>Projeto / trabalho</label><input id="d-project" type="text" list="project-suggestions" placeholder="ex: Obra Residencial" value="'+escapeHtml(b.project||'')+'">'+projectDatalistHtml(b.categoryId)+'</div>' : '') +
       '<div class="field"><label>Anotação</label><textarea id="d-note" placeholder="O que fazer exatamente nesse horário…">'+escapeHtml(b.note||'')+'</textarea></div>' +
       '<div class="field"><label>Tags</label><input id="d-tags" type="text" placeholder="ex: obra JB, urgente" value="'+escapeHtml((b.tags||[]).join(', '))+'"></div>' +
-      '<div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;">' +
-        '<button class="btn small ghost" data-act="duplicate">⧉ Duplicar</button>' +
-        '<button class="btn small ghost" data-act="rename">✎ Trocar nome</button>' +
-      '</div>' +
-      (state.renameFor===b.id ? renamePanelHtml(b) : '') +
-      (b.isLoose?'':'<div class="empty-hint" style="padding:4px 2px 0; font-size:0.72rem;">Na grade: arraste o bloco pra mudar o horário (a duração fica igual) · puxe a alcinha de baixo pra mudar a duração · segure Shift pra copiar</div>') +
+
       (b.isLoose?'':
 
         (state.routineMarkFor===b.id ? routineMarkPanelHtml(b) : '')
@@ -17697,6 +17703,21 @@ window.addEventListener('keydown', function(e){
 
     var unskipBtn = modal.querySelector('[data-act="unskip"]');
     if(unskipBtn) wireArmConfirm(unskipBtn, 'Confirma? apaga o motivo', function(){ unskipBlock(b); closeModal(); });
+    var tIn = modal.querySelector('#d-title');
+    if(tIn){
+      var tSalva=function(){
+        var v=tIn.value.trim();
+        if(v===(b.title||'')) return;
+        updateBlock(b.id, {title:v}); patchBlockLocal(b.id, {title:v});
+        showToast(v ? 'Nome trocado.' : 'Sem nome: mostra o da categoria.', '✎');
+      };
+      tIn.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); tIn.blur(); } else if(e.key==='Escape'){ e.stopPropagation(); tIn.value=b.title||''; tIn.blur(); } });
+      tIn.addEventListener('blur', function(){ setTimeout(tSalva, 0); });
+
+      var tFit=function(){ var s=document.createElement('span'); s.className='dte-measure'; s.textContent=tIn.value||tIn.placeholder; tIn.parentNode.appendChild(s);
+        tIn.style.width=Math.min(tIn.parentNode.clientWidth-24, s.offsetWidth+16)+'px'; s.remove(); };
+      tIn.addEventListener('input', tFit); tFit();
+    }
     var catSel = modal.querySelector('#d-cat');
     if(catSel) catSel.addEventListener('change', function(){
       if(!catSel.value || catSel.value===b.categoryId) return;
