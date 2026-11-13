@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261113-150531';</script>
+<script>window.AGENDA_BUILD = '20261113-152129';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261113-150531"></script>
+<script src="cloud.js?v=20261113-152129"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -10172,11 +10172,12 @@ window.addEventListener('keydown', function(e){
         var keyStart=b.id+'-start';
         if(now>=startMs && !fired[keyStart]){ fired[keyStart]=now; fireAlert('Hora de começar', label+' já deveria ter começado às '+b.plannedStart+'.', {urgent:true, kind:'start', key:keyStart, blockId:b.id}); }
       } else if(b.status==='running' && b.plannedEnd){
-        var endMs = parseDT(b.date, b.plannedEnd).getTime();
+
+        var endMs = runEndMs(b) || parseDT(b.date, b.plannedEnd).getTime();
         var minsToEnd = Math.round((endMs-now)/60000);
         [5,1].forEach(function(m){
           var key=b.id+'-nearend-'+m;
-          if(minsToEnd===m && !fired[key]){ fired[key]=now; fireAlert('Faltam '+m+' min pro fim', label+' termina às '+b.plannedEnd+'.', {kind:'nearend', key:key, blockId:b.id}); }
+          if(minsToEnd===m && !fired[key]){ fired[key]=now; fireAlert('Faltam '+m+' min pro fim', label+' termina às '+timeStr(new Date(endMs))+'.', {kind:'nearend', key:key, blockId:b.id}); }
         });
         if(now>endMs){
           var overMin = Math.floor((now-endMs)/60000);
@@ -10750,6 +10751,11 @@ window.addEventListener('keydown', function(e){
     return per;
   }
 
+  function runEndMs(b){
+    if(!b || b.isLoose || b.status!=='running' || !b.plannedStart || !b.plannedEnd) return null;
+    var dur=(minutesOf(b.plannedEnd)-minutesOf(b.plannedStart))*60000; if(dur<=0) return null;
+    return Date.now()+dur-elapsedOf(b);
+  }
   function elapsedOf(b){
     if(!b || !b.actualStart) return 0;
     if(b.status==='paused' && b.pausedAt) return Math.max(0, b.pausedAt - b.actualStart);
@@ -13649,6 +13655,9 @@ window.addEventListener('keydown', function(e){
     var plannedMs = b.isLoose ? (b.targetDurationMin?b.targetDurationMin*60000:null) : (minutesOf(b.plannedEnd)-minutesOf(b.plannedStart))*60000;
     var over = plannedMs!=null && elapsedMs>plannedMs;
     var timeLabel = b.isLoose ? ('<span class="lay-stat">início real </span>'+timeStr(new Date(b.actualStart))) : (b.plannedStart+'–'+b.plannedEnd+'<span class="lay-stat"> planejado · início real '+timeStr(new Date(b.actualStart))+'</span>');
+
+    var reEnd = runEndMs(b);
+    if(reEnd && !over){ var reStr=timeStr(new Date(reEnd)); if(reStr!==b.plannedEnd) timeLabel += ' · <b class="hero-reend">termina '+reStr+'</b>'; }
     if(paused) timeLabel += ' · pausada desde '+timeStr(new Date(b.pausedAt||Date.now()));
     var barHtml = '';
     if(plannedMs!=null){
