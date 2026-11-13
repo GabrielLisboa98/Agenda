@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261113-120130';</script>
+<script>window.AGENDA_BUILD = '20261113-120752';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261113-120130"></script>
+<script src="cloud.js?v=20261113-120752"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -3231,6 +3231,28 @@ html.lay-off-progress.lay-off-budget #mobile-metrics, html.lay-off-progress.lay-
 .lay-bar span{font-size:9px; line-height:1; color:var(--ink); opacity:.75; white-space:nowrap;}
 .lay-bar.is-grid{background:repeating-linear-gradient(180deg, color-mix(in srgb, var(--ink) 10%, transparent) 0 1px, transparent 1px 9px), color-mix(in srgb, var(--accent) 12%, transparent);}
 .lay-bar.off{height:0; margin-bottom:0; opacity:0;}
+.lay-phone{overflow:hidden;}
+.lay-bar.is-grid{position:relative;}
+.ld-chip{position:absolute; left:12px; right:10px; top:9px; height:10px; border-radius:3px; background:var(--accent); opacity:.85;}
+.ld-finger{position:absolute; left:58%; top:60%; width:16px; height:16px; margin:-8px 0 0 -8px; border-radius:50%; background:color-mix(in srgb, var(--ink) 30%, transparent); box-shadow:0 0 0 3px color-mix(in srgb, var(--ink) 12%, transparent); opacity:0; pointer-events:none;}
+.ld-sheet{position:absolute; left:6px; right:6px; bottom:6px; padding:8px 8px 7px; border-radius:12px; background:linear-gradient(var(--surface),var(--surface)), linear-gradient(var(--glass-bg-strong),var(--glass-bg-strong)), var(--sky-base, var(--bg)); border:1px solid var(--border); box-shadow:0 -6px 18px -8px rgba(0,0,0,.4); transform:translateY(120%); display:flex; flex-direction:column; gap:4px;}
+.ld-name{font-size:9px; font-weight:800; color:var(--ink); line-height:1;}
+.ld-time{font-size:8px; color:var(--ink-soft); line-height:1;}
+.ld-stat{align-self:flex-start; font-size:7.5px; font-weight:700; line-height:1; padding:2px 5px; border-radius:6px; background:color-mix(in srgb, var(--accent) 22%, transparent); color:var(--ink);}
+.ld-tip{height:4px; border-radius:2px; background:color-mix(in srgb, var(--ink) 18%, transparent);}
+.ld-tip.short{width:62%;}
+.ld-btn{height:10px; margin-top:2px; border-radius:6px; background:var(--accent);}
+.lay-phone.tips-off .ld-tip, .lay-phone.stats-off .ld-stat{display:none;}
+.ld-legend{position:absolute; top:12px; right:8px; display:flex; flex-direction:column; align-items:flex-end; gap:2px;}
+.ld-legend span{font-size:7px; font-weight:800; line-height:1; padding:2px 4px; border-radius:5px; background:color-mix(in srgb, var(--accent) 22%, var(--surface-3)); color:var(--ink); transition:opacity .25s ease;}
+.lay-phone.tips-off .ld-l-tip, .lay-phone.stats-off .ld-l-stat{opacity:.25; text-decoration:line-through;}
+.lay-phone.ld-play .ld-finger{animation:ld-finger 5s cubic-bezier(.32,.72,0,1) infinite;}
+.lay-phone.ld-play .ld-sheet{animation:ld-sheet 5s cubic-bezier(.32,.72,0,1) infinite;}
+.lay-phone.ld-play .ld-chip{animation:ld-chip 5s ease infinite;}
+@keyframes ld-finger{0%{opacity:0; transform:translate(10px,14px);} 12%{opacity:1; transform:translate(0,0);} 18%{transform:scale(.8);} 22%{transform:scale(1); opacity:1;} 30%,100%{opacity:0;}}
+@keyframes ld-chip{0%,16%{filter:none;} 20%{filter:brightness(1.4);} 26%,100%{filter:none;}}
+@keyframes ld-sheet{0%,24%{transform:translateY(120%);} 34%,82%{transform:translateY(0);} 92%,100%{transform:translateY(120%);}}
+@media (prefers-reduced-motion:reduce){ .lay-phone.ld-play .ld-finger, .lay-phone.ld-play .ld-chip{animation:none;} .lay-phone.ld-play .ld-sheet{animation:none; transform:none;} }
 .lay-list{display:flex; flex-direction:column;}
 .lay-group{font-size:13px; font-weight:650; color:var(--ink-soft); margin:12px 0 4px;}
 .lay-group:first-child{margin-top:0;}
@@ -5477,7 +5499,7 @@ function ntBlockMenu(anchor, id){
        '<button type="button" class="nt-mi'+(b.colHead?' is-on':'')+'" data-tb="colhead"><span class="nt-mi-t">Coluna de título</span><span class="nt-mi-chk"></span></button>';
     if(lc) h+='<button type="button" class="nt-mi" data-tb="addrow"><span class="nt-mi-t">Inserir linha abaixo da linha '+(lc.r+1)+'</span></button><button type="button" class="nt-mi" data-tb="addcol"><span class="nt-mi-t">Inserir coluna à direita da coluna '+(lc.c+1)+'</span></button>'+
        '<button type="button" class="nt-mi danger" data-tb="delrow"><span class="nt-mi-t">Excluir a linha '+(lc.r+1)+'</span></button><button type="button" class="nt-mi danger" data-tb="delcol"><span class="nt-mi-t">Excluir a coluna '+(lc.c+1)+'</span></button>';
-    else h+='<div class="nt-pop-note">Clique numa célula antes para inserir ou excluir a linha e a coluna dela.</div>';
+    else h+='<div class="nt-pop-note lay-tip">Clique numa célula antes para inserir ou excluir a linha e a coluna dela.</div>';
     h+='<button type="button" class="nt-mi" data-bm="todb"><span class="nt-mi-i">🗂</span><span class="nt-mi-t">Transformar em banco de dados</span></button><div class="nt-pop-sep"></div>';
   }
   if(MEDIA_TYPES[b.type] && b.asset && NT.assets) h+='<button type="button" class="nt-mi" data-bm="replace"><span class="nt-mi-t">Substituir arquivo</span></button>';
@@ -5547,7 +5569,7 @@ function ntLinkPrompt(blk, t){
   var a=(s.anchorNode && s.anchorNode.parentElement) ? s.anchorNode.parentElement.closest('a[href]') : null;
   var h='<div class="nt-pop-h">Link</div><form class="nt-linkf"><input id="nt-link-url" type="text" placeholder="https://…" value="'+ntEscAttr(a?a.getAttribute('href'):'')+'"><button type="submit" class="nt-btn primary">OK</button></form>'+
         (a?'<button type="button" class="nt-mi" data-unlink="1">Remover link</button>':'')+
-        (saved.collapsed && !a?'<div class="nt-pop-note">Sem texto selecionado: o próprio endereço vira o texto do link. Para ligar outra página, use @.</div>':'');
+        (saved.collapsed && !a?'<div class="nt-pop-note lay-tip">Sem texto selecionado: o próprio endereço vira o texto do link. Para ligar outra página, use @.</div>':'');
   var rc=saved.getBoundingClientRect(); var anchor={getBoundingClientRect:function(){ return (rc.width||rc.height)?rc:t.getBoundingClientRect(); }};
   ntOpenPop(anchor, h, function(pop){
     var restore=function(){ t.focus({preventScroll:true}); var ss=window.getSelection(); ss.removeAllRanges(); ss.addRange(saved); };
@@ -7142,7 +7164,7 @@ function ntDbPick(btn){
     shown.slice(0,40).forEach(function(o){ var on=sel.indexOf(o.id)>=0; h+='<button type="button" class="nt-mi'+(on?' is-on':'')+'" data-opt="'+o.id+'"><span class="nt-mi-t">'+(isRel?(o.icon?ntEsc(o.icon)+' ':'▤ ')+ntEsc(o.name):ntChip(o))+'</span>'+(on?'<span class="nt-mi-k">✓</span>':'')+'</button>'; });
     if(!isRel && nq && !items.some(function(o){ return ntNorm(o.name)===nq; })) h+='<button type="button" class="nt-mi" data-newopt="1"><span class="nt-mi-t">Criar '+ntChip({name:q.trim(), color:OPT_COLORS[(prop.options||[]).length%OPT_COLORS.length]})+'</span></button>';
     if(isRel && !items.length) h+='<div class="nt-pop-note">O banco ligado ainda não tem linhas.</div>';
-    if(!isRel) h+='<div class="nt-pop-note">Enter cria a opção digitada. Para mudar nome ou cor, use o cabeçalho da coluna.</div>';
+    if(!isRel) h+='<div class="nt-pop-note lay-tip">Enter cria a opção digitada. Para mudar nome ou cor, use o cabeçalho da coluna.</div>';
     pop.innerHTML=h;
     var inp=pop.querySelector('input'); inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length);
     inp.oninput=function(){ draw(pop, inp.value); };
@@ -7290,7 +7312,7 @@ function ntDbFilterPop(anchor){
       }
       h+='<button type="button" class="nt-btn ghost icon" data-fdel="1" aria-label="Remover filtro">×</button></div>';
     });
-    if(!fs.length) h+='<div class="nt-pop-note">Nenhum filtro. As linhas que não passam ficam escondidas só nesta visão.</div>';
+    if(!fs.length) h+='<div class="nt-pop-note lay-tip">Nenhum filtro. As linhas que não passam ficam escondidas só nesta visão.</div>';
     h+='<button type="button" class="nt-mi" data-fadd="1">'+ntIcon('plus')+'<span class="nt-mi-t">Adicionar filtro</span></button>';
     pop.innerHTML=h;
     var save=function(fn){ var d=ntClone(ntDbOf(dbId)), vv=ntDbView(d); vv.filters=vv.filters||[]; fn(vv, d); ntDbSave(dbId,d); ntDbRender(); };
@@ -7319,7 +7341,7 @@ function ntDbSortPop(anchor){
     var db=ntDbOf(dbId), v=ntDbView(db), ss=v.sorts||[];
     var h='<div class="nt-pop-h">Ordenar</div>';
     ss.forEach(function(s,i){ h+='<div class="nt-frow" data-si="'+i+'"><select data-sprop="1">'+ntPropOptions(db,s.prop,true)+'</select><select data-sdir="1"><option value="asc"'+(s.dir!=='desc'?' selected':'')+'>Crescente</option><option value="desc"'+(s.dir==='desc'?' selected':'')+'>Decrescente</option></select><button type="button" class="nt-btn ghost icon" data-sdel="1" aria-label="Remover">×</button></div>'; });
-    if(!ss.length) h+='<div class="nt-pop-note">Sem ordenação: as linhas ficam na ordem em que foram criadas.</div>';
+    if(!ss.length) h+='<div class="nt-pop-note lay-tip">Sem ordenação: as linhas ficam na ordem em que foram criadas.</div>';
     h+='<button type="button" class="nt-mi" data-sadd="1">'+ntIcon('plus')+'<span class="nt-mi-t">Adicionar critério</span></button>';
     pop.innerHTML=h;
     var save=function(fn){ var d=ntClone(ntDbOf(dbId)), vv=ntDbView(d); vv.sorts=vv.sorts||[]; fn(vv); ntDbSave(dbId,d); ntDbRender(); draw(pop); };
@@ -8355,16 +8377,38 @@ window.addEventListener('keydown', function(e){
     ['night','Noite',12], ['habits','Hábitos',10], ['pie','Distribuição',20], [null,'Grade de horários',46],
     ['check','Afazeres',16], ['loose','Tarefas soltas',12], ['tray','Planner',16], ['noteday','Anotações',12]
   ];
+
   function layoutPreviewHtml(){
     return '<div class="lay-phone" aria-hidden="true"><div class="lay-notch"></div>' +
       LAYOUT_PREVIEW.map(function(r){
-        return '<div class="lay-bar'+(r[0]?'':' is-grid')+'" data-lp="'+(r[0]||'grid')+'" style="--h:'+r[2]+'px"><span>'+r[1]+'</span></div>';
-      }).join('') + '</div>';
+        return '<div class="lay-bar'+(r[0]?'':' is-grid')+'" data-lp="'+(r[0]||'grid')+'" style="--h:'+r[2]+'px"><span>'+r[1]+'</span>'+(r[0]?'':'<i class="ld-chip"></i>')+'</div>';
+      }).join('') +
+      '<div class="ld-finger"></div>' +
+      '<div class="ld-sheet"><div class="ld-name">Estudo Revit</div><div class="ld-time">09:00–10:00</div>' +
+        '<div class="ld-stat">4h57 · 8 blocos</div><div class="ld-tip"></div><div class="ld-tip short"></div>' +
+        '<div class="ld-btn"></div></div>' +
+    '</div>';
   }
   function paintLayoutPreview(root, mode, custom){
     var on=layoutSet(mode, custom);
     Array.prototype.forEach.call(root.querySelectorAll('.lay-bar[data-lp]'), function(b){
       var k=b.getAttribute('data-lp'); b.classList.toggle('off', k!=='grid' && on.indexOf(k)<0);
+    });
+    Array.prototype.forEach.call(root.querySelectorAll('.lay-phone'), function(ph){
+      ph.classList.toggle('tips-off', on.indexOf('tips')<0);
+      ph.classList.toggle('stats-off', on.indexOf('stats')<0);
+
+      ph.classList.remove('ld-play'); void ph.offsetWidth; ph.classList.add('ld-play');
+    });
+  }
+
+  function wireLayoutHoverPreview(root, getSel){
+    Array.prototype.forEach.call(root.querySelectorAll('[data-lay-mode]'), function(b){
+      var k=b.getAttribute('data-lay-mode'); if(k==='custom') return;
+      b.addEventListener('pointerenter', function(){ paintLayoutPreview(root, k, null); });
+      b.addEventListener('focus', function(){ paintLayoutPreview(root, k, null); });
+      b.addEventListener('pointerleave', function(){ var s=getSel(); paintLayoutPreview(root, s.mode, s.custom); });
+      b.addEventListener('blur', function(){ var s=getSel(); paintLayoutPreview(root, s.mode, s.custom); });
     });
   }
   function layoutModeCardsHtml(sel, withCustom){
@@ -8405,6 +8449,7 @@ window.addEventListener('keydown', function(e){
   function wireLayoutPanel(app){
     var root=app.querySelector('[data-sec-p="visual"]'); if(!root) return;
     paintLayoutPanel();
+    wireLayoutHoverPreview(root, function(){ return state.layout; });
     Array.prototype.forEach.call(root.querySelectorAll('[data-lay-mode]'), function(b){
       b.onclick=function(){
         var m=b.getAttribute('data-lay-mode');
@@ -8481,6 +8526,7 @@ window.addEventListener('keydown', function(e){
     }, {passive:true});
     var modo=ov.querySelector('.intro-modo');
     paintLayoutPreview(modo, introState.mode, null);
+    wireLayoutHoverPreview(modo, function(){ return {mode:introState.mode, custom:null}; });
     Array.prototype.forEach.call(modo.querySelectorAll('[data-lay-mode]'), function(b){
       b.onclick=function(){
         introState.mode=b.getAttribute('data-lay-mode');
@@ -11210,7 +11256,7 @@ window.addEventListener('keydown', function(e){
         '<span class="pn-hub-top"><i></i><b>'+escapeHtml(p.name)+'</b>'+(cat?'<em>'+escapeHtml(cat.name)+'</em>':'')+'</span>' +
         '<span class="pn-hub-nums"><span><b>'+open+'</b>em aberto</span><span><b>'+prog+'</b>em andamento</span>'+(late?'<span class="late"><b>'+late+'</b>atrasada'+(late>1?'s':'')+'</span>':'')+'<span><b>'+(wkMin?fmtDuration(wkMin):'0h')+'</b>na semana</span></span>' +
         '<span class="pn-hub-bar"><i style="width:'+pct+'%"></i></span>' +
-        '<span class="pn-hub-foot">'+done+' de '+ts.length+' concluídas · '+pct+'%</span>' +
+        '<span class="pn-hub-foot lay-stat">'+done+' de '+ts.length+' concluídas · '+pct+'%</span>' +
         (buckets?'<span class="pn-hub-buckets">'+buckets+'</span>':'') +
       '</button>';
     }).join('');
@@ -11227,7 +11273,7 @@ window.addEventListener('keydown', function(e){
       '<div class="pn-chipset" style="padding:0 8px 8px;">'+PN_PLAN_COLORS.map(function(c){ return '<button class="pn-plan-color" data-pc="'+c+'" style="width:24px;height:24px;border-radius:8px;border:2px solid '+(c===plan.color?'var(--ink)':'transparent')+';background:'+c+';padding:0;"></button>'; }).join('')+'</div>' +
       '<div class="pn-menu-note">Categoria na Agenda</div>' +
       '<div style="padding:0 8px 8px;"><select id="pn-plan-cat" class="pn-plan-cat">'+state.categories.map(function(c){ return '<option value="'+c.id+'"'+(c.id===pnPlanCatId(plan)?' selected':'')+'>'+escapeHtml(c.name)+'</option>'; }).join('')+'</select>' +
-      '<div class="pn-menu-note" style="padding:5px 3px 0;">Blocos ligados às tarefas deste plano entram nessa categoria.</div></div>' +
+      '<div class="pn-menu-note lay-tip" style="padding:5px 3px 0;">Blocos ligados às tarefas deste plano entram nessa categoria.</div></div>' +
       '<button id="pn-plan-new">'+pnIc('plus')+'Novo plano</button>' +
       '<button class="danger" id="pn-plan-del">'+pnIc('trash')+'Excluir este plano</button>' +
     '</div>';
@@ -12757,7 +12803,7 @@ window.addEventListener('keydown', function(e){
       h='<div class="ck-wrap">' +
         '<div class="ck-sec">Sono | Despertar</div><div class="ck-group"><div class="ck-row ck-sleep">' +
           '<div class="ck-row-main"><div class="ck-sleep-times"><label>Dormir<input type="time" id="ck-rs-start" value="'+(r.start||'22:30')+'"></label><label>Acordar<input type="time" id="ck-rs-end" value="'+(r.end||'06:00')+'"></label></div>' +
-          '<div class="ck-sub">Banner roxo na hora de dormir e agenda travada nesse intervalo</div></div>'+ckSwitch(r.on!==false,'id="ck-rs-on" aria-label="Horário de sono ligado"')+'</div></div>' +
+          '<div class="ck-sub lay-tip">Banner roxo na hora de dormir e agenda travada nesse intervalo</div></div>'+ckSwitch(r.on!==false,'id="ck-rs-on" aria-label="Horário de sono ligado"')+'</div></div>' +
         '<div class="ck-sec">Outros</div>' +
         (list.length ? '<div class="ck-group">'+list.map(function(a,i){ return '<div class="ck-row ck-alarm'+(a.on?'':' off')+'" data-i="'+i+'"><button class="ck-row-main" type="button" data-ck-edit="'+i+'"><span class="ck-big mono">'+escapeHtml(a.time||'06:00')+'</span><span class="ck-sub">'+escapeHtml(a.label||'Alarme')+', '+alarmRepeatText(a)+'</span></button>'+ckSwitch(a.on,'data-ck-on="'+i+'" aria-label="Ligar '+escapeHtml(a.label||'alarme')+'"')+'</div>'; }).join('')+'</div>'
           : '<div class="ck-empty">Nenhum alarme. Toque em <b>+</b> no canto para criar.</div>') +
@@ -13243,7 +13289,7 @@ window.addEventListener('keydown', function(e){
           '<button class="btn small" id="wake-now">Acordei agora</button>' +
           '<button class="btn small primary" id="wake-save">Salvar</button>' +
         '</div>' +
-        '<div class="wake-hint">Só a hora de acordar é obrigatória — é ela que ancora o dia. Com as outras duas o app calcula quanto você dormiu e lança o bloco de Sono na grade.</div>' +
+        '<div class="wake-hint lay-tip">Só a hora de acordar é obrigatória — é ela que ancora o dia. Com as outras duas o app calcula quanto você dormiu e lança o bloco de Sono na grade.</div>' +
       '</div></div>';
     }
     var st = sleepStats(dstr) || {};
@@ -13265,7 +13311,7 @@ window.addEventListener('keydown', function(e){
           '<div class="wake-edit"><button class="btn ghost small" id="wake-change">Corrigir</button></div>' +
         '</div>' +
         (st.latencyMin!=null && st.latencyMin>0 ? '<div class="wake-sub">'+fmtDuration(st.latencyMin)+' deitado antes de pegar no sono.</div>' : '') +
-        (st.sleptMin==null ? '<div class="wake-sub">Falta a hora que você dormiu — clique em Corrigir pra fechar a conta da noite.</div>' : '') +
+        (st.sleptMin==null ? '<div class="wake-sub lay-tip">Falta a hora que você dormiu — clique em Corrigir pra fechar a conta da noite.</div>' : '') +
         '<div class="wake-noterow"><input type="text" id="night-note" placeholder="Observação sobre a noite — acordei no meio, demorei pra desligar, dormi mal…" value="'+escapeHtml(r.sleepNote||'')+'"></div>' +
         (pend.length ?
           '<div class="wake-resolve">' +
@@ -13436,7 +13482,7 @@ window.addEventListener('keydown', function(e){
       var minsUntil = Math.max(0, minutesOf(next.plannedStart) - (new Date().getHours()*60+new Date().getMinutes()));
       title = 'Próxima: '+catIconPrefix(cat)+escapeHtml(next.title||(cat?cat.name:'Bloco'));
       if(next.project) projectHtml = '<div class="hero-project">'+escapeHtml(next.project)+'</div>';
-      sub = 'às '+next.plannedStart+' · '+idleSuggestion();
+      sub = 'às '+next.plannedStart+'<span class="lay-tip"> · '+idleSuggestion()+'</span>';
       right = '<div style="text-align:right;">' +
           '<div class="hero-timer mono idle">'+fmtDuration(minsUntil)+'</div>' +
           '<div class="hero-timer-label">até a próxima</div>' +
@@ -13446,7 +13492,7 @@ window.addEventListener('keydown', function(e){
     } else {
 
       title = apptNextToday() ? 'Nenhuma tarefa até o próximo compromisso' : 'Nada mais planejado por hoje';
-      sub = idleSuggestion();
+      sub = '<span class="lay-tip">'+idleSuggestion()+'</span>';
 
       right = '<div style="text-align:right;"><button class="btn small primary" id="hero-quickstart" title="Começa algo que não estava planejado — escolha o nome e a categoria">▶ Começar uma tarefa agora</button></div>';
     }
@@ -14028,7 +14074,7 @@ window.addEventListener('keydown', function(e){
         extra = '<div class="s skip-s">'+xIcon()+' não feito</div>';
       } else if(b.status==='done'){
         var realMin=Math.round((b.actualEnd-b.actualStart)/60000);
-        extra = '<div class="s">'+fmtDuration(realMin)+' ✓</div>';
+        extra = '<div class="s lay-stat">'+fmtDuration(realMin)+' ✓</div>';
       } else if(b.status==='skipped'){
         var sMeta=skipReasonMeta(b.skipReason);
         extra = '<div class="s skip-s">'+sMeta.icon+' '+escapeHtml(sMeta.label)+'</div>';
