@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261113-152129';</script>
+<script>window.AGENDA_BUILD = '20261116-145521';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261113-152129"></script>
+<script src="cloud.js?v=20261116-145521"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -2880,7 +2880,6 @@ code, pre, kbd, .nt-code, .nt-code *, .nt-codebar select{font-family:var(--code)
 body[data-app="settings"] .sidebar-nav{display:none!important;}
 .ck-app{padding-bottom:84px;}
 @media (max-width:860px){ .toast-host{bottom:calc(76px + var(--safe-bottom,0px))!important;} }
-html[data-mode="dark"] .ck-round.green{color:#30D158;} html[data-mode="dark"] .ck-round.red{color:#FF453A;} html[data-mode="dark"] .ck-round.orange{color:#FF9F0A;}
 .sb-switch.sb-switch4 > button{padding-left:2px; padding-right:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .ck-app{max-width:560px; margin:0 auto; padding:4px 0 24px;}
 .ck-wrap{display:flex; flex-direction:column; gap:16px;}
@@ -2897,6 +2896,10 @@ html[data-mode="dark"] .ck-round.green{color:#30D158;} html[data-mode="dark"] .c
 .ck-next{display:flex; align-items:center; gap:10px; min-height:48px; padding:0 16px; border-radius:14px; border:none; background:var(--surface); color:var(--ink); font:400 .9444rem var(--sans); cursor:pointer;}
 .ck-next svg{color:var(--accent);}
 .ck-headrow{display:flex; justify-content:space-between; align-items:center; margin-bottom:-8px;}
+.ck-headrow-al{margin-bottom:-4px;} .ck-headrow-al .ck-sec{margin-bottom:0;}
+.ck-addbtn{font:inherit; font-size:14px; font-weight:600; color:var(--accent-deep); background:var(--accent-soft); border:1px solid color-mix(in srgb, var(--accent) 45%, transparent); border-radius:999px; padding:5px 12px; cursor:pointer; transition:background .15s, transform .12s;}
+.ck-addbtn:hover{background:color-mix(in srgb, currentColor 12%, transparent);}
+.ck-addbtn:active{transform:scale(.96);}
 .ck-plus{width:44px; height:44px; border-radius:50%; border:none; background:var(--accent); color:var(--accent-ink); display:flex; align-items:center; justify-content:center; cursor:pointer;}
 .ck-plus:active, .ck-round:active, .ck-next:active{transform:scale(.97);}
 .ck-sec{font-size:.8333rem; font-weight:600; color:var(--ink-soft); margin:0 4px -8px;}
@@ -2924,9 +2927,9 @@ html[data-mode="dark"] .ck-round.green{color:#30D158;} html[data-mode="dark"] .c
 .ck-round{width:84px; height:84px; border-radius:50%; border:none; font:500 .9444rem var(--sans); cursor:pointer; box-shadow:0 0 0 3px var(--bg), 0 0 0 4.5px currentColor;}
 .ck-round:disabled{opacity:.4; cursor:default;}
 .ck-round.gray{background:var(--surface-2); color:var(--ink);}
-.ck-round.green{background:rgba(52,199,89,.2); color:#2BA24C;}
-.ck-round.red{background:rgba(255,59,48,.18); color:#E5372B;}
-.ck-round.orange{background:rgba(255,149,0,.2); color:#D97A00;}
+.ck-round.green{background:linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0) 55%), var(--accent); color:var(--accent-ink); box-shadow:0 0 0 3px var(--bg), 0 0 0 4.5px var(--accent);}
+.ck-round.red, .ck-round.orange{background:var(--accent-soft); color:var(--accent-deep); box-shadow:0 0 0 3px var(--bg), 0 0 0 4.5px var(--accent);}
+html[data-mode="dark"] .ck-round.red, html[data-mode="dark"] .ck-round.orange, html[data-mode="dark"] .ck-addbtn{color:var(--accent);}
 .ck-laps{display:flex; flex-direction:column; border-top:.5px solid var(--border);}
 .ck-lap{display:flex; justify-content:space-between; padding:12px 6px; border-bottom:.5px solid var(--border); font-size:.9444rem;}
 .ck-lap.cur{color:var(--ink-soft);}
@@ -10124,7 +10127,7 @@ window.addEventListener('keydown', function(e){
 
   function looseAlerts(b, fired, now){
     if(b.status!=='running' || !b.targetDurationMin) return;
-    var label=(b.project ? b.project+' — ' : '') + (b.title || (catById(b.categoryId)||{}).name || 'Tarefa');
+    var label=(b.project && b.project!==b.title ? b.project+' — ' : '') + (b.title || (catById(b.categoryId)||{}).name || 'Tarefa');
     var goalMs=b.targetDurationMin*60000, el=elapsedOf(b), left=Math.round((goalMs-el)/60000);
     [5,1].forEach(function(m){
       var key=b.id+'-lnear-'+m;
@@ -10146,7 +10149,7 @@ window.addEventListener('keydown', function(e){
     blocksForDate(today).forEach(function(b){
       if(b.isLoose){ looseAlerts(b, fired, now); return; }
       if(!b.plannedStart) return;
-      var label = (b.project ? b.project+' — ' : '') + (b.title || (catById(b.categoryId)||{}).name || 'Bloco');
+      var label = (b.project && b.project!==b.title ? b.project+' — ' : '') + (b.title || (catById(b.categoryId)||{}).name || 'Bloco');
 
       if(isAppt(b)){
         if(b.status!=='pending') return;
@@ -12813,9 +12816,10 @@ window.addEventListener('keydown', function(e){
         '<div class="ck-sec">Sono | Despertar</div><div class="ck-group"><div class="ck-row ck-sleep">' +
           '<div class="ck-row-main"><div class="ck-sleep-times"><label>Dormir<input type="time" id="ck-rs-start" value="'+(r.start||'22:30')+'"></label><label>Acordar<input type="time" id="ck-rs-end" value="'+(r.end||'06:00')+'"></label></div>' +
           '<div class="ck-sub lay-tip">Banner roxo na hora de dormir e agenda travada nesse intervalo</div></div>'+ckSwitch(r.on!==false,'id="ck-rs-on" aria-label="Horário de sono ligado"')+'</div></div>' +
-        '<div class="ck-sec">Outros</div>' +
-        (list.length ? '<div class="ck-group">'+list.map(function(a,i){ return '<div class="ck-row ck-alarm'+(a.on?'':' off')+'" data-i="'+i+'"><button class="ck-row-main" type="button" data-ck-edit="'+i+'"><span class="ck-big mono">'+escapeHtml(a.time||'06:00')+'</span><span class="ck-sub">'+escapeHtml(a.label||'Alarme')+', '+alarmRepeatText(a)+'</span></button>'+ckSwitch(a.on,'data-ck-on="'+i+'" aria-label="Ligar '+escapeHtml(a.label||'alarme')+'"')+'</div>'; }).join('')+'</div>'
-          : '<div class="ck-empty">Nenhum alarme. Toque em <b>+</b> no canto para criar.</div>') +
+
+        '<div class="ck-headrow ck-headrow-al"><div class="ck-sec">Outros</div><button type="button" class="ck-addbtn" id="ck-add" title="Criar um alarme novo">+ Novo alarme</button></div>' +
+        (list.length ? '<div class="ck-group ck-alarm-list">'+list.map(function(a,i){ return '<div class="ck-row ck-alarm'+(a.on?'':' off')+'" data-i="'+i+'"><button class="ck-row-main" type="button" data-ck-edit="'+i+'" title="Clique para editar · botão direito: copiar, duplicar, excluir"><span class="ck-big mono">'+escapeHtml(a.time||'06:00')+'</span><span class="ck-sub">'+escapeHtml(a.label||'Alarme')+', '+alarmRepeatText(a)+'</span></button>'+ckSwitch(a.on,'data-ck-on="'+i+'" aria-label="Ligar '+escapeHtml(a.label||'alarme')+'"')+'</div>'; }).join('')+'</div>'
+          : '<div class="ck-empty ck-alarm-list">Nenhum alarme. Use <b>+ Novo alarme</b> para criar.</div>') +
         '<div class="ck-foot">Os alarmes tocam com a Agenda aberta. No PC ela pode ficar em segundo plano.</div></div>';
     } else if(t==='cronometro'){
       var run=CK.sw.run, el=swElapsed(), laps=CK.sw.laps||[];
@@ -12953,6 +12957,9 @@ window.addEventListener('keydown', function(e){
     if(t==='alarmes'){
       var add=app.querySelector('#ck-add'); if(add) add.onclick=function(){ ckAlarmSheet(-1); };
       [].forEach.call(app.querySelectorAll('[data-ck-edit]'), function(b){ b.onclick=function(){ ckAlarmSheet(+b.getAttribute('data-ck-edit')); }; });
+      [].forEach.call(app.querySelectorAll('.ck-alarm-list'), function(g){ g.oncontextmenu=function(e){
+        e.preventDefault(); var row=e.target.closest('.ck-alarm'); ckAlarmMenu(row ? +row.getAttribute('data-i') : -1, e.clientX, e.clientY);
+      }; });
       [].forEach.call(app.querySelectorAll('[data-ck-on]'), function(cb){ cb.onchange=function(){ var i=+cb.getAttribute('data-ck-on'), l=(state.alarms||[]).map(function(x){ return Object.assign({},x); }); l[i].on=cb.checked; saveAlarms(l); }; });
       var rs=app.querySelector('#ck-rs-start'), re=app.querySelector('#ck-rs-end'), ro=app.querySelector('#ck-rs-on');
       if(rs) rs.onchange=function(){ if(/^\d{2}:\d{2}$/.test(rs.value)) saveRest({start:rs.value}); };
@@ -12996,11 +13003,29 @@ window.addEventListener('keydown', function(e){
   }
   setInterval(function(){ if(state.view==='clock' || (CK.tm.on && CK.tm.run)) ckPaint(); }, 100);
 
-  function ckAlarmSheet(i){
-    var a = i>=0 ? Object.assign({}, state.alarms[i]) : {id:uid(), on:true, time:'07:00', label:'Alarme', days:[], sound:'crescente', snooze:true};
+  var CK_ALARM_CLIP=null;
+  function ckAlarmCopyOf(a){ var c=JSON.parse(JSON.stringify(a)); c.id=uid(); c.on=true; return c; }
+  function ckAlarmMenu(i, x, y){
+    var a = i>=0 ? state.alarms[i] : null;
+    var html = (a ? gmi('edit','✎','Editar') + gmi('dup','⧉','Duplicar e ajustar') + gmi('copy','⎘','Copiar') : gmi('new','+','Novo alarme')) +
+      (CK_ALARM_CLIP ? gmi('paste','📋','Colar ('+escapeHtml(CK_ALARM_CLIP.time)+(CK_ALARM_CLIP.label?' · '+escapeHtml(CK_ALARM_CLIP.label):'')+')') : '') +
+      (a ? gmi('onoff', a.on?'○':'●', a.on?'Desligar':'Ligar') + '<div class="nt-pop-sep"></div>' + gmi('del','🗑','Excluir',' danger') : '');
+    gridMenuOpen(x, y, html, function(m){
+      var q=function(k){ return m.querySelector('[data-gm="'+k+'"]'); }, on=function(k,f){ var b=q(k); if(b) b.onclick=function(){ gridMenuClose(); f(); }; };
+      on('edit', function(){ ckAlarmSheet(i); });
+      on('new', function(){ ckAlarmSheet(-1); });
+      on('dup', function(){ ckAlarmSheet(-1, ckAlarmCopyOf(a)); });
+      on('copy', function(){ CK_ALARM_CLIP=JSON.parse(JSON.stringify(a)); showToast('Alarme das '+a.time+' copiado. Botão direito → Colar.', '⎘'); });
+      on('paste', function(){ ckAlarmSheet(-1, ckAlarmCopyOf(CK_ALARM_CLIP)); });
+      on('onoff', function(){ var l=(state.alarms||[]).map(function(x){ return Object.assign({},x); }); l[i].on=!l[i].on; saveAlarms(l); showToast(l[i].on?'Alarme ligado.':'Alarme desligado.', '⏰'); });
+      var d=q('del'); if(d) wireArmConfirm(d, 'Excluir? Clique de novo', function(){ gridMenuClose(); var l=(state.alarms||[]).slice(); l.splice(i,1); saveAlarms(l); showToast('Alarme excluído.', '🗑'); });
+    });
+  }
+  function ckAlarmSheet(i, tpl){
+    var a = i>=0 ? Object.assign({}, state.alarms[i]) : (tpl || {id:uid(), on:true, time:'07:00', label:'Alarme', days:[], sound:'crescente', snooze:true});
     var hm=(a.time||'07:00').split(':').map(Number), days=(a.days&&a.days.length)?a.days.slice():[];
-    var o=document.createElement('div'); o.id='ck-sheet'; o.setAttribute('role','dialog'); o.setAttribute('aria-label', i>=0?'Editar alarme':'Novo alarme');
-    o.innerHTML='<div class="im-scrim" data-x></div><div class="ck-sheet"><div class="ck-sheet-head"><button type="button" class="ck-link" data-x>Cancelar</button><b>'+(i>=0?'Editar alarme':'Novo alarme')+'</b><button type="button" class="ck-link strong" id="ck-a-save">Salvar</button></div>' +
+    var o=document.createElement('div'); o.id='ck-sheet'; o.setAttribute('role','dialog'); o.setAttribute('aria-label', i>=0?'Editar alarme':(tpl?'Cópia do alarme':'Novo alarme'));
+    o.innerHTML='<div class="im-scrim" data-x></div><div class="ck-sheet"><div class="ck-sheet-head"><button type="button" class="ck-link" data-x>Cancelar</button><b>'+(i>=0?'Editar alarme':(tpl?'Cópia do alarme':'Novo alarme'))+'</b><button type="button" class="ck-link strong" id="ck-a-save">Salvar</button></div>' +
       '<div class="ck-wheels">'+ckWheelHtml('ck-a-h',24,hm[0],'h')+ckWheelHtml('ck-a-m',60,hm[1],'min')+'</div>' +
       '<div class="ck-group">' +
         '<div class="ck-row"><span class="ck-row-main">Repetir</span><div class="ck-days">'+[1,2,3,4,5,6,0].map(function(k){ return '<button type="button" data-ck-day="'+k+'" class="'+(days.indexOf(k)>=0?'on':'')+'" aria-label="'+DOW_SHORT[k]+'">'+DOW_SHORT[k].charAt(0)+'</button>'; }).join('')+'</div></div>' +
