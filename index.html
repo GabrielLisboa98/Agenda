@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261116-153931';</script>
+<script>window.AGENDA_BUILD = '20261116-170525';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261116-153931"></script>
+<script src="cloud.js?v=20261116-170525"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -10108,6 +10108,8 @@ window.addEventListener('keydown', function(e){
     var el = document.createElement('div');
     el.className = 'alert-pop'+(entry.urgent?' urgent':'');
     el.setAttribute('data-alert-id', entry.id);
+    if(entry.blockId) el.setAttribute('data-alert-block', entry.blockId);
+    el.setAttribute('data-alert-kind', entry.kind||'');
     el.setAttribute('role','alert');
     var canOpen = !!(entry.blockId || entry.checkId);
     el.innerHTML = '<span class="ap-ic">'+m.icon+'</span>' +
@@ -10128,15 +10130,15 @@ window.addEventListener('keydown', function(e){
   function looseAlerts(b, fired, now){
     if(b.status!=='running' || !b.targetDurationMin) return;
     var label=(b.project && b.project!==b.title ? b.project+' — ' : '') + (b.title || (catById(b.categoryId)||{}).name || 'Tarefa');
-    var goalMs=b.targetDurationMin*60000, el=elapsedOf(b), left=Math.round((goalMs-el)/60000);
+    var goalMs=b.targetDurationMin*60000, el=elapsedOf(b), left=Math.round((goalMs-el)/60000), sk='-'+Math.round((b.actualStart||0)/60000);
     [5,1].forEach(function(m){
-      var key=b.id+'-lnear-'+m;
+      var key=b.id+'-lnear-'+m+sk;
       if(b.targetDurationMin>m && left===m && !fired[key]){ fired[key]=now; fireAlert('Faltam '+m+' min', label+' — meta de '+fmtDuration(b.targetDurationMin)+'.', {kind:'nearend', key:key, blockId:b.id}); }
     });
     if(el>=goalMs-30000){
-      var keyEnd=b.id+'-lend';
+      var keyEnd=b.id+'-lend'+sk;
       if(!fired[keyEnd]){ fired[keyEnd]=now; fireAlert('Acabou o tempo planejado', label+' chegou à meta de '+fmtDuration(b.targetDurationMin)+'. Concluir ou continuar?', {urgent:true, kind:'over', key:keyEnd, blockId:b.id}); }
-      var overMin=Math.floor((el-goalMs)/60000), bucket=Math.floor(overMin/10), keyOver=b.id+'-lover-'+bucket;
+      var overMin=Math.floor((el-goalMs)/60000), bucket=Math.floor(overMin/10), keyOver=b.id+'-lover-'+bucket+sk;
       if(bucket>=1 && !fired[keyOver]){ fired[keyOver]=now; fireAlert('Ainda rodando', label+' já passou '+fmtDuration(overMin)+' da meta.', {urgent:true, kind:'over', key:keyOver, blockId:b.id}); }
     }
   }
@@ -10178,14 +10180,16 @@ window.addEventListener('keydown', function(e){
 
         var endMs = runEndMs(b) || parseDT(b.date, b.plannedEnd).getTime();
         var minsToEnd = Math.round((endMs-now)/60000);
+
+        var endKey = Math.round(endMs/60000);
         [5,1].forEach(function(m){
-          var key=b.id+'-nearend-'+m;
+          var key=b.id+'-nearend-'+m+'-'+endKey;
           if(minsToEnd===m && !fired[key]){ fired[key]=now; fireAlert('Faltam '+m+' min pro fim', label+' termina às '+timeStr(new Date(endMs))+'.', {kind:'nearend', key:key, blockId:b.id}); }
         });
         if(now>endMs){
           var overMin = Math.floor((now-endMs)/60000);
           var bucket = Math.floor(overMin/10);
-          var keyOver=b.id+'-over-'+bucket;
+          var keyOver=b.id+'-over-'+bucket+'-'+endKey;
           if(overMin>=1 && !fired[keyOver]){ fired[keyOver]=now; fireAlert('Estourou o tempo', label+' já passou '+fmtDuration(overMin)+' do planejado.', {urgent:true, kind:'over', key:keyOver, blockId:b.id}); }
         }
       }
@@ -10258,6 +10262,7 @@ window.addEventListener('keydown', function(e){
     isLoose: !!v.isLoose, plannedStart:v.plannedStart||null, plannedEnd:v.plannedEnd||null,
     targetDurationMin:v.targetDurationMin||null, status:v.status||'pending',
     actualStart:v.actualStart||null, actualEnd:v.actualEnd||null, pausedAt:v.pausedAt||null,
+    realStart:v.realStart||null, pausedMs:(typeof v.pausedMs==='number')?v.pausedMs:0,
     skipReason:v.skipReason||null, skipNote:v.skipNote||'',
     overlapEatenMin:v.overlapEatenMin||null, overlapAcknowledged:!!v.overlapAcknowledged, createdAt:v.createdAt||0,
     tags: v.tags||[],
@@ -10665,7 +10670,7 @@ window.addEventListener('keydown', function(e){
     var sc = (!opt || !opt.lateChoice) ? startChoiceNeeded(b) : null;
     if(sc){ closeModal(); showStartChoice(b, sc); return false; }
     whyOnStart(b && b.categoryId);
-    var late=startLateMin(b), patch={status:'running', actualStart:Date.now(), pausedAt:null};
+    var late=startLateMin(b), patch={status:'running', actualStart:Date.now(), pausedAt:null, realStart:null, pausedMs:0};
     if(opt && opt.lateChoice==='rest'){
       var nw=new Date(); patch.plannedStartOrig=b.plannedStart; patch.plannedStart=timeOfMinutes(nw.getHours()*60+nw.getMinutes());
     }
@@ -10697,7 +10702,7 @@ window.addEventListener('keydown', function(e){
     if(b.lateMin!=null) return b.lateMin;
     return Math.max(0, Math.round((b.actualStart-parseDT(b.date,b.plannedStart).getTime())/60000));
   }
-  function cancelRun(b){ updateBlock(b.id, {status:'pending', actualStart:null, pausedAt:null}); closeModal(); }
+  function cancelRun(b){ updateBlock(b.id, {status:'pending', actualStart:null, pausedAt:null, realStart:null, pausedMs:0}); closeModal(); }
 
   var SKIP_REASONS = [
     {id:'celular',      label:'Fui pro celular',      icon:'📱'},
@@ -10766,11 +10771,18 @@ window.addEventListener('keydown', function(e){
     return Math.max(0, Date.now() - b.actualStart);
   }
   function isActiveStatus(s){ return s==='running' || s==='paused'; }
-  function pauseBlock(b){ if(b && b.status==='running') updateBlock(b.id, {status:'paused', pausedAt:Date.now()}); }
+
+  function dropEndPopups(id){
+    Array.prototype.forEach.call(document.querySelectorAll('.alert-pop[data-alert-block="'+id+'"]'), function(el){
+      var k=el.getAttribute('data-alert-kind'); if(k==='nearend' || k==='over'){ el.classList.remove('show'); setTimeout(function(){ el.remove(); }, 220); }
+    });
+  }
+  function pauseBlock(b){ if(b && b.status==='running'){ updateBlock(b.id, {status:'paused', pausedAt:Date.now(), realStart:b.realStart||b.actualStart}); dropEndPopups(b.id); } }
   function resumeBlock(b){
     if(!b || b.status!=='paused') return;
-    var shifted = b.actualStart + Math.max(0, Date.now() - (b.pausedAt||Date.now()));
-    updateBlock(b.id, {status:'running', actualStart:shifted, pausedAt:null});
+    var gap = Math.max(0, Date.now() - (b.pausedAt||Date.now()));
+    updateBlock(b.id, {status:'running', actualStart:b.actualStart + gap, pausedAt:null, realStart:b.realStart||b.actualStart, pausedMs:(b.pausedMs||0)+gap});
+    dropEndPopups(b.id);
   }
 
   function findNextForOverlap(dayList, refBlock){
@@ -13700,7 +13712,8 @@ window.addEventListener('keydown', function(e){
     var elapsedMs = elapsedOf(b);
     var plannedMs = b.isLoose ? (b.targetDurationMin?b.targetDurationMin*60000:null) : (minutesOf(b.plannedEnd)-minutesOf(b.plannedStart))*60000;
     var over = plannedMs!=null && elapsedMs>plannedMs;
-    var timeLabel = b.isLoose ? ('<span class="lay-stat">início real </span>'+timeStr(new Date(b.actualStart))) : (b.plannedStart+'–'+b.plannedEnd+'<span class="lay-stat"> planejado · início real '+timeStr(new Date(b.actualStart))+'</span>');
+    var timeLabel = b.isLoose ? ('<span class="lay-stat">início real </span>'+timeStr(new Date(b.actualStart))) : (b.plannedStart+'–'+b.plannedEnd+'<span class="lay-stat"> planejado · início real '+timeStr(new Date(b.realStart||b.actualStart))+'</span>');
+    if(b.pausedMs>=60000) timeLabel += '<span class="lay-stat"> · pausou '+fmtDuration(Math.round(b.pausedMs/60000))+'</span>';
 
     var reEnd = runEndMs(b);
     if(reEnd && !over){ var reStr=timeStr(new Date(reEnd)); if(reStr!==b.plannedEnd) timeLabel += ' · <b class="hero-reend">termina '+reStr+'</b>'; }
@@ -16525,7 +16538,7 @@ window.addEventListener('keydown', function(e){
     state.db.collection('blocks').doc(uid()).set({
       categoryId:catId||null, title:title||'', date:todayStr(), isLoose:true,
       plannedStart:null, plannedEnd:null, targetDurationMin:targetMin||null,
-      status:'running', actualStart:Date.now(), actualEnd:null, pausedAt:null,
+      status:'running', actualStart:Date.now(), actualEnd:null, pausedAt:null, realStart:null, pausedMs:0,
       overlapEatenMin:null, overlapAcknowledged:false, createdAt:Date.now(),
       tags: extra.tags||[], project: extra.project||'', note: extra.note||'',
       taskId: pnLinkPatch(extra.taskId).taskId, hasTask: pnLinkPatch(extra.taskId).hasTask
