@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261116-150445';</script>
+<script>window.AGENDA_BUILD = '20261116-153931';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261116-150445"></script>
+<script src="cloud.js?v=20261116-153931"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -14383,7 +14383,7 @@ window.addEventListener('keydown', function(e){
   var GRID_CLIP=null, GRID_HOVER=null;
   function gridFresh(kind, id){
     if(kind==='block') return freshBlockById(id);
-    return (state.weekChecklist||[]).filter(function(c){ return c.id===id; })[0] || null;
+    return (state.weekChecklist||[]).filter(function(c){ return c.id===id; })[0] || (state.backlogChecklist||[]).filter(function(c){ return c.id===id; })[0] || null;
   }
   function gridClipSet(mode, it){
     GRID_CLIP={mode:mode, kind:it.kind, id:it.kind==='block'?it.b.id:it.c.id};
@@ -14892,6 +14892,11 @@ window.addEventListener('keydown', function(e){
     if(cd) wireArmConfirm(cd, 'Confirma? não pergunta mais', function(){ setCarryDismissed(monday); renderChecklist(); });
     var fold=el.querySelector('[data-cg-done]');
     if(fold) fold.onclick=function(){ var m=loadCheckCollapse(); m['nd-done']=!m['nd-done']; saveCheckCollapse(m); renderChecklist(); };
+    el.oncontextmenu=function(e){
+      var g=e.target.closest('.check-group'); if(!g || e.target.closest('.check-item')) return;
+      e.preventDefault(); var k=g.getAttribute('data-cg-key'), bd=e.target.closest('.check-band');
+      checkDayMenu(k==='nd'?null:k, bd?bd.getAttribute('data-band'):null, e.clientX, e.clientY);
+    };
     Array.prototype.forEach.call(el.querySelectorAll('.check-item'), function(row){
       var id=row.getAttribute('data-id');
       var item = state.weekChecklist.filter(function(c){return c.id===id;})[0] || state.backlogChecklist.filter(function(c){return c.id===id;})[0];
@@ -14908,6 +14913,7 @@ window.addEventListener('keydown', function(e){
         else if(pi){ showToast('Esse bloco está em outra semana — '+pi.label.replace(/^\S+ /,''), '📅'); }
       };
       row.querySelector('[data-act=del]').onclick=function(){ deleteCheck(id); };
+      row.addEventListener('contextmenu', function(e){ e.preventDefault(); e.stopPropagation(); planCheckMenu(item, e.clientX, e.clientY); });
       var grip=row.querySelector('.drag-grip');
       if(grip) wireListDrag(grip, {kind:'check', id:item.id, title:item.title, durMin:60, row:row});
     });
@@ -15312,6 +15318,13 @@ window.addEventListener('keydown', function(e){
         openModal({type:'createCheck', preDate: d==='nd' ? null : d, prePeriod: p||null});
       };
     });
+    Array.prototype.forEach.call(app.querySelectorAll('.pl-cell'), function(cell){
+      cell.addEventListener('contextmenu', function(e){
+        if(e.target.closest('.pl-card')) return;
+        e.preventDefault(); var d=cell.getAttribute('data-pd'), pp=cell.getAttribute('data-pp');
+        checkDayMenu(d==='nd'?null:d, pp||null, e.clientX, e.clientY);
+      });
+    });
     Array.prototype.forEach.call(app.querySelectorAll('.pl-card'), function(card){
       var kind=card.getAttribute('data-pk'), id=card.getAttribute('data-pi');
       if(kind==='check'){
@@ -15338,18 +15351,55 @@ window.addEventListener('keydown', function(e){
     });
   }
 
+  function checkFresh(id){
+    return (state.weekChecklist||[]).filter(function(c){ return c.id===id; })[0] || (state.backlogChecklist||[]).filter(function(c){ return c.id===id; })[0] || null;
+  }
+  function checkClipItem(){ var c=GRID_CLIP; return (c && c.kind==='check') ? checkFresh(c.id) : null; }
+  function checkClipLabel(){ var it=checkClipItem(); if(!it) return ''; var t=it.title||''; return (GRID_CLIP.mode==='cut'?'✂ ':'')+(t.length>22?t.slice(0,21)+'…':t); }
+  function checkClipSet(mode, c){
+    GRID_CLIP={mode:mode, kind:'check', id:c.id};
+    showToast('“'+c.title+'” '+(mode==='cut'?'recortado':'copiado')+' — botão direito num dia (ou num horário da grade) → Colar', mode==='cut'?'✂':'⧉');
+    render();
+  }
+
+  function checkPasteTo(date, period, src){
+    var it = src || checkClipItem(), cut = !src && GRID_CLIP && GRID_CLIP.mode==='cut';
+    if(!it){ GRID_CLIP=null; showToast('O que foi copiado não existe mais.', '⚠️'); return; }
+    var mon=startOfWeek(state.selectedDate), where={date:date||null, period:period||(date===it.date ? it.period||null : null)};
+    if(!date) where.week=mon;
+    if(cut){ updateCheck(it.id, where); GRID_CLIP=null; }
+    else addCheck(Object.assign({title:it.title, note:it.note||'', timeLabel:date===it.date?it.timeLabel||null:null, tags:(it.tags||[]).slice()}, where));
+    showToast((cut?'Movido para ':(src?'Duplicado em ':'Colado em '))+(date ? weekdayLabel(date).toLowerCase()+', '+dayNum(date) : '"Sem dia"')+'.', '✓');
+    render();
+  }
+
+  function checkDayMenu(date, period, x, y){
+    var html = gmi('new','+','Novo afazer aqui') + (checkClipItem() ? gmi('paste','📋','Colar aqui <span class="ag-k">'+escapeHtml(checkClipLabel())+'</span>') : '');
+    gridMenuOpen(x, y, html, function(m){
+      m.querySelector('[data-gm=new]').onclick=function(){ gridMenuClose(); openModal({type:'createCheck', preDate:date||null, prePeriod:period||null}); };
+      var p=m.querySelector('[data-gm=paste]'); if(p) p.onclick=function(){ gridMenuClose(); checkPasteTo(date, period); };
+    });
+  }
+
   function planCheckMenu(c, x, y){
     var mon=startOfWeek(state.selectedDate), ds=weekDates(mon);
     var dias = ds.map(function(d){ return '<button type="button" class="nt-mi ag-cat'+(c.date===d?' on':'')+'" data-gd="'+d+'"><span class="nt-mi-i">'+dayNum(d)+'</span><span class="nt-mi-t">'+weekdayLabel(d)+(d===todayStr()?' · hoje':'')+'</span></button>'; }).join('') +
       '<button type="button" class="nt-mi ag-cat'+(!c.date?' on':'')+'" data-gd="nd"><span class="nt-mi-i">—</span><span class="nt-mi-t">Sem dia definido</span></button>';
     var html = gmi('open','✎','Editar') +
       gmi('done', c.done?'↺':'✓', c.done?'Desmarcar feito':'Marcar como feito') +
+      '<div class="nt-pop-sep"></div>' +
+      gmi('copy','⧉','Copiar') + gmi('cut','✂','Recortar pra mover') + gmi('dup','⊕','Duplicar aqui') +
+      (checkClipItem() ? gmi('paste','📋','Colar aqui <span class="ag-k">'+escapeHtml(checkClipLabel())+'</span>') : '') +
       gmi('move','→','Mover para ▸') + '<div class="ag-catlist ag-days" hidden>'+dias+'</div>' +
       '<div class="nt-pop-sep"></div>' + gmi('del','🗑','Excluir',' danger');
     gridMenuOpen(x, y, html, function(m){
       var q=function(k){ return m.querySelector('[data-gm="'+k+'"]'); };
       q('open').onclick=function(){ gridMenuClose(); openModal({type:'editCheck', item:c}); };
       q('done').onclick=function(){ gridMenuClose(); toggleCheck(c); };
+      q('copy').onclick=function(){ gridMenuClose(); checkClipSet('copy', c); };
+      q('cut').onclick=function(){ gridMenuClose(); checkClipSet('cut', c); };
+      q('dup').onclick=function(){ gridMenuClose(); checkPasteTo(c.date||null, c.period||null, c); };
+      if(q('paste')) q('paste').onclick=function(){ gridMenuClose(); checkPasteTo(c.date||null, c.period||null); };
       q('move').onclick=function(){ var l=m.querySelector('.ag-days'); l.hidden=!l.hidden; gridMenuFit(m); };
       Array.prototype.forEach.call(m.querySelectorAll('[data-gd]'), function(bt){ bt.onclick=function(){
         gridMenuClose(); var d=bt.getAttribute('data-gd');
