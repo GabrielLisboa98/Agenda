@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261116-145521';</script>
+<script>window.AGENDA_BUILD = '20261116-150445';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261116-145521"></script>
+<script src="cloud.js?v=20261116-150445"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -12846,34 +12846,55 @@ window.addEventListener('keydown', function(e){
     wireClock(app);
     ckPaint();
   }
+
+  var CK_LOOP=9;
   function ckWheelHtml(id, n, sel, unit){
-    var items=''; for(var i=0;i<n;i++) items+='<div class="ck-wi">'+pad2(i)+'</div>';
-    return '<div class="ck-wheel-box"><div class="ck-wheel" id="'+id+'" data-sel="'+sel+'" tabindex="0" aria-label="'+unit+'">'+'<div class="ck-wpad"></div>'+items+'<div class="ck-wpad"></div></div><span class="ck-unit">'+unit+'</span></div>';
+    var items=''; for(var k=0;k<CK_LOOP;k++) for(var i=0;i<n;i++) items+='<div class="ck-wi">'+pad2(i)+'</div>';
+    return '<div class="ck-wheel-box"><div class="ck-wheel" id="'+id+'" data-sel="'+sel+'" data-n="'+n+'" tabindex="0" aria-label="'+unit+'">'+'<div class="ck-wpad"></div>'+items+'<div class="ck-wpad"></div></div><span class="ck-unit">'+unit+'</span></div>';
   }
   var CK_ROW=40;
-  function ckWheelInit(w){ if(!w) return; var sel=+w.getAttribute('data-sel')||0; w.scrollTop=sel*CK_ROW;
+  function ckWheelN(w){ return +w.getAttribute('data-n')||0; }
+  function ckWheelMid(w){ var n=ckWheelN(w); return n ? Math.floor(CK_LOOP/2)*n : 0; }
+
+  function ckWheelGo(w, v, smooth){
+    if(!w) return; var n=ckWheelN(w), cur=Math.round(w.scrollTop/CK_ROW), idx=v;
+    if(n){ var d=((v-cur)%n+n)%n; if(d>n/2) d-=n; idx=cur+d; }
+    w.scrollTo({top:idx*CK_ROW, behavior:smooth?'smooth':'auto'});
+  }
+  function ckWheelInit(w){ if(!w) return; var sel=+w.getAttribute('data-sel')||0; w.scrollTop=(ckWheelMid(w)+sel)*CK_ROW;
     w.addEventListener('keydown', function(e){ if(e.key==='ArrowDown'||e.key==='ArrowUp'){ e.preventDefault(); w.scrollTop+= (e.key==='ArrowDown'?1:-1)*CK_ROW; } });
 
-    var lastIdx=sel;
+    var lastIdx=Math.round(w.scrollTop/CK_ROW), wN=ckWheelN(w), settleT=null;
 
-    var wTarget=sel, wAcc=0, wLast=0, wMax=w.querySelectorAll('.ck-wi').length-1;
+    function recenter(){
+      if(!wN) return; var i=Math.round(w.scrollTop/CK_ROW), mid=ckWheelMid(w);
+      if(Math.abs(i-(mid+wN/2))<=wN*2) return;
+      var j=mid+((i%wN)+wN)%wN; lastIdx=j; wTarget+=j-i; w.scrollTop=j*CK_ROW;
+    }
+
+    var wTarget=Math.round(w.scrollTop/CK_ROW), wAcc=0, wLast=0, wStreak=0, wMax=w.querySelectorAll('.ck-wi').length-1;
     w.addEventListener('wheel', function(e){
       e.preventDefault();
       var dy=e.deltaMode===1 ? e.deltaY*40 : e.deltaMode===2 ? e.deltaY*400 : e.deltaY;
-      var now=performance.now(), dt=now-wLast, steps=0;
-      if(Math.abs(dy)>=50){ wAcc=0; wLast=now; steps=(dy>0?1:-1)*(dt<35?3:dt<80?2:1); }
+      var now=performance.now(), dt=now-wLast, steps=0, quiet=dt>400;
+      if(Math.abs(dy)>=50){
+        wAcc=0; wLast=now; wStreak = dt<110 ? wStreak+1 : 0;
+        var mult = wStreak<2 ? 1 : Math.min(8, 1+Math.floor(wStreak/2)+(dt<30?1:0));
+        steps=(dy>0?1:-1)*mult;
+      }
       else { wAcc+=dy; if(Math.abs(wAcc)>=CK_ROW*0.7){ steps=wAcc>0?1:-1; wAcc=0; wLast=now; } }
       if(!steps) return;
-      if(Math.abs(w.scrollTop/CK_ROW-wTarget)>1.5) wTarget=Math.round(w.scrollTop/CK_ROW);
+      if(quiet && Math.abs(w.scrollTop/CK_ROW-wTarget)>1.5) wTarget=Math.round(w.scrollTop/CK_ROW);
       wTarget=Math.max(0, Math.min(wMax, wTarget+steps));
       w.scrollTo({top:wTarget*CK_ROW, behavior:'smooth'});
     }, {passive:false});
     w.addEventListener('scroll', function(){
+      clearTimeout(settleT); settleT=setTimeout(recenter, 220);
       var i=Math.round(w.scrollTop/CK_ROW); if(i===lastIdx) return; lastIdx=i;
       if(window.uiSound) uiSound('tick'); if(window.uiHaptic) uiHaptic(6);
     }, {passive:true});
   }
-  function ckWheelVal(w){ return w ? Math.max(0, Math.round(w.scrollTop/CK_ROW)) : 0; }
+  function ckWheelVal(w){ if(!w) return 0; var i=Math.max(0, Math.round(w.scrollTop/CK_ROW)), n=ckWheelN(w); return n ? i%n : i; }
 
   var TW=null;
   function twClose(apply){
@@ -12972,7 +12993,7 @@ window.addEventListener('keydown', function(e){
       if(!CK.tm.on){
         ['ck-w-h','ck-w-m','ck-w-s'].forEach(function(id){ ckWheelInit(app.querySelector('#'+id)); });
         [].forEach.call(app.querySelectorAll('[data-ck-pre]'), function(b){ b.onclick=function(){ var n=+b.getAttribute('data-ck-pre'); var W=function(id){ return app.querySelector('#'+id); };
-          W('ck-w-h').scrollTo({top:Math.floor(n/60)*CK_ROW, behavior:'smooth'}); W('ck-w-m').scrollTo({top:(n%60)*CK_ROW, behavior:'smooth'}); W('ck-w-s').scrollTo({top:0, behavior:'smooth'}); }; });
+          ckWheelGo(W('ck-w-h'), Math.floor(n/60), true); ckWheelGo(W('ck-w-m'), n%60, true); ckWheelGo(W('ck-w-s'), 0, true); }; });
         var snd=app.querySelector('#ck-tm-sound'); if(snd) snd.onchange=function(){ CK.tm.sound=snd.value; ckSave(); };
         app.querySelector('#ck-tm-go').onclick=function(){
           var d=(ckWheelVal(app.querySelector('#ck-w-h'))*3600+ckWheelVal(app.querySelector('#ck-w-m'))*60+ckWheelVal(app.querySelector('#ck-w-s')))*1000;
