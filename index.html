@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261117-194534';</script>
+<script>window.AGENDA_BUILD = '20261117-230044';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261117-194534"></script>
+<script src="cloud.js?v=20261117-230044"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -4010,11 +4010,11 @@ addEventListener('keydown',e=>{if(active&&e.code==='Space'&&view==='mapa'&&tgt(e
 addEventListener('keyup',e=>{if(e.code==='Space'){spaceDown=false;const s=$('#msvg');if(s)s.style.cursor=''}});
 const svgMid=e=>{if(e.button===1)e.preventDefault()};
 function bindMap(){
-  const svg=$('#msvg');let st=null;let lp=null;svg.addEventListener('mousedown',svgMid);
+  const svg=$('#msvg');let st=null;let lp=null;const tp=new Map(); svg.addEventListener('mousedown',svgMid);
   svg.addEventListener('contextmenu',e=>{e.preventDefault();const nd=e.target.closest('.nd');if(nd)nodeMenu(e,NODES[nd.dataset.id]);else canvasMenu(e)});
   svg.addEventListener('pointerdown',e=>{
     if(ctxOpen){closeCtx()}
-    if(e.button===2)return;
+    if(e.button===2)return;if(e.pointerType==='touch'){tp.set(e.pointerId,{x:e.clientX,y:e.clientY});if(tp.size===2){clearTimeout(lp);svg.setPointerCapture(e.pointerId);const r=svg.getBoundingClientRect(),[a,b]=[...tp.values()];st={m:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,s0:pan.s,wx:((a.x+b.x)/2-r.left-pan.x)/pan.s,wy:((a.y+b.y)/2-r.top-pan.y)/pan.s,moved:true};return}if(tp.size>2)return}
     const w=toW(e),rs=e.target.closest('[data-rs]'),tg=e.target.closest('[data-tog]'),nd=e.target.closest('.nd');
     svg.setPointerCapture(e.pointerId);
     if(e.pointerType==='touch'){clearTimeout(lp);const ev={clientX:e.clientX,clientY:e.clientY};lp=setTimeout(()=>{if(st&&!st.moved){const n=nd&&NODES[nd.dataset.id];st=null;n?nodeMenu(ev,n):canvasMenu(ev)}},550)}
@@ -4028,7 +4028,7 @@ function bindMap(){
     st={m:'mv',id,ids,start,sx:w.x,sy:w.y,moved:false,shift:e.shiftKey};drawMap();
   });
   svg.addEventListener('pointermove',e=>{
-    if(!st)return;
+    if(tp.has(e.pointerId))tp.set(e.pointerId,{x:e.clientX,y:e.clientY});if(!st)return;if(st.m==='pinch'){if(tp.size<2)return;const r=svg.getBoundingClientRect(),[a,b]=[...tp.values()],ns=Math.min(2.5,Math.max(.25,st.s0*Math.hypot(a.x-b.x,a.y-b.y)/st.d0));pan.s=ns;pan.x=(a.x+b.x)/2-r.left-st.wx*ns;pan.y=(a.y+b.y)/2-r.top-st.wy*ns;applyPan();return}
     if(st.m==='pan'){const dx=e.clientX-st.x,dy=e.clientY-st.y;if(Math.abs(dx)+Math.abs(dy)>3)st.moved=true;pan.x=st.px+dx;pan.y=st.py+dy;applyPan();return}
     const w=toW(e);
     if(st.m==='box'){st.x2=w.x;st.y2=w.y;st.moved=true;drawMap(null,st);return}
@@ -4039,7 +4039,7 @@ function bindMap(){
       drawMap(g)}
   });
   svg.addEventListener('pointerup',e=>{
-    clearTimeout(lp);const s=st;st=null;if(!s)return;
+    tp.delete(e.pointerId);clearTimeout(lp);if(st&&st.m==='pinch'){if(tp.size<2){st=null;drawMap()}return}const s=st;st=null;if(!s)return;
     if(s.m==='pan'){if(!s.moved&&sel.size){sel.clear();drawMap()}return}
     if(s.m==='box'){if(!s.moved){sel.clear();drawMap();return}const x1=Math.min(s.x1,s.x2),x2=Math.max(s.x1,s.x2),y1=Math.min(s.y1,s.y2),y2=Math.max(s.y1,s.y2);sel=s.add;for(const n of Object.values(NODES))if(n.x<x2&&n.x+n.w>x1&&n.y<y2&&n.y+n.h>y1)sel.add(n.id);drawMap();return}
     if(s.m==='tog'){collapsed.has(s.id)?collapsed.delete(s.id):collapsed.add(s.id);drawMap();return}
@@ -4047,7 +4047,7 @@ function bindMap(){
     if(s.m==='mv'){drawMap();if(!s.shift&&sel.size===1){const n=NODES[s.id];if(n&&n.k!=='root')openNode(n.k,n.id)}}
   });
   svg.addEventListener('wheel',e=>{e.preventDefault();if(e.ctrlKey&&Math.abs(e.deltaY)>=40||e.shiftKey){if(e.shiftKey){pan.x-=e.deltaY||e.deltaX}else{pan.y-=e.deltaY}applyPan();return}const r=svg.getBoundingClientRect(),cx=e.clientX-r.left,cy=e.clientY-r.top,f=e.deltaY<0?1.1:1/1.1,ns=Math.min(2.5,Math.max(.25,pan.s*f));pan.x=cx-(cx-pan.x)*ns/pan.s;pan.y=cy-(cy-pan.y)*ns/pan.s;pan.s=ns;applyPan();drawMap()},{passive:false});
-  $('#zi').onclick=()=>{pan.s=Math.min(2.5,pan.s*1.2);applyPan()};$('#zo').onclick=()=>{pan.s=Math.max(.25,pan.s/1.2);applyPan()};$('#zf').onclick=fit;
+  svg.addEventListener('pointercancel',e=>{tp.delete(e.pointerId);if(st&&st.m==='pinch'&&tp.size<2){st=null;drawMap()}});$('#zi').onclick=()=>{pan.s=Math.min(2.5,pan.s*1.2);applyPan()};$('#zo').onclick=()=>{pan.s=Math.max(.25,pan.s/1.2);applyPan()};$('#zf').onclick=fit;
   $('#un').onclick=undo;$('#re').onclick=redo;$('#xp').onclick=toggleFull;
 }
 document.addEventListener('keydown',e=>{
