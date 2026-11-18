@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261117-230044';</script>
+<script>window.AGENDA_BUILD = '20261118-114117';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261117-230044"></script>
+<script src="cloud.js?v=20261118-114117"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -2345,7 +2345,7 @@ button.sb-pn-stat:hover{background:var(--hover-glass, rgba(239,231,216,.1));}
 .nt-check svg{width:12px; height:12px; stroke:var(--accent-ink); fill:none; stroke-width:3; opacity:0;}
 .nt-blk.is-done > .nt-check{background:var(--accent); border-color:var(--accent);}
 .nt-blk.is-done > .nt-check svg{opacity:1;}
-.nt-blk.is-done > .nt-txt{color:var(--ink-faint); text-decoration:line-through;}
+.nt-blk.is-done > .nt-txt{color:var(--ink-faint); text-decoration:line-through;} .nt-qbar{position:fixed; left:50%; transform:translateX(-50%); z-index:126; display:none; gap:4px; padding:4px; border-radius:999px; background:var(--glass-bg-strong); backdrop-filter:blur(24px) saturate(1.5); -webkit-backdrop-filter:blur(24px) saturate(1.5); border:1px solid var(--glass-border, var(--border)); box-shadow:0 8px 28px rgba(0,0,0,.16);} .nt-qbar.on{display:flex;} .nt-qbar button{display:inline-flex; align-items:center; gap:7px; height:36px; padding:0 14px; border:0; border-radius:999px; background:transparent; color:var(--ink); font:inherit; font-size:14px; font-weight:600; cursor:pointer; -webkit-tap-highlight-color:transparent; touch-action:manipulation;} .nt-qbar button:hover{background:color-mix(in srgb, var(--ink) 7%, transparent);} .nt-qbar button.on{background:var(--accent); color:var(--accent-ink);} .nt-qbar .qb-box{width:15px; height:15px; border:1.6px solid currentColor; border-radius:5px; display:inline-block;} .nt-qbar button.on .qb-box{background:currentColor; box-shadow:inset 0 0 0 2px var(--accent);} .nt-qbar .qb-dot{width:6px; height:6px; border-radius:50%; background:currentColor; display:inline-block;}
 .nt-blk.is-tgl{flex-direction:column; gap:0;}
 .nt-tgl-row{display:flex; align-items:flex-start; gap:6px; width:100%;}
 .nt-caret{width:20px; height:20px; flex:none; margin-top:.2em; border:none; background:transparent; color:var(--ink-soft); padding:0; border-radius:8px; display:flex; align-items:center; justify-content:center;}
@@ -5390,6 +5390,66 @@ function ntFocusBlock(id, where){
   var t=ntTxtOf(el); if(!t) return;
   ntSetCaret(t, where==null?'end':where);
 }
+/* Barra rápida das Notas: aparece enquanto se escreve num bloco de texto.
+   Existe porque o checklist (que já risca sozinho ao marcar) ficava escondido atrás do "/" ou do "[] ",
+   e no teclado do celular o colchete fica longe — o Gabriel nem sabia que dava para fazer lista de mercado.
+   Um toque converte a linha atual; tocar de novo volta para texto. */
+var QB_TYPES=[['todo','<span class="qb-box"></span>Checklist','Transforma a linha em caixinha de marcar (risca ao marcar)'],['ul','<span class="qb-dot"></span>Lista','Transforma a linha em lista com marcadores'],['p','Texto','Volta a linha para texto normal']];
+var QB={el:null, id:null, lastAct:0};
+function ntQbEnsure(){
+  if(QB.el) return QB.el;
+  var b=document.createElement('div'); b.className='nt-qbar'; b.id='nt-qbar'; b.setAttribute('role','toolbar'); b.setAttribute('aria-label','Tipo da linha');
+  b.innerHTML=QB_TYPES.map(function(x){ return '<button type="button" data-qb="'+x[0]+'" title="'+x[2]+'">'+x[1]+'</button>'; }).join('');
+  /* A ação roda no toque/clique de descida com preventDefault: assim o texto não perde o foco
+     (se perdesse, a barra sumiria e o teclado do celular fecharia antes da troca). */
+  function act(e){
+    var btn=e.target.closest && e.target.closest('[data-qb]'); e.preventDefault(); if(!btn) return;
+    var now=Date.now(); if(now-QB.lastAct<350) return; QB.lastAct=now;
+    ntQbApply(btn.getAttribute('data-qb'));
+  }
+  b.addEventListener('touchstart', act, {passive:false});
+  b.addEventListener('mousedown', act);
+  document.body.appendChild(b); QB.el=b;
+  if(window.visualViewport){ visualViewport.addEventListener('resize', ntQbPlace); visualViewport.addEventListener('scroll', ntQbPlace); }
+  window.addEventListener('resize', ntQbPlace);
+  return b;
+}
+function ntQbApply(type){
+  var id=QB.id; if(!id || NT.readOnly) return;
+  var loc=ntLocate(id); if(!loc || !TEXT_TYPES[loc.block.type]) return;
+  var blkEl=document.querySelector('#nt-body .nt-blk[data-id="'+id+'"]');
+  if(blkEl) ntSyncText(blkEl);
+  var nt=(loc.block.type===type && type!=='p') ? 'p' : type;
+  if(loc.block.type!==nt){ ntConvert(loc, nt); ntTouched(id,true); ntRenderBody(); }
+  ntFocusBlock(id,'end'); ntQbShow(id);
+}
+function ntQbPlace(){
+  var b=QB.el; if(!b || !b.classList.contains('on')) return;
+  var vv=window.visualViewport, H=b.offsetHeight||44;
+  var kb = vv ? (innerHeight - vv.height - vv.offsetTop) > 120 : false;
+  /* Com o teclado aberto, cola logo acima dele; sem teclado, fica acima da barra de abas do celular. */
+  var bottomGap = kb ? 8 : (innerWidth<=760 ? 96 : 22);
+  var top = vv ? (vv.offsetTop + vv.height - H - bottomGap) : (innerHeight - H - bottomGap);
+  b.style.top=Math.max(8, top)+'px';
+}
+function ntQbShow(id){
+  var loc=id && ntLocate(id);
+  if(!loc || NT.readOnly || !TEXT_TYPES[loc.block.type] || loc.block.type==='code' || loc.block.type==='eq'){ ntQbHide(); return; }
+  var b=ntQbEnsure(); QB.id=id;
+  Array.prototype.forEach.call(b.querySelectorAll('[data-qb]'), function(x){ x.classList.toggle('on', x.getAttribute('data-qb')===loc.block.type && loc.block.type!=='p'); });
+  b.classList.add('on'); ntQbPlace();
+}
+function ntQbHide(){ if(QB.el) QB.el.classList.remove('on'); }
+document.addEventListener('focusin', function(e){
+  var t=e.target; if(!t || !t.closest) return;
+  var body=document.getElementById('nt-body');
+  if(!body || !body.contains(t) || !t.classList || !t.classList.contains('nt-txt')){ ntQbHide(); return; }
+  var blk=t.closest('.nt-blk'); if(blk) ntQbShow(blk.getAttribute('data-id'));
+});
+document.addEventListener('focusout', function(){
+  /* Espera o foco pousar: re-render da página troca o nó e o foco volta logo em seguida. */
+  setTimeout(function(){ var id=ntFocusedBlockId(); if(id) ntQbShow(id); else ntQbHide(); }, 120);
+});
 function ntFocusedBlockId(){
   var ae=document.activeElement; if(!ae) return null;
   var body=$('#nt-body'); if(!body || !body.contains(ae)) return null;
@@ -10008,7 +10068,15 @@ window.addEventListener('keydown', function(e){
     ['crescente','Crescente (suave → firme)'],['bipe','Bipe digital'],['voz','Voz falando a mensagem'],['classico','Clássico do app']];
   var ACX=null;
 
-  try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(_){}
+  /* Sessão de áudio: 'ambient' o tempo todo, para o app NUNCA parar a música de quem está ouvindo
+     (antes ficava 'playback' desde a abertura, e o iPhone pausava o Spotify/Música só de abrir a Agenda).
+     Só na hora em que um alarme/despertador toca de verdade passa para 'playback' (toca mesmo no silencioso,
+     como o Relógio do iPhone) e volta para 'ambient' assim que o som acaba. */
+  var SND_QUIET_T=0;
+  function sndSession(t){ try{ if(navigator.audioSession && navigator.audioSession.type!==t) navigator.audioSession.type=t; }catch(_){} }
+  function sndLoud(sec){ clearTimeout(SND_QUIET_T); sndSession('playback'); SND_QUIET_T=setTimeout(sndQuiet, Math.max(2, (sec||6)+1.5)*1000); }
+  function sndQuiet(){ clearTimeout(SND_QUIET_T); sndSession('ambient'); }
+  sndSession('ambient');
   function actx(){ try{ if(!ACX){ var C=window.AudioContext||window.webkitAudioContext; if(!C) return null; ACX=new C(); } if(ACX.state!=='running' && ACX.resume) ACX.resume().catch(function(){}); return ACX; }catch(e){ return null; } }
   var SND_EL=null, SND_UNLOCKED=false, SND_URL={};
   function sndEl(){ if(!SND_EL){ SND_EL=new Audio(); SND_EL.preload='auto'; SND_EL.setAttribute('playsinline',''); } return SND_EL; }
@@ -10046,7 +10114,7 @@ window.addEventListener('keydown', function(e){
       return SND_URL[id];
     }catch(e){ return null; }
   }
-  function stopSound(){ try{ if(SND_EL && SND_EL.src!==SND_SILENT){ SND_EL.pause(); } }catch(_){} try{ speechSynthesis.cancel(); }catch(_){} }
+  function stopSound(){ try{ if(SND_EL && SND_EL.src!==SND_SILENT){ SND_EL.pause(); } }catch(_){} try{ speechSynthesis.cancel(); }catch(_){} sndQuiet(); }
   window.__agendaSnd={render:sndRender, unlocked:function(){ return SND_UNLOCKED; }};
   function tone(c, t, f, dur, type, vol, glideTo){
     var o=c.createOscillator(), g=c.createGain(); o.type=type||'sine'; o.frequency.setValueAtTime(f, t);
@@ -10070,6 +10138,7 @@ window.addEventListener('keydown', function(e){
       return 4;
     }
     if(!SND_DUR[id]){ playAlertSound('beep'); return 2; }
+    sndLoud(SND_DUR[id]);
     var pr=sndRender(id);
     if(pr){
       pr.then(function(url){
@@ -10153,7 +10222,18 @@ window.addEventListener('keydown', function(e){
 
   (function(){
     if(!('speechSynthesis' in window)) return;
+    /* Destravar a voz fala um texto mudo — e no celular isso já abaixa/para a música.
+       Por isso só destrava no toque quando a voz vai ser usada mesmo: tarefa rodando (porquê falado)
+       ou algum alarme/descanso com som "Voz". Fora disso o toque não faz nada. */
+    function voiceNeeded(){
+      try{
+        if(typeof currentTaskInfo==='function' && currentTaskInfo()) return true;
+        if(state.rest && state.rest.on && state.rest.sound==='voz') return true;
+        return (state.alarms||[]).some(function(a){ return a && a.on!==false && a.sound==='voz'; });
+      }catch(_){ return false; }
+    }
     function unlock(){
+      if(!voiceNeeded()) return;
       try{ var u=new SpeechSynthesisUtterance(' '); u.volume=0; u.lang='pt-BR'; speechSynthesis.speak(u); }catch(_){}
       document.removeEventListener('touchend', unlock, true); document.removeEventListener('click', unlock, true);
     }
@@ -10457,6 +10537,24 @@ window.addEventListener('keydown', function(e){
     try{ var p=el.play(); if(p && p.catch) p.catch(function(){   }); }catch(e){}
     _keepAliveStarted = true;
   }
+  /* O áudio mudo que segura a aba acordada só fica ligado quando há algo correndo de fato
+     (tarefa em andamento, cronômetro/timer, alarme ou descanso na tela). Antes ligava no primeiro clique
+     e ficava para sempre: o Windows mostrava a Agenda "tocando" e as teclas de mídia (play/pause)
+     iam para ela em vez da música. */
+  function keepAliveNeeded(){
+    try{
+      if(typeof currentTaskInfo==='function' && currentTaskInfo()) return true;
+      if(typeof CK!=='undefined' && CK && ((CK.tm && CK.tm.run) || (CK.sw && CK.sw.run))) return true;
+      if(document.getElementById('alarm-ov') || document.getElementById('bed-ov')) return true;
+    }catch(_){}
+    return false;
+  }
+  function stopKeepAliveAudio(){
+    if(!_keepAliveStarted) return;
+    var el=document.getElementById('audio-keepalive'); if(el){ try{ el.pause(); }catch(_){} }
+    _keepAliveStarted=false;
+  }
+  setInterval(function(){ var need=keepAliveNeeded(); if(_keepAliveStarted && !need) stopKeepAliveAudio(); else if(!_keepAliveStarted && need && state.alertsEnabled && navigator.userActivation && navigator.userActivation.hasBeenActive) startKeepAliveAudio(); }, 30000);
   function playAlertSound(kind, alertKind){
     if(window.uiChime && window.uiChime(alertKind || (kind==='urgent' ? 'urgent' : 'beep'))) return;
     var el = document.getElementById(kind==='urgent' ? 'audio-urgent' : 'audio-beep');
@@ -10467,7 +10565,7 @@ window.addEventListener('keydown', function(e){
     state.alertsEnabled = !!val;
     if(state.db) state.db.collection('settings').doc('display').update({alertsEnabled: state.alertsEnabled});
     if(state.alertsEnabled){
-      startKeepAliveAudio();
+      if(keepAliveNeeded()) startKeepAliveAudio();
       if('Notification' in window && Notification.permission==='default'){ Notification.requestPermission(); }
     }
     render();
@@ -19135,7 +19233,7 @@ window.addEventListener('keydown', function(e){
     render(); initDb();
     window.addEventListener('resize', updateHeroHeightVar);
 
-    document.addEventListener('click', function(){ if(state.alertsEnabled) startKeepAliveAudio(); });
+    document.addEventListener('click', function(){ if(state.alertsEnabled && keepAliveNeeded()) startKeepAliveAudio(); });
   }
   if(window.claude && window.claude.hot){ window.claude.hot.ready ? window.claude.hot.ready(boot) : boot(); }
   else { boot(); }
