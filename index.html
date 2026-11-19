@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261119-192654';</script>
+<script>window.AGENDA_BUILD = '20261119-193015';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261119-192654"></script>
+<script src="cloud.js?v=20261119-193015"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -346,6 +346,16 @@
   .hero-timer-label{font-family:var(--mono);font-variant-numeric:tabular-nums; font-size:0.6111rem; color:var(--ink-soft); text-transform:none; letter-spacing:0;}
   .hero-current{position:relative; overflow:hidden; margin-bottom:12px; background:linear-gradient(180deg, var(--accent-soft), transparent 60%) , var(--glass-bg); backdrop-filter:blur(var(--glass-blur)) saturate(1.4); -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4); border:1px solid var(--glass-border); box-shadow:var(--panel-shadow), inset 0 1px 0 var(--panel-highlight);}
   #hero-slot{position:sticky; top:0; z-index:12;}
+  /* v167: minimizar o cartão do topo */
+  #hero-slot .panel{position:relative;}
+  .hero-fold{position:absolute; left:50%; bottom:3px; transform:translateX(-50%); width:44px; height:18px; border:0; border-radius:999px; background:transparent; color:var(--ink-faint); display:flex; align-items:center; justify-content:center; cursor:pointer; opacity:.55; transition:opacity .15s ease, background .15s ease;}
+  .hero-fold:hover, .hero-fold:focus-visible{opacity:1; background:var(--hover-glass, rgba(0,0,0,.06)); color:var(--ink);}
+  .hero-mini{display:flex; align-items:center; gap:10px; padding:9px 12px 9px 16px!important; margin-bottom:12px; cursor:pointer; min-height:0;}
+  .hero-mini .hm-tag{font-size:0.6667rem; font-weight:800; letter-spacing:.04em; color:var(--accent); white-space:nowrap; flex:none;}
+  .hero-mini .hm-t{flex:1; min-width:0; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .hero-mini .hm-ck{font-weight:700; flex:none;} .hero-mini .hm-ck.over{color:var(--critical);}
+  .hero-mini .hm-open{flex:none; color:var(--ink-soft); display:flex;}
+  .hero-mini.run{border-left:4px solid var(--accent);}
   .hero-current.idle{background:linear-gradient(180deg, var(--accent-soft), transparent 60%), var(--glass-bg); border:1px solid var(--glass-border); border-left:4px solid var(--accent);}
   .idle-tag{color:var(--accent)!important;}
   .hero-timer.idle{color:var(--accent);}
@@ -14016,9 +14026,40 @@ window.addEventListener('keydown', function(e){
       setAlertPulse(currentTaskInfo() ? null : overdueLoudInfo());
       return;
     }
-    slot.innerHTML = heroHtml();
+    /* v167: o cartão do topo pode ser minimizado (fica uma linha só: o que está em curso + o cronômetro).
+       Guardado no aparelho; tocar na linha abre de novo. */
+    var full=heroHtml();
+    if(heroMin()){
+      slot.classList.add('hero-min'); slot.innerHTML=heroMiniHtml(full);
+      slot.querySelector('#hero-mini').onclick=function(e){ if(e.target.closest('[data-hero-act]')) return; heroMin(false); renderHeroSlot(); };
+      updateHeroHeightVar(); return;
+    }
+    slot.classList.remove('hero-min');
+    slot.innerHTML = full;
     wireHeroButton();
     updateHeroHeightVar();
+  }
+  function heroMin(v){
+    if(v!==undefined){ try{ v?localStorage.setItem('agenda-hero-min','1'):localStorage.removeItem('agenda-hero-min'); }catch(_){ } return v; }
+    try{ return localStorage.getItem('agenda-hero-min')==='1'; }catch(_){ return false; }
+  }
+  function heroMiniHtml(full){
+    var t=document.createElement('div'); t.innerHTML=full;
+    var tag=t.querySelector('.hero-tag'), ti=t.querySelector('.hero-title'), ck=t.querySelector('#hero-clock');
+    var run=!!t.querySelector('#hero-current');
+    return '<div class="panel hero-mini'+(run?' run':'')+'" id="hero-mini" role="button" tabindex="0" title="Mostrar o cartão inteiro" aria-label="Mostrar o cartão inteiro">'+
+      (tag?'<span class="hm-tag">'+escapeHtml(tag.textContent.trim())+'</span>':'')+
+      '<span class="hm-t">'+escapeHtml(ti?ti.textContent.trim():'Agenda')+'</span>'+
+      (ck?'<span class="hm-ck mono'+(ck.classList.contains('over')?' over':'')+'" id="hero-clock">'+escapeHtml(ck.textContent)+'</span>':'')+
+      '<span class="hm-open" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></div>';
+  }
+  function heroFoldBtn(){
+    var slot=document.getElementById('hero-slot'); if(!slot || slot.classList.contains('hero-min')) return;
+    var p=slot.querySelector('.panel'); if(!p || p.querySelector('.hero-fold')) return;
+    var b=document.createElement('button'); b.type='button'; b.className='hero-fold'; b.title='Minimizar este cartão'; b.setAttribute('aria-label','Minimizar este cartão');
+    b.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>';
+    b.onclick=function(e){ e.stopPropagation(); heroMin(true); renderHeroSlot(); };
+    p.appendChild(b);
   }
 
   function updateHeroHeightVar(){
@@ -15381,6 +15422,7 @@ window.addEventListener('keydown', function(e){
     e.preventDefault(); e.stopPropagation(); goToBlock(g.getAttribute('data-goto'));
   });
   function wireHeroButton(){
+    heroFoldBtn();
     var heroBtn=document.getElementById('hero-complete');
     var b=currentTaskInfo();
     if(heroBtn && b) heroBtn.onclick=function(e){ e.stopPropagation(); openModal({type:'detail', block:b}); };
@@ -18737,6 +18779,12 @@ window.addEventListener('keydown', function(e){
     mic:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>'
   };
   var AI_CSS=
+    '#ai-dica{position:fixed; right:20px; bottom:146px; z-index:46; display:flex; align-items:flex-start; gap:2px; max-width:min(320px, calc(100vw - 40px)); padding:4px; border-radius:18px; background:var(--glass-bg-strong); -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4); backdrop-filter:blur(var(--glass-blur)) saturate(1.4); border:1px solid var(--glass-border); box-shadow:var(--shadow-lg); color:var(--ink); opacity:0; transform:translateY(8px) scale(.97); transform-origin:100% 100%; transition:opacity .22s ease, transform .26s cubic-bezier(.32,.72,0,1);}'+
+    '#ai-dica.show{opacity:1; transform:none;} #ai-dica::after{content:""; position:absolute; right:18px; bottom:-6px; width:12px; height:12px; background:inherit; border-right:1px solid var(--glass-border); border-bottom:1px solid var(--glass-border); transform:rotate(45deg); -webkit-backdrop-filter:none; backdrop-filter:none;}'+
+    '#ai-dica .ad-t{display:flex; gap:8px; align-items:flex-start; text-align:left; border:0; background:none; color:inherit; font:600 0.8333rem/1.35 inherit; padding:8px 4px 8px 10px; cursor:pointer;} #ai-dica .ad-ic{flex:none; width:18px; height:18px; color:var(--accent);} #ai-dica .ad-ic svg{width:18px; height:18px;}'+
+    '#ai-dica .ad-x{flex:none; border:0; background:none; color:var(--ink-soft); font-size:18px; line-height:1; width:30px; height:30px; border-radius:50%; cursor:pointer;} #ai-dica .ad-x:hover{background:var(--hover-glass, rgba(0,0,0,.06));}'+
+    'body.ai-open #ai-dica, body.fw-open:not(.fw-solto-on) #ai-dica, body:has(#modal-overlay) #ai-dica, body:has(#quick-fabs.open) #ai-dica{display:none;}'+
+    '@media (max-width:860px){ #ai-dica{right:16px; bottom:calc(183px + env(safe-area-inset-bottom,0px));} }'+
     '#ai-fab{position:fixed; right:20px; bottom:88px; z-index:46; width:48px; height:48px; border-radius:50%; border:1px solid var(--glass-border); display:flex; align-items:center; justify-content:center; cursor:pointer;'+
       'background:var(--glass-bg-strong); color:var(--accent); box-shadow:var(--shadow-lg); transition:transform .15s ease-out, opacity .15s;}'+
     '#ai-fab:hover{transform:scale(1.06);} #ai-fab:active{transform:scale(.94);}'+
@@ -18937,7 +18985,50 @@ window.addEventListener('keydown', function(e){
     if(add>0){ g.usd=Math.round((g.usd+add)*1e6)/1e6; try{ localStorage.setItem('agenda-ai-gasto', JSON.stringify(g)); }catch(_){ } }
     return g;
   }
+  /* v167: Dicas do Assistente. A conta de QUANDO dar a dica é do próprio app (grátis): mini-metas sem dia,
+     valor sem nenhuma meta, dia lotado, itens do Planner com prazo sem horário. Achando algo, aparece um
+     balãozinho em cima do ✦ — no máximo 2 por dia, e o que a pessoa fechar não volta no mesmo dia.
+     O Claude só é chamado (e só aí gasta) se a pessoa tocar no balão. */
+  var DICA={t:0, el:null, k:null};
+  function aiDicaLs(){ var d=todayStr(); try{ var x=JSON.parse(localStorage.getItem('agenda-dicas')||'null'); if(x && x.dia===d) return x; }catch(_){ } return {dia:d, vistos:[]}; }
+  function aiDicaSalva(x){ try{ localStorage.setItem('agenda-dicas', JSON.stringify(x)); }catch(_){ } }
+  function aiDicaCalc(){
+    var out=[], mv=null;
+    try{ mv=window.__metas && window.__metas.data && window.__metas.data(); }catch(_){ }
+    if(mv && mv.tasks && mv.tasks.length){
+      var pl=state.mvPlanned||{}, G={}; (mv.goals||[]).forEach(function(g){ G[g.id]=g; });
+      var sem=mv.tasks.filter(function(t){ var g=G[t.goalId]; return !t.noAgenda && !pl[t.id] && g && !g.done; });
+      if(sem.length) out.push({k:'mv', txt:(sem.length===1?'1 mini-meta':sem.length+' mini-metas')+' desta semana ainda sem dia. Quer ajuda para encaixar?',
+        pedido:'Tenho '+(sem.length===1?'esta mini-meta':'estas mini-metas')+' desta semana ainda sem dia na agenda: '+sem.slice(0,8).map(function(t){ return '“'+t.title+'”'; }).join(', ')+'. Olhe a minha agenda e os meus valores e me proponha onde encaixar (ainda sem criar).'});
+      var vs=(mv.values||[]).filter(function(v){ return !(mv.goals||[]).some(function(g){ return !g.done && (g.values||[]).indexOf(v.id)>=0; }); });
+      if(vs.length){ var v=vs[0], nm=v.short||String(v.name).split('(')[0].trim();
+        out.push({k:'val:'+v.id, txt:'Seu valor “'+nm+'” está sem nenhuma meta. Que tal uma pequena?',
+          pedido:'Meu valor “'+v.name+'”'+(v.desc?' ('+v.desc+')':'')+' não tem nenhuma meta ligada. Me ajuda a pensar numa meta pequena e numa mini-meta para esta semana?'}); }
+    }
+    var hoje=todayStr(), min=0;
+    (state.weekBlocks||[]).forEach(function(b){ if(b.date!==hoje || b.isLoose || !b.plannedStart || !b.plannedEnd || b.status==='skipped') return; var a=minutesOf(b.plannedStart), e=minutesOf(b.plannedEnd); if(e<=a) e=1440; min+=e-a; });
+    if(min>=10*60) out.push({k:'lotado', txt:'Hoje tem '+Math.round(min/60)+'h marcadas. Quer ver o que dá para mudar de dia?',
+      pedido:'Meu dia de hoje está com '+Math.round(min/60)+'h marcadas. Olhe a agenda de hoje e me sugira o que dá para passar para outro dia, sem criar nada ainda.'});
+    try{ var pn=window.__plannerDicas && window.__plannerDicas(); if(pn) out.push(pn); }catch(_){ }
+    return out;
+  }
+  function aiDicaVer(force){
+    var agora=Date.now();
+    if(!force && agora-DICA.t<10*60*1000) return; DICA.t=agora;
+    if(DICA.el || AI.open || !aiCanUse()) return;
+    var reg=aiDicaLs(); if(reg.vistos.length>=2) return;
+    var d=aiDicaCalc().filter(function(x){ return reg.vistos.indexOf(x.k)<0; })[0]; if(!d) return;
+    reg.vistos.push(d.k); aiDicaSalva(reg);
+    var el=document.createElement('div'); el.id='ai-dica'; el.setAttribute('role','status');
+    el.innerHTML='<button type="button" class="ad-t" data-ad="ir"><span class="ad-ic">'+AI_SPARK+'</span><span>'+escapeHtml(d.txt)+'</span></button><button type="button" class="ad-x" data-ad="x" aria-label="Dispensar dica" title="Dispensar">×</button>';
+    document.body.appendChild(el); DICA.el=el; DICA.k=d.k;
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.classList.add('show'); }); });
+    el.onclick=function(e){ var b=e.target.closest('[data-ad]'); if(!b) return; aiDicaFechar(); if(b.getAttribute('data-ad')==='ir'){ aiOpen(true); aiSend(d.pedido); } };
+  }
+  function aiDicaFechar(){ var el=DICA.el; DICA.el=null; if(!el) return; el.classList.remove('show'); setTimeout(function(){ el.remove(); }, 240); }
+  window.__assistenteDica=function(){ aiDicaVer(true); };
   function aiMount(){
+    if(!DICA.arm){ DICA.arm=true; DICA.t=Date.now()-9.5*60*1000; setInterval(function(){ aiDicaVer(false); }, 60*1000); }
     if(document.getElementById('ai-fab')) return;
     var st=document.createElement('style'); st.id='ai-css'; st.textContent=AI_CSS; document.head.appendChild(st);
     var fab=document.createElement('button'); fab.id='ai-fab'; fab.type='button'; fab.title='Assistente'; fab.setAttribute('aria-label','Abrir Assistente'); fab.innerHTML=AI_SPARK;
@@ -19117,6 +19208,7 @@ window.addEventListener('keydown', function(e){
   function aiOpen(o){
     aiMount(); aiNuvemOuvir();
     AI.open=!!o;
+    if(AI.open) aiDicaFechar();
     document.body.classList.toggle('ai-open', AI.open);
     var p=aiP(); p.setAttribute('aria-hidden', AI.open?'false':'true');
     if(AI.open){ aiPosAplicar(); aiDraw(); setTimeout(function(){ var ta=p.querySelector('textarea'); if(ta && !ta.disabled && window.innerWidth>860) ta.focus(); }, 60); }
