@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261119-164718';</script>
+<script>window.AGENDA_BUILD = '20261119-165828';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261119-164718"></script>
+<script src="cloud.js?v=20261119-165828"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -1003,6 +1003,12 @@
   .metric-overshoot{font-size:0.8333rem; margin-top:5px;}
   .wk-narrative{font-size:0.9444rem; line-height:1.55; color:var(--ink);}
   .wk2{display:flex; align-items:center; gap:22px;}
+  .pn-grip{border:none; background:transparent; color:var(--ink-faint); width:28px; height:28px; margin:0 4px 0 -8px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; cursor:grab; touch-action:none; flex:none;}
+  .pn-grip + h2{margin-right:auto;}
+  .pn-grip:hover, .pn-grip:focus-visible{color:var(--ink); background:var(--surface-2, rgba(127,127,127,.12));}
+  .pn-arrastando .pn-sec .panel-body{display:none;} .pn-arrastando .pn-sec .panel{margin-bottom:8px!important;}
+  .pn-arrastando{user-select:none;} .pn-arrastando .pn-grip{cursor:grabbing;}
+  .pn-sec.pn-pego .panel{outline:2px solid var(--accent); outline-offset:2px; box-shadow:var(--shadow-lg);}
   .wk2-ring{position:relative; width:112px; height:112px; flex:none;}
   .wk2-pct{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.1;}
   .wk2-pct b{font-size:1.6rem; font-weight:700;} .wk2-pct span{font-size:.6667rem; color:var(--ink-soft);}
@@ -9211,7 +9217,7 @@ window.addEventListener('keydown', function(e){
   }
   function saveLayout(patch){
     state.layout = Object.assign({}, state.layout, patch);
-    var doc = {mode:state.layout.mode, custom:state.layout.custom||null, introSeen:!!state.layout.introSeen, guidesSeen:state.layout.guidesSeen||{}};
+    var doc = {mode:state.layout.mode, custom:state.layout.custom||null, introSeen:!!state.layout.introSeen, guidesSeen:state.layout.guidesSeen||{}, painelOrdem:state.layout.painelOrdem||null};
     if(state.db) state.db.collection('settings').doc('layout').set(doc);
     applyLayout();
   }
@@ -13431,6 +13437,7 @@ window.addEventListener('keydown', function(e){
   function isFloatView(v){ return v==='settings' || v==='clock'; }
   function cfgApp(){ return isFloatView(state.view) ? (document.getElementById('fw-body')||document.getElementById('app')) : document.getElementById('app'); }
   function render(){
+    if(PN_DRAG){ PN_DRAG_PEND=true; return; }   // arrastando um quadro do Painel: redesenhar agora derrubaria o arraste
     var fv=isFloatView(state.view) ? state.view : null;
     if(fv){
       var under=state.floatUnder && !isFloatView(state.floatUnder) ? state.floatUnder : (state.lastAgendaView||'day');
@@ -13493,7 +13500,7 @@ window.addEventListener('keydown', function(e){
   }
   /* Explicações recolhidas no app inteiro: textos de explicação mostram só a primeira linha, em letra menor,
      com "mais" para abrir. Aberto uma vez, fica aberto naquele aparelho (guardado pelo começo do texto). */
-  var FX_SEL='.cfg-title p, p.cfg-note, div.cfg-note, p.lay-tip, div.lay-tip, .panel-body > p.empty-hint, .hero-note.lay-tip';
+  var FX_SEL='.cfg-title p, p.cfg-note, div.cfg-note, p.lay-tip, div.lay-tip, .panel-body > p.empty-hint, .hero-note.lay-tip, .chart-sub, div.radar-foot, .panel-body > div.empty-hint, .panel-body.empty-hint';
   var FX_OPEN={}; try{ FX_OPEN=JSON.parse(localStorage.getItem('agenda-fx')||'{}')||{}; }catch(_){}
   function fxKey(t){ var s=String(t).slice(0,48), n=0; for(var i=0;i<s.length;i++) n=(n*31+s.charCodeAt(i))>>>0; return n.toString(36); }
   function foldExplainHost(root){
@@ -16793,6 +16800,62 @@ window.addEventListener('keydown', function(e){
     return {scheduled:scheduled, scheduledMin:scheduledMin, done:done, doneMin:doneMin, skipped:skipped, skippedMin:skippedMin,
       pct: scheduled ? Math.round(done/scheduled*100) : null, perCat:perCat};
   }
+  var PN_DRAG=false, PN_DRAG_PEND=false;
+  var PN_ORDEM_PADRAO=['resumo','noites','planejado','conclusao','categorias','tempo','pontualidade','pulados','tags'];
+  function painelOrdem(){
+    var o=(state.layout && Array.isArray(state.layout.painelOrdem)) ? state.layout.painelOrdem.filter(function(k){ return PN_ORDEM_PADRAO.indexOf(k)>=0; }) : [];
+    PN_ORDEM_PADRAO.forEach(function(k){ if(o.indexOf(k)<0) o.push(k); });
+    return o;
+  }
+  var PN_GRIP='<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
+  /* Arrastar pela alça: o quadro acompanha o dedo/mouse e os outros abrem espaço; perto da borda a tela rola.
+     Solta → grava a ordem. Enquanto arrasta, os quadros encolhem até o título (fica fácil ver para onde vai). */
+  function wirePainelOrdem(app){
+    Array.prototype.forEach.call(app.querySelectorAll('.pn-sec'), function(sec){
+      var head=sec.querySelector('.panel-head'); if(!head || head.querySelector('.pn-grip')) return;
+      var g=document.createElement('button'); g.type='button'; g.className='pn-grip'; g.innerHTML=PN_GRIP;
+      g.title='Arraste para mudar a ordem'; g.setAttribute('aria-label','Arrastar para mudar a ordem deste quadro');
+      head.insertBefore(g, head.firstChild);
+      g.addEventListener('keydown', function(e){
+        if(e.key!=='ArrowUp' && e.key!=='ArrowDown') return; e.preventDefault();
+        var o=painelOrdem(), k=sec.getAttribute('data-pnsec'), i=o.indexOf(k), j=i+(e.key==='ArrowUp'?-1:1);
+        if(j<0||j>=o.length) return; o.splice(i,1); o.splice(j,0,k); saveLayout({painelOrdem:o}); render();
+        setTimeout(function(){ var b=document.querySelector('.pn-sec[data-pnsec="'+k+'"] .pn-grip'); if(b) b.focus(); }, 30);
+      });
+      g.addEventListener('pointerdown', function(e){
+        if(e.button>0) return; e.preventDefault();
+        var y0=e.clientY, moved=false, tick=null, lastY=e.clientY;
+        try{ g.setPointerCapture(e.pointerId); }catch(_){}
+        function lugar(y){
+          var irmaos=Array.prototype.filter.call(app.querySelectorAll('.pn-sec'), function(x){ return x!==sec; });
+          var antes=null;
+          for(var i=0;i<irmaos.length;i++){ var r=irmaos[i].getBoundingClientRect(); if(y < r.top + r.height/2){ antes=irmaos[i]; break; } }
+          if(antes){ if(sec.nextSibling!==antes) app.insertBefore(sec, antes); } else if(app.lastElementChild!==sec) app.appendChild(sec);
+        }
+        function mover(ev){
+          lastY=ev.clientY;
+          if(!moved){ if(Math.abs(ev.clientY-y0)<6) return; moved=true; dragActive=true; PN_DRAG=true;
+            var t0=sec.getBoundingClientRect().top; app.classList.add('pn-arrastando'); sec.classList.add('pn-pego');
+            window.scrollBy(0, sec.getBoundingClientRect().top-t0);
+            tick=setInterval(function(){ var m=60, v=0; if(lastY<m+40) v=-12; else if(lastY>innerHeight-m) v=12; if(v){ window.scrollBy(0,v); lugar(lastY); } }, 16);
+          }
+          lugar(ev.clientY);
+        }
+        function fim(){
+          window.removeEventListener('pointermove', mover); window.removeEventListener('pointerup', fim); window.removeEventListener('pointercancel', fim);
+          clearInterval(tick); dragActive=false; PN_DRAG=false;
+          if(!moved){ if(PN_DRAG_PEND){ PN_DRAG_PEND=false; render(); } return; }
+          PN_DRAG_PEND=false;
+          app.classList.remove('pn-arrastando'); sec.classList.remove('pn-pego');
+          var o=Array.prototype.map.call(app.querySelectorAll('.pn-sec'), function(x){ return x.getAttribute('data-pnsec'); });
+          saveLayout({painelOrdem:o});
+          try{ sec.scrollIntoView({block:'nearest'}); }catch(_){}
+        }
+        // ouvir na janela: o quadro muda de lugar na página durante o arraste e isso solta a "captura" do ponteiro
+        window.addEventListener('pointermove', mover); window.addEventListener('pointerup', fim); window.addEventListener('pointercancel', fim);
+      });
+    });
+  }
   function weekSummaryHtml(){
     var todayW = startOfWeek(todayStr());
     var lastMon = addDays(todayW,-7), prevMon = addDays(todayW,-14);
@@ -17071,21 +17134,27 @@ window.addEventListener('keydown', function(e){
       }).join('');
     }
 
-    app.innerHTML =
-      weekSummaryHtml() +
-      planVsDoneHtml(todayW) +
-      sleepChartHtml() +
-      '<div class="panel" style="margin-bottom:12px;"><div class="panel-head"><h2>Conclusão diária (últimos 14 dias)</h2>' + (media==null?'':'<span class="mono" style="font-size:.7rem; color:var(--ink-soft); margin-left:auto; margin-right:10px;">média '+media+'%</span>') + '<button class="btn ghost small" id="btn-export-csv">Exportar CSV</button></div>' +
+    /* v160: o Gabriel escolhe a ordem dos quadros do Painel arrastando pela alça ⋮⋮ (como os valores no Metas).
+       Ordem padrão pedida por ele: resumo da semana, noites, e o resto. Guardada em settings/layout.painelOrdem
+       (vale nos outros aparelhos). Quadro novo que não está na ordem salva entra no fim. */
+    var PN_SECS = {
+      resumo: weekSummaryHtml(),
+      noites: sleepChartHtml(),
+      planejado: planVsDoneHtml(todayW),
+      conclusao: '<div class="panel" style="margin-bottom:12px;"><div class="panel-head"><h2>Conclusão diária (últimos 14 dias)</h2>' + (media==null?'':'<span class="mono" style="font-size:.7rem; color:var(--ink-soft); margin-left:auto; margin-right:10px;">média '+media+'%</span>') + '<button class="btn ghost small" id="btn-export-csv">Exportar CSV</button></div>' +
         '<div class="panel-body"><div class="chart">' +
           '<div class="chart-sub">Cada coluna é um dia: a altura é a porcentagem dos blocos planejados daquele dia que foram concluídos. Embaixo de cada dia, quantos de quantos. A linha laranja é a média dos 14 dias. Coluna hachurada = dia sem nada planejado (não é 0%).</div>' +
           '<div class="chart-plot">'+guiasDia+refHtml+'<div class="chart-cols">'+barsHtml+'</div></div>' +
           '<div class="chart-xaxis">'+eixoDia+'</div>' +
-        '</div></div></div>' +
-      '<div class="panel" style="margin-bottom:12px;"><div class="panel-head"><h2>Esta semana por categoria</h2></div><div class="panel-body"><div class="sky-cat-grid">'+catHtml+'</div></div></div>' +
-      radarWeekHtml(todayW) +
-      punctualityHtml() +
-      skipRollupHtml() +
-      tagRollupHtml();
+        '</div></div></div>',
+      categorias: '<div class="panel" style="margin-bottom:12px;"><div class="panel-head"><h2>Esta semana por categoria</h2></div><div class="panel-body"><div class="sky-cat-grid">'+catHtml+'</div></div></div>',
+      tempo: radarWeekHtml(todayW),
+      pontualidade: punctualityHtml(),
+      pulados: skipRollupHtml(),
+      tags: tagRollupHtml()
+    };
+    app.innerHTML = painelOrdem().map(function(k){ return PN_SECS[k] ? '<div class="pn-sec" data-pnsec="'+k+'">'+PN_SECS[k]+'</div>' : ''; }).join('');
+    wirePainelOrdem(app);
     var pvdB=app.querySelector('[data-pvd-mais]');
     if(pvdB) pvdB.onclick=function(){
       var pn=pvdB.closest('.pvd-panel'), on=!pn.classList.contains('pvd-mais');
@@ -18271,6 +18340,9 @@ window.addEventListener('keydown', function(e){
     'html[data-mode="dark"] #ai-panel{background:#1B1E1B;} @media (prefers-color-scheme:dark){ html:not([data-mode="light"]) #ai-panel{background:#1B1E1B;} }'+
     'body.ai-open #ai-panel{transform:none; opacity:1; pointer-events:auto;}'+
     'body.ai-open #agenda-cloud-ui{display:none!important;}'+
+    '@media (min-width:861px){ .ai-head{cursor:grab; touch-action:none;} .ai-movendo .ai-head{cursor:grabbing;} }'+
+    '#ai-panel.ai-solto{right:auto; bottom:auto; resize:both; min-width:320px; min-height:360px; max-width:calc(100vw - 16px); max-height:calc(100vh - 16px); transform:none;}'+
+    '#ai-panel.ai-movendo{transition:none; user-select:none; box-shadow:0 24px 60px rgba(0,0,0,.28);}'+
     '.ai-head{display:flex; align-items:center; gap:10px; padding:14px 12px 12px 16px; border-bottom:1px solid var(--border-soft);}'+
     '.ai-head .ai-logo{width:34px; height:34px; border-radius:11px; display:flex; align-items:center; justify-content:center; background:var(--accent-soft); color:var(--accent); flex:none;}'+
     '.ai-head .ai-t{flex:1; min-width:0;} .ai-head b{display:block; font-size:1rem;} .ai-head small{display:block; color:var(--ink-faint); font-size:.7222rem;}'+
@@ -18372,7 +18444,7 @@ window.addEventListener('keydown', function(e){
     var fr=p.querySelector('[data-ai=fresh]'); if(fr) fr.style.visibility=aiLoad().log.length?'visible':'hidden';
     var md=aiModo();
     Array.prototype.forEach.call(p.querySelectorAll('[data-ai-modo]'), function(x){ var on=x.getAttribute('data-ai-modo')===md; x.classList.toggle('on', on); x.setAttribute('aria-checked', on?'true':'false'); x.setAttribute('role','radio'); });
-    var mdd=p.querySelector('.ai-modo-d'); if(mdd) mdd.textContent = md==='economico' ? 'sempre o modelo barato' : md==='caprichado' ? 'sempre o modelo forte · ~R$ 0,25 cada' : 'barato no dia a dia, forte para planejar';
+    var mdd=p.querySelector('.ai-modo-d'); if(mdd) mdd.textContent = md==='economico' ? 'sempre o modelo barato' : md==='caprichado' ? 'sempre o modelo mais forte · ~R$ 0,25 cada' : 'barato no dia a dia, forte para planejar';
     aiGastoDraw(p);
   }
   /* Gasto do mês (v159): dá para esconder/mostrar (fica lembrado) e vem em reais pela cotação do dólar do dia.
@@ -18420,7 +18492,7 @@ window.addEventListener('keydown', function(e){
     var m=null; try{ m=localStorage.getItem('agenda-ai-modo2'); }catch(_){ }
     return (m==='economico'||m==='caprichado') ? m : 'auto';
   }
-  var AI_NIVEL={rapido:'⚡ rápido', pensando:'💭 pensou com calma', caprichado:'✦ caprichado'};
+  var AI_NIVEL={rapido:'⚡ rápido', pensando:'💭 pensou com calma', caprichado:'✦ análise avançada'};
   function aiGasto(add){
     var mes=todayStr().slice(0,7), g={mes:mes, usd:0};
     try{ var x=JSON.parse(localStorage.getItem('agenda-ai-gasto')||'null'); if(x && x.mes===mes) g=x; }catch(_){ }
@@ -18438,13 +18510,14 @@ window.addEventListener('keydown', function(e){
     p.innerHTML='<div class="ai-head"><span class="ai-logo">'+AI_SPARK+'</span><span class="ai-t"><b>Assistente</b><small>Claude · vê e organiza sua agenda</small></span>'+
         '<button class="ai-hb" type="button" data-ai="fresh" title="Nova conversa" aria-label="Nova conversa">'+AI_ICO.fresh+'</button>'+
         '<button class="ai-hb" type="button" data-ai="close" title="Fechar" aria-label="Fechar">'+AI_ICO.close+'</button></div>'+
-      '<div class="ai-modo" role="radiogroup" aria-label="Modo de resposta"><button type="button" data-ai-modo="auto">Automático</button><button type="button" data-ai-modo="economico">Econômico</button><button type="button" data-ai-modo="caprichado">Caprichado</button><span class="ai-modo-d"></span></div>'+
+      '<div class="ai-modo" role="radiogroup" aria-label="Modo de resposta"><button type="button" data-ai-modo="auto">Automático</button><button type="button" data-ai-modo="economico">Econômico</button><button type="button" data-ai-modo="caprichado">Avançado</button><span class="ai-modo-d"></span></div>'+
       '<div class="ai-msgs" aria-live="polite"></div>'+
       '<div class="ai-in">'+(SR?'<button class="ai-ib mic" type="button" data-ai="mic" title="Falar" aria-label="Falar">'+AI_ICO.mic+'</button>':'')+
         '<textarea rows="1" placeholder="Peça algo para a sua agenda…" aria-label="Mensagem para a assistente"></textarea>'+
         '<button class="ai-ib send" type="button" data-ai="send" title="Enviar" aria-label="Enviar">'+AI_ICO.send+'</button></div>'+
       '<div class="ai-gasto" hidden></div><div class="ai-note">Só mexe na agenda, nos afazeres e nas metas — nunca nas configurações.</div>';
     document.body.appendChild(p);
+    aiArrastar(p);
     var ta=p.querySelector('textarea');
     function fit(){ ta.style.height='auto'; ta.style.height=Math.min(140, ta.scrollHeight+2)+'px'; var sb=p.querySelector('.ai-ib.send'); sb.disabled=AI.busy||!aiCanUse()||!ta.value.trim(); }
     ta.addEventListener('input', fit);
@@ -18479,6 +18552,48 @@ window.addEventListener('keydown', function(e){
      (ou de AI_MIC_INICIO se nada foi dito), ou quando a pessoa toca no microfone de novo. Se o navegador encerrar
      sozinho antes disso (alguns encerram em ~5–10 s), o app religa e continua de onde parou. */
   var AI_MIC_SILENCIO=3500, AI_MIC_INICIO=8000;
+  /* v160: no computador o painel pode ser arrastado pelo cabeçalho para sair da frente (vira uma janela solta, mais
+     baixa, e dá para mudar o tamanho pelo canto de baixo). Duplo clique no cabeçalho volta para o canto direito.
+     Posição e tamanho ficam guardados no aparelho. No celular continua tela cheia. */
+  function aiPos(v){
+    if(v!==undefined){ try{ if(v) localStorage.setItem('agenda-ai-pos', JSON.stringify(v)); else localStorage.removeItem('agenda-ai-pos'); }catch(_){ } return v; }
+    try{ return JSON.parse(localStorage.getItem('agenda-ai-pos')||'null'); }catch(_){ return null; }
+  }
+  function aiPosAplicar(){
+    var p=document.getElementById('ai-panel'); if(!p) return;
+    var pos=aiPos();
+    if(!pos || window.innerWidth<=860){ p.classList.remove('ai-solto'); p.style.left=p.style.top=p.style.width=p.style.height=''; return; }
+    p.classList.add('ai-solto');
+    var w=Math.max(320, Math.min(pos.w||410, innerWidth-16)), h=Math.max(360, Math.min(pos.h||Math.min(640, innerHeight-32), innerHeight-16));
+    p.style.width=w+'px'; p.style.height=h+'px';
+    p.style.left=Math.max(8, Math.min(pos.x, innerWidth-w-8))+'px'; p.style.top=Math.max(8, Math.min(pos.y, innerHeight-h-8))+'px';
+  }
+  function aiArrastar(p){
+    var head=p.querySelector('.ai-head');
+    head.title='Arraste para mover · duplo clique para voltar ao canto';
+    head.addEventListener('pointerdown', function(e){
+      if(window.innerWidth<=860 || e.button>0 || e.target.closest('button')) return;
+      e.preventDefault();
+      var r=p.getBoundingClientRect(), dx=e.clientX-r.left, dy=e.clientY-r.top, moveu=false, x0=e.clientX, y0=e.clientY;
+      try{ head.setPointerCapture(e.pointerId); }catch(_){}
+      function mover(ev){
+        if(!moveu){ if(Math.abs(ev.clientX-x0)+Math.abs(ev.clientY-y0)<5) return; moveu=true; p.classList.add('ai-movendo');
+          var cur=aiPos()||{}; if(!p.classList.contains('ai-solto')){ cur={w:r.width, h:Math.min(640, innerHeight-32)}; }
+          aiPos({x:r.left, y:r.top, w:cur.w||r.width, h:cur.h||r.height}); aiPosAplicar(); var r2=p.getBoundingClientRect(); dy=Math.min(dy, r2.height-20); }
+        var pos=aiPos(); pos.x=ev.clientX-dx; pos.y=ev.clientY-dy; aiPos(pos); aiPosAplicar();
+      }
+      function fim(){ window.removeEventListener('pointermove', mover); window.removeEventListener('pointerup', fim); window.removeEventListener('pointercancel', fim); p.classList.remove('ai-movendo'); }
+      window.addEventListener('pointermove', mover); window.addEventListener('pointerup', fim); window.addEventListener('pointercancel', fim);
+    });
+    head.addEventListener('dblclick', function(e){ if(e.target.closest('button')) return; aiPos(null); aiPosAplicar(); });
+    // guardar o tamanho quando a pessoa puxa o canto (resize do navegador)
+    if(window.ResizeObserver) new ResizeObserver(function(){
+      if(!p.classList.contains('ai-solto') || p.classList.contains('ai-movendo') || !AI.open) return;
+      var pos=aiPos(); if(!pos) return; var r=p.getBoundingClientRect();
+      if(Math.abs((pos.w||0)-r.width)>2 || Math.abs((pos.h||0)-r.height)>2){ pos.w=Math.round(r.width); pos.h=Math.round(r.height); aiPos(pos); }
+    }).observe(p);
+    window.addEventListener('resize', aiPosAplicar);
+  }
   function aiMic(btn, ta, fit){
     var SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return;
     if(AI.listening){ AI.micStop=true; clearTimeout(AI.micT); try{ AI.rec.stop(); }catch(_){ } return; }
@@ -18516,7 +18631,7 @@ window.addEventListener('keydown', function(e){
     AI.open=!!o;
     document.body.classList.toggle('ai-open', AI.open);
     var p=document.getElementById('ai-panel'); p.setAttribute('aria-hidden', AI.open?'false':'true');
-    if(AI.open){ aiDraw(); setTimeout(function(){ var ta=p.querySelector('textarea'); if(ta && !ta.disabled && window.innerWidth>860) ta.focus(); }, 60); }
+    if(AI.open){ aiPosAplicar(); aiDraw(); setTimeout(function(){ var ta=p.querySelector('textarea'); if(ta && !ta.disabled && window.innerWidth>860) ta.focus(); }, 60); }
     else { var f=document.getElementById('ai-fab'); if(f && document.activeElement && p.contains(document.activeElement)) f.focus(); }
   }
   async function aiSend(text){
