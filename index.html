@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261119-190428';</script>
+<script>window.AGENDA_BUILD = '20261119-191243';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261119-190428"></script>
+<script src="cloud.js?v=20261119-191243"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -565,6 +565,15 @@
   .toast.show{opacity:1; transform:translateY(0) scale(1);}
   .toast .toast-ic{color:var(--success); font-size:0.9444rem; flex:none;}
   @media (max-width:500px){ .toast{white-space:normal; font-size:0.8333rem;} }
+  /* v165: cartão "confirmar mudança" (arrastar bloco/afazer na grade) */
+  .cm-card{position:fixed; left:50%; bottom:22px; z-index:210; width:min(420px, calc(100vw - 24px)); transform:translate(-50%, 16px); opacity:0; transition:opacity .2s ease, transform .24s cubic-bezier(.32,.72,0,1);
+    background:var(--glass-bg-strong); backdrop-filter:blur(var(--glass-blur)) saturate(1.4); -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4); border:1px solid var(--glass-border, var(--border)); border-radius:20px; box-shadow:var(--shadow-lg); padding:14px 14px 12px; color:var(--ink);}
+  .cm-card.show{opacity:1; transform:translate(-50%, 0);}
+  .cm-card .cm-t{font-weight:700; font-size:0.95rem; margin:0 2px 2px;}
+  .cm-card .cm-d{font-size:0.85rem; color:var(--ink-soft); margin:0 2px 12px; line-height:1.4;}
+  .cm-card .cm-d b{color:var(--ink); font-variant-numeric:tabular-nums;}
+  .cm-card .cm-a{display:flex; gap:8px;} .cm-card .cm-a .btn{flex:1; min-height:44px; justify-content:center;}
+  @media (max-width:860px){ .cm-card{bottom:calc(78px + var(--safe-bottom,0px));} }
   .sb-brand-acts{margin-left:auto; display:flex; gap:6px; flex:none;}
   .search-btn{position:relative; flex:none; width:34px; height:34px; border-radius:10px; border:1px solid rgba(239,231,216,.16); background:rgba(239,231,216,.06); color:var(--sidebar-ink); font-size:0.9444rem; display:flex; align-items:center; justify-content:center; padding:0;}
   .search-btn:hover{background:rgba(239,231,216,.14);}
@@ -1922,6 +1931,10 @@ button.sb-pn-stat:hover{background:var(--hover-glass, rgba(239,231,216,.1));}
 .rest-zone.unlocked{pointer-events:none; align-items:flex-start; justify-content:flex-end;}
 .rest-zone.unlocked .rz-lab{pointer-events:auto; position:absolute; top:4px; right:4px; bottom:auto; padding:2px 8px 2px 5px; gap:4px; font-size:11px; cursor:pointer; opacity:.85;}
 .rest-zone.unlocked .rz-lab:hover{opacity:1;}
+/* v165: liberado não leva moldura nenhuma (o Gabriel achou o visual carregado) — só o cadeado aberto, agora no canto
+   de BAIXO e por cima dos blocos, para dar para tocar nele e travar de novo mesmo com um bloco ocupando o horário. */
+.rest-zone.unlocked{background:none; box-shadow:none; outline:none; z-index:6;}
+.rest-zone.unlocked .rz-lab{top:auto; bottom:6px; right:6px; box-shadow:0 2px 8px -3px rgba(0,0,0,.35);}
 .rest-zone.unlocked.thin .rz-lab{display:inline-flex;} .rest-zone.unlocked.narrow .rz-lab, .rest-zone.unlocked.wk .rz-lab{padding:2px 4px;}
 .rest-zone.unlocked.wk .rz-w{display:none;}
 .rest-zone.narrow .rz-t, .rest-zone.wk .rz-t{display:none;}
@@ -11936,6 +11949,36 @@ window.addEventListener('keydown', function(e){
     autoHide(el, readMs(msg), function(){ el.classList.remove('show'); setTimeout(function(){ el.remove(); }, 260); });
   }
 
+  /* v165: pedir confirmação antes de aplicar uma mudança que pode ter sido sem querer (no celular, passar o dedo
+     na grade arrastava blocos já marcados). Não usa confirm() — o iframe do artefato bloqueia. Um cartão só por vez;
+     um novo pedido cancela o anterior. Enter confirma, Esc cancela. Tocar fora não confirma (só cancela depois de 12 s
+     sem resposta, para não deixar a mudança pendurada). */
+  var CM_ATUAL=null;
+  function confirmarMudanca(titulo, detalheHtml, okLabel, onOk, onCancel){
+    if(CM_ATUAL) CM_ATUAL.cancelar();
+    var el=document.createElement('div'); el.className='cm-card'; el.setAttribute('role','alertdialog'); el.setAttribute('aria-label', titulo);
+    el.innerHTML='<div class="cm-t">'+escapeHtml(titulo)+'</div><div class="cm-d">'+detalheHtml+'</div>'+
+      '<div class="cm-a"><button type="button" class="btn" data-cm="no">Cancelar</button><button type="button" class="btn primary" data-cm="ok">'+escapeHtml(okLabel||'Confirmar')+'</button></div>';
+    document.body.appendChild(el);
+    var feito=false, t=null;
+    function fechar(){ clearTimeout(t); document.removeEventListener('keydown', tecla, true); el.classList.remove('show'); setTimeout(function(){ el.remove(); }, 240); if(CM_ATUAL===api) CM_ATUAL=null; }
+    function ok(){ if(feito) return; feito=true; fechar(); try{ onOk(); }catch(e){ console.error(e); } }
+    function cancelar(){ if(feito) return; feito=true; fechar(); if(onCancel) try{ onCancel(); }catch(_){ } }
+    function tecla(e){ if(e.key==='Enter'){ e.preventDefault(); e.stopPropagation(); ok(); } else if(e.key==='Escape'){ e.preventDefault(); e.stopPropagation(); cancelar(); } }
+    el.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+    el.querySelector('[data-cm=ok]').onclick=function(e){ e.stopPropagation(); ok(); };
+    el.querySelector('[data-cm=no]').onclick=function(e){ e.stopPropagation(); cancelar(); };
+    document.addEventListener('keydown', tecla, true);
+    t=setTimeout(cancelar, 12000);
+    el.addEventListener('pointerenter', function(){ clearTimeout(t); });
+    var api={cancelar:cancelar, ok:ok, el:el}; CM_ATUAL=api;
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.classList.add('show'); }); });
+    setTimeout(function(){ try{ el.querySelector('[data-cm=ok]').focus({preventScroll:true}); }catch(_){ } }, 30);
+    return api;
+  }
+  function cmDia(d){ try{ return DOW[new Date(d+'T12:00:00').getDay()].toLowerCase()+' '+pnDdmm(d); }catch(_){ return d; } }
+  function cmHora(m){ return m>=1440 ? '23:59' : timeOfMinutes(m); }
+
   function readMs(text, extra){ var n=String(text||'').replace(/\s+/g,' ').trim().length; return Math.max(4000, Math.min(12000, 2500 + n*70 + (extra||0))); }
   function autoHide(el, ms, hide){
     var t=null, done=false;
@@ -15598,14 +15641,30 @@ window.addEventListener('keydown', function(e){
       else if(!moved){ openFn(); return; }
       if(lastDate==null) return;
       var copyNow = effectiveCopy();
-      if(it.kind==='check'){
-        if(copyNow) duplicateCheck(it.c, {date:lastDate, timeLabel:timeOfMinutes(lastStartMin)});
-        else updateCheck(it.c.id, {date:lastDate, timeLabel:timeOfMinutes(lastStartMin)});
-      } else {
-        var b=it.b;
-        if(copyNow) duplicateBlock(b, {date:lastDate, isLoose:false, plannedStart:timeOfMinutes(lastStartMin), plannedEnd:timeOfMinutes(lastStartMin+durMin)});
-        else updateBlock(b.id, {date:lastDate, plannedStart:timeOfMinutes(lastStartMin), plannedEnd:timeOfMinutes(lastStartMin+durMin), overlapEatenMin:null, overlapAcknowledged:false});
+      var alvoD=lastDate, alvoS=lastStartMin, origD=(it.kind==='check' ? it.c.date : it.b.date);
+      if(!copyNow && alvoD===origD && alvoS===it.sMin) return;   // soltou no mesmo lugar
+      function aplicar(){
+        if(it.kind==='check'){
+          if(copyNow) duplicateCheck(it.c, {date:alvoD, timeLabel:timeOfMinutes(alvoS)});
+          else updateCheck(it.c.id, {date:alvoD, timeLabel:timeOfMinutes(alvoS)});
+        } else {
+          var b=it.b;
+          if(copyNow) duplicateBlock(b, {date:alvoD, isLoose:false, plannedStart:timeOfMinutes(alvoS), plannedEnd:timeOfMinutes(alvoS+durMin)});
+          else updateBlock(b.id, {date:alvoD, plannedStart:timeOfMinutes(alvoS), plannedEnd:timeOfMinutes(alvoS+durMin), overlapEatenMin:null, overlapAcknowledged:false});
+        }
       }
+      /* v165: confirma antes de mudar (arraste sem querer no celular mudava o horário de blocos já acertados).
+         A sombra fica no lugar novo enquanto a pessoa decide. */
+      var nome=(it.kind==='check' ? it.c.title : it.b.title) || (it.kind==='check' ? 'afazer' : 'bloco');
+      var sombra=null, col=document.querySelector('#cal-body .cal-col[data-date="'+alvoD+'"]');
+      if(col){ sombra=document.createElement('div'); sombra.className='ghost-range'+(copyNow?' is-copy':''); sombra.style.top=yForMinute(alvoS)+'px'; sombra.style.height=(yForMinute(alvoS+durMin)-yForMinute(alvoS))+'px'; col.appendChild(sombra); }
+      var de = (origD && origD!==alvoD ? cmDia(origD)+' ' : '') + cmHora(it.sMin)+'–'+cmHora(it.sMin+durMin);
+      var para = (origD!==alvoD ? cmDia(alvoD)+' ' : '') + cmHora(alvoS)+'–'+cmHora(alvoS+durMin);
+      confirmarMudanca(copyNow ? 'Copiar “'+nome+'”?' : 'Mudar o horário de “'+nome+'”?',
+        copyNow ? 'Cria uma cópia em <b>'+escapeHtml(para)+'</b>.' : 'De <b>'+escapeHtml(de)+'</b> para <b>'+escapeHtml(para)+'</b>.',
+        copyNow ? 'Copiar' : 'Mudar',
+        function(){ if(sombra) sombra.remove(); aplicar(); },
+        function(){ if(sombra) sombra.remove(); });
     }
     chip.addEventListener('pointerup', function(e){ if(tPt && !armed){ disarm(); return; } disarm(); finish(e); });
     chip.addEventListener('pointercancel', function(){ disarm(); armed=false; chip.dataset.tapOpen=''; chip.classList.remove('chip-lift'); dragging=false; dragActive=false; chip.style.opacity=''; if(ghost){ghost.remove(); ghost=null; ghostCol=null;} gridTipClear(); gasStop(); });
@@ -15643,8 +15702,15 @@ window.addEventListener('keydown', function(e){
       on=false; dragActive=false; gasStop();
       if(ghost){ ghost.remove(); ghost=null; } gridTipClear();
       if(cancel || endMin===it.eMin) return;
-      updateBlock(it.b.id, {plannedEnd:endMin>=1440?'23:59':timeOfMinutes(endMin), overlapEatenMin:null, overlapAcknowledged:false});
-      showToast('Agora termina às '+(endMin>=1440?'23:59':timeOfMinutes(endMin))+' ('+fmtDuration(endMin-it.sMin)+').', '⏱');
+      var fimM=endMin, sombra=document.createElement('div'); sombra.className='ghost-range';
+      sombra.style.top=yForMinute(it.sMin)+'px'; sombra.style.height=(yForMinute(fimM)-yForMinute(it.sMin))+'px'; col.appendChild(sombra);
+      // v165: confirma antes (no celular, rolar a tela passando pela borda de baixo do bloco esticava sem querer)
+      confirmarMudanca('Mudar a duração de “'+(it.b.title||'bloco')+'”?',
+        'Termina às <b>'+cmHora(it.eMin)+'</b> → <b>'+cmHora(fimM)+'</b> ('+escapeHtml(fmtDuration(fimM-it.sMin))+').', 'Mudar',
+        function(){ sombra.remove();
+          updateBlock(it.b.id, {plannedEnd:fimM>=1440?'23:59':timeOfMinutes(fimM), overlapEatenMin:null, overlapAcknowledged:false});
+          showToast('Agora termina às '+cmHora(fimM)+' ('+fmtDuration(fimM-it.sMin)+').', '⏱'); },
+        function(){ sombra.remove(); });
     }
     hdl.addEventListener('pointerup', function(e){ e.stopPropagation(); end(e, false); });
     hdl.addEventListener('pointercancel', function(e){ end(e, true); });
@@ -18728,6 +18794,18 @@ window.addEventListener('keydown', function(e){
     var SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return;
     if(AI.listening){ AI.micStop=true; clearTimeout(AI.micT); try{ AI.rec.stop(); }catch(_){ } return; }
     var base=ta.value?ta.value.replace(/\s*$/,' '):'', finais='', ph=ta.placeholder, falou=false;
+    /* v165: o Gabriel falava, tocava em Enviar com o microfone ainda ligado, e o texto voltava para a caixa — o
+       reconhecimento continuava rodando e o próximo resultado (ou o religar automático) reescrevia o campo já
+       limpo. Agora cada escuta tem um número (gen); enviar chama AI.micCortar(), que aborta a escuta e faz os
+       resultados atrasados dessa escuta serem ignorados. */
+    var gen=AI.micGen=(AI.micGen||0)+1;
+    AI.micCortar=function(){
+      if(gen!==AI.micGen) return;
+      AI.micGen++; AI.micStop=true; clearTimeout(AI.micT);
+      var r0=AI.rec; AI.rec=null; AI.listening=false;
+      try{ if(r0) r0.abort(); }catch(_){ }
+      btn.classList.remove('on'); btn.setAttribute('aria-label','Falar'); ta.placeholder=ph;
+    };
     AI.micStop=false; AI.listening=true; btn.classList.add('on'); btn.setAttribute('aria-label','Parar de ouvir');
     ta.placeholder='Ouvindo… toque no microfone para parar';
     function armar(ms){ clearTimeout(AI.micT); AI.micT=setTimeout(function(){ AI.micStop=true; try{ AI.rec.stop(); }catch(_){ parar(); } }, ms); }
@@ -18739,6 +18817,7 @@ window.addEventListener('keydown', function(e){
       var r=new SR(), sess='';
       r.lang='pt-BR'; r.interimResults=true; r.continuous=true;
       r.onresult=function(ev){
+        if(gen!==AI.micGen) return;   // escuta já cortada pelo envio
         var fin='', tmp='';
         for(var i=0;i<ev.results.length;i++){ var t=ev.results[i][0].transcript; if(ev.results[i].isFinal) fin+=t; else tmp+=t; }
         sess=fin; ta.value=base+finais+fin+tmp; fit();
@@ -18746,6 +18825,7 @@ window.addEventListener('keydown', function(e){
       };
       r.onerror=function(ev){ if(ev.error==='not-allowed'||ev.error==='service-not-allowed'||ev.error==='audio-capture'){ AI.micStop=true; showToast('Libere o microfone para falar com o Assistente.','🎙️'); } };
       r.onend=function(){
+        if(gen!==AI.micGen) return;   // cortada pelo envio: não religa nem mexe no campo
         if(sess){ finais+=sess; if(!/\s$/.test(finais)) finais+=' '; }
         if(!AI.micStop){ try{ iniciar(); return; }catch(_){ } }
         parar();
@@ -18765,6 +18845,7 @@ window.addEventListener('keydown', function(e){
     else { var f=document.getElementById('ai-fab'); if(f && document.activeElement && p.contains(document.activeElement)) f.focus(); }
   }
   async function aiSend(text){
+    if(AI.micCortar) AI.micCortar();   // v165: enviar desliga o microfone antes (senão o texto volta para a caixa)
     text=String(text||'').trim(); if(!text || AI.busy || !aiCanUse()) return;
     var C=window.AgendaCloud, c=aiLoad();
     c.log.push({w:'eu', t:text}); c.api.push({role:'user', content:text});
