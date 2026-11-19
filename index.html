@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261119-165828';</script>
+<script>window.AGENDA_BUILD = '20261119-170832';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261119-165828"></script>
+<script src="cloud.js?v=20261119-170832"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -2903,6 +2903,10 @@ code, pre, kbd, .nt-code, .nt-code *, .nt-codebar select{font-family:var(--code)
 #fw-scrim{position:fixed; inset:0; z-index:47; background:rgba(10,14,12,.34); animation:fwFade .18s ease-out;}
 #fw{position:fixed; z-index:48; left:50%; top:50%; transform:translate(-50%,-50%); width:min(780px, calc(100vw - 32px)); height:min(860px, calc(100dvh - 48px)); display:flex; flex-direction:column; border-radius:24px; background:#F4EFE5; isolation:isolate; contain:layout paint; border:1px solid var(--glass-border, var(--border)); box-shadow:0 30px 80px -24px rgba(0,0,0,.45), 0 2px 10px rgba(0,0,0,.08); overflow:hidden; animation:fwIn .24s cubic-bezier(.2,.9,.3,1.1);}
 #fw.nudge{animation:fwNudge .3s ease-out;}
+@media (min-width:861px){ .fw-h{cursor:grab; touch-action:none;} .fw-movendo .fw-h{cursor:grabbing;} }
+#fw.fw-solto{transform:none; animation:fwFade .18s ease-out; resize:both; overflow:hidden; min-width:360px; min-height:320px;}
+#fw.fw-movendo{user-select:none; transition:none;}
+#fw-scrim.fw-solto{background:transparent!important; pointer-events:none!important; backdrop-filter:none!important;}
 @keyframes fwIn{from{opacity:0; transform:translate(-50%,-47%) scale(.97);} to{opacity:1; transform:translate(-50%,-50%) scale(1);}}
 @keyframes fwFade{from{opacity:0} to{opacity:1}}
 @keyframes fwNudge{0%,100%{transform:translate(-50%,-50%)} 30%{transform:translate(-50%,-50%) scale(1.012)} }
@@ -2930,7 +2934,7 @@ code, pre, kbd, .nt-code, .nt-code *, .nt-codebar select{font-family:var(--code)
   #fw-pill{bottom:calc(var(--safe-bottom, 0px) + 84px);}
 }
 @media (prefers-reduced-motion:reduce){ #fw, #fw-scrim{animation:none;} }
-body.fw-open{overflow:hidden;}
+body.fw-open{overflow:hidden;} body.fw-open.fw-solto-on{overflow:auto;}
 html[data-mode="dark"] #fw{background:#1B1E1B;}
 @media (prefers-color-scheme:dark){ html:not([data-mode="light"]) #fw{background:#1B1E1B;} }
 .fw-body{contain:content;}
@@ -2942,6 +2946,8 @@ body.fw-open #sky-fab, body.fw-open #sky-panel, body.fw-open #quick-fabs, body.f
 
 .fx-h{position:relative; display:-webkit-box!important; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; padding-right:52px!important; font-size:0.7222rem!important; line-height:1.45!important; color:var(--ink-soft);}
 .fx-h.open{display:block!important; padding-right:0!important;}
+/* v161: fechado mostra só o COMEÇO da frase (o Gabriel não quer a explicação na frente da informação, nem numa linha comprida) */
+.fx-h:not(.open){max-width:min(100%, 50ch);}
 .fx-h .fx-more{position:absolute; right:0; top:50%; transform:translateY(-50%); border:0; background:color-mix(in srgb, var(--ink) 8%, transparent); color:var(--ink); font:inherit; font-size:0.6667rem; font-weight:700; padding:2px 9px; border-radius:999px; cursor:pointer; line-height:1.5;}
 .fx-h.open .fx-more{position:static; transform:none; margin-left:6px; vertical-align:1px;}
 
@@ -13464,8 +13470,43 @@ window.addEventListener('keydown', function(e){
     document.body.appendChild(w);
     w.querySelector('[data-fw=close]').onclick=function(){ state.floatMin=null; setView(state.floatUnder||state.lastAgendaView||'day'); };
     w.querySelector('[data-fw=min]').onclick=function(){ state.floatMin=state.view; setView(state.floatUnder||state.lastAgendaView||'day'); };
+    fwArrastar(w);
     w.querySelector('.fw-tabs').onclick=function(e){ var b=e.target.closest('[data-ckt]'); if(!b) return; CK.tab=b.getAttribute('data-ckt'); ckSave(); var bd=document.getElementById('fw-body'); if(bd) bd.scrollTop=0; render(); };
     return w;
+  }
+  /* v161: Configurações e Relógio também saem da frente: arrastar pelo topo (fora dos botões/abas). Depois de
+     mover, a janela fica solta, sem escurecer o fundo, e dá para usar o app atrás. Duplo clique no topo volta ao
+     centro. Posição guardada por janela (Configurações e Relógio separados). Só no computador. */
+  function fwPos(k, v){
+    var key='agenda-fw-pos-'+k;
+    if(v!==undefined){ try{ if(v) localStorage.setItem(key, JSON.stringify(v)); else localStorage.removeItem(key); }catch(_){ } return v; }
+    try{ return JSON.parse(localStorage.getItem(key)||'null'); }catch(_){ return null; }
+  }
+  function fwPosAplicar(w){
+    w=w||document.getElementById('fw'); if(!w) return;
+    var k=w.getAttribute('data-k'), pos=k?fwPos(k):null, sc=document.getElementById('fw-scrim');
+    if(!pos || window.innerWidth<=860){ w.classList.remove('fw-solto'); w.style.left=w.style.top=''; w.setAttribute('aria-modal','true'); if(sc) sc.classList.remove('fw-solto'); document.body.classList.remove('fw-solto-on'); return; }
+    var r=w.getBoundingClientRect();
+    w.classList.add('fw-solto'); if(sc) sc.classList.add('fw-solto'); document.body.classList.add('fw-solto-on'); w.setAttribute('aria-modal','false');
+    w.style.left=Math.max(8, Math.min(pos.x, innerWidth-Math.min(r.width,innerWidth)-8))+'px';
+    w.style.top=Math.max(8, Math.min(pos.y, innerHeight-80))+'px';
+  }
+  function fwArrastar(w){
+    var h=w.querySelector('.fw-h');
+    h.title='Arraste para mover · duplo clique para voltar ao centro';
+    h.addEventListener('pointerdown', function(e){
+      if(window.innerWidth<=860 || e.button>0 || e.target.closest('button, [role=tab], input, select')) return;
+      e.preventDefault();
+      var r=w.getBoundingClientRect(), dx=e.clientX-r.left, dy=e.clientY-r.top, x0=e.clientX, y0=e.clientY, moveu=false, k=w.getAttribute('data-k');
+      function mover(ev){
+        if(!moveu){ if(Math.abs(ev.clientX-x0)+Math.abs(ev.clientY-y0)<5) return; moveu=true; w.classList.add('fw-movendo'); }
+        fwPos(k, {x:ev.clientX-dx, y:ev.clientY-dy}); fwPosAplicar(w);
+      }
+      function fim(){ window.removeEventListener('pointermove', mover); window.removeEventListener('pointerup', fim); window.removeEventListener('pointercancel', fim); w.classList.remove('fw-movendo'); }
+      window.addEventListener('pointermove', mover); window.addEventListener('pointerup', fim); window.addEventListener('pointercancel', fim);
+    });
+    h.addEventListener('dblclick', function(e){ if(e.target.closest('button, [role=tab]')) return; fwPos(w.getAttribute('data-k'), null); fwPosAplicar(w); });
+    if(!fwArrastar.liga){ fwArrastar.liga=true; window.addEventListener('resize', function(){ fwPosAplicar(); }); }
   }
   function renderFloat(fv){
     var w=fwEnsure(), body=w.querySelector('#fw-body'), was=w.getAttribute('data-k');
@@ -13478,6 +13519,7 @@ window.addEventListener('keydown', function(e){
     if(fv==='clock'){ body.removeAttribute('data-cfg'); body.removeAttribute('data-sec'); renderClock(body); }
     else { body.setAttribute('data-cfg','settings'); renderCategories(body); }
     body.scrollTop=st;
+    fwPosAplicar(w);
     var cb=document.getElementById('clock-btn'); if(cb) cb.classList.toggle('on', fv==='clock');
     var sb=document.getElementById('settings-btn'); if(sb) sb.classList.toggle('on', fv==='settings');
     fwPill();
@@ -13485,7 +13527,7 @@ window.addEventListener('keydown', function(e){
   function fwGear(){ var g=document.querySelector('#settings-btn svg'); return g ? g.outerHTML : ''; }
   function closeFloatEl(){
     var w=document.getElementById('fw'); if(w){ w.remove(); var sc=document.getElementById('fw-scrim'); if(sc) sc.remove(); }
-    document.body.classList.remove('fw-open');
+    document.body.classList.remove('fw-open','fw-solto-on');
     fwPill();
   }
   /* Minimizado: um botãozinho flutuante traz a janela de volta do jeito que estava. */
@@ -13500,7 +13542,7 @@ window.addEventListener('keydown', function(e){
   }
   /* Explicações recolhidas no app inteiro: textos de explicação mostram só a primeira linha, em letra menor,
      com "mais" para abrir. Aberto uma vez, fica aberto naquele aparelho (guardado pelo começo do texto). */
-  var FX_SEL='.cfg-title p, p.cfg-note, div.cfg-note, p.lay-tip, div.lay-tip, .panel-body > p.empty-hint, .hero-note.lay-tip, .chart-sub, div.radar-foot, .panel-body > div.empty-hint, .panel-body.empty-hint';
+  var FX_SEL='.cfg-title p, p.cfg-note, div.cfg-note, p.lay-tip, div.lay-tip, .panel-body > p.empty-hint, .hero-note.lay-tip, .chart-sub, div.radar-foot, div.empty-hint, .panel-body.empty-hint, div.cfg-sub, div.ap-note, .pn-empty p';
   var FX_OPEN={}; try{ FX_OPEN=JSON.parse(localStorage.getItem('agenda-fx')||'{}')||{}; }catch(_){}
   function fxKey(t){ var s=String(t).slice(0,48), n=0; for(var i=0;i<s.length;i++) n=(n*31+s.charCodeAt(i))>>>0; return n.toString(36); }
   function foldExplainHost(root){
@@ -13508,7 +13550,7 @@ window.addEventListener('keydown', function(e){
     Array.prototype.forEach.call(root.querySelectorAll(FX_SEL), function(el){
       if(el.classList.contains('fx-h') || el.closest('.nt-pop, .modal, #ck-sheet, .fx-h')) return;
       if(el.querySelector('button, input, select, textarea, a, label')) return;
-      var txt=(el.textContent||'').trim(); if(txt.length<70) return;
+      var txt=(el.textContent||'').trim(); if(txt.length<56) return;
       var k=fxKey(txt), on=!!FX_OPEN[k];
       el.classList.add('fx-h'); el.classList.toggle('open', on);
       var b=document.createElement('button'); b.type='button'; b.className='fx-more'; b.textContent=on?'menos':'mais'; b.setAttribute('aria-expanded', on?'true':'false');
@@ -13519,6 +13561,18 @@ window.addEventListener('keydown', function(e){
       if(!on) requestAnimationFrame(function(){ if(el.isConnected && !el.classList.contains('open') && el.clientHeight>0 && el.scrollHeight<=el.clientHeight+2){ el.classList.remove('fx-h'); b.remove(); } });
     });
   }
+  /* v161: algumas telas se redesenham sozinhas depois do render (seções das Configurações, painéis que se
+     atualizam), e as explicações voltavam abertas. Um observador recolhe de novo tudo o que aparecer.
+     Barato: roda no máximo uma vez por quadro e só olha os seletores de explicação. */
+  (function(){
+    var pend=false;
+    function passa(){ pend=false; foldExplainHost(document.getElementById('app')); foldExplainHost(document.getElementById('fw-body')); }
+    function agenda(){ if(pend) return; pend=true; requestAnimationFrame(passa); }
+    function liga(){
+      ['app','fw-body'].forEach(function(id){ var el=document.getElementById(id); if(el && !el.__fxObs){ el.__fxObs=true; new MutationObserver(agenda).observe(el, {childList:true, subtree:true}); } });
+    }
+    liga(); setInterval(liga, 2000);  // #fw-body é criado e destruído junto com a janela flutuante
+  })();
   function renderCore(){
     renderSidebar();
     renderNotifUi();
@@ -18333,13 +18387,15 @@ window.addEventListener('keydown', function(e){
     '#ai-fab{position:fixed; right:20px; bottom:88px; z-index:46; width:48px; height:48px; border-radius:50%; border:1px solid var(--glass-border); display:flex; align-items:center; justify-content:center; cursor:pointer;'+
       'background:var(--glass-bg-strong); color:var(--accent); box-shadow:var(--shadow-lg); transition:transform .15s ease-out, opacity .15s;}'+
     '#ai-fab:hover{transform:scale(1.06);} #ai-fab:active{transform:scale(.94);}'+
-    'body.ai-open #ai-fab, body.fw-open #ai-fab, body:has(#quick-fabs.open) #ai-fab, body:has(#modal-overlay) #ai-fab, body:has(#pn-detail) #ai-fab, body:has(#bed-ov) #ai-fab{opacity:0; pointer-events:none;}'+
+    'body.ai-open #ai-fab, body.fw-open:not(.fw-solto-on) #ai-fab, body:has(#quick-fabs.open) #ai-fab, body:has(#modal-overlay) #ai-fab, body:has(#pn-detail) #ai-fab, body:has(#bed-ov) #ai-fab{opacity:0; pointer-events:none;}'+
     '#ai-panel{position:fixed; right:16px; top:16px; bottom:16px; width:min(410px, calc(100vw - 32px)); z-index:9500; display:flex; flex-direction:column; border-radius:22px; overflow:hidden;'+
       'background:#F4EFE5; color:var(--ink); border:1px solid var(--glass-border); box-shadow:var(--shadow-lg); contain:layout paint;'+
       'transform:translateX(24px); opacity:0; pointer-events:none; transition:transform .2s cubic-bezier(.2,.8,.2,1), opacity .16s ease-out;}'+
     'html[data-mode="dark"] #ai-panel{background:#1B1E1B;} @media (prefers-color-scheme:dark){ html:not([data-mode="light"]) #ai-panel{background:#1B1E1B;} }'+
     'body.ai-open #ai-panel{transform:none; opacity:1; pointer-events:auto;}'+
     'body.ai-open #agenda-cloud-ui{display:none!important;}'+
+    'body.ai-pip{margin:0; overflow:hidden;} body.ai-pip #ai-panel{position:fixed; inset:0!important; width:auto!important; height:auto!important; border-radius:0; border:none; resize:none; transform:none; opacity:1; pointer-events:auto; padding-top:0;}'+
+    'body.ai-pip .ai-head{cursor:default;} body.ai-na-janela #ai-fab{box-shadow:0 0 0 3px var(--accent), var(--shadow-lg);}'+
     '@media (min-width:861px){ .ai-head{cursor:grab; touch-action:none;} .ai-movendo .ai-head{cursor:grabbing;} }'+
     '#ai-panel.ai-solto{right:auto; bottom:auto; resize:both; min-width:320px; min-height:360px; max-width:calc(100vw - 16px); max-height:calc(100vh - 16px); transform:none;}'+
     '#ai-panel.ai-movendo{transition:none; user-select:none; box-shadow:0 24px 60px rgba(0,0,0,.28);}'+
@@ -18437,7 +18493,7 @@ window.addEventListener('keydown', function(e){
     return h;
   }
   function aiDraw(){
-    var p=document.getElementById('ai-panel'); if(!p) return;
+    var p=aiP(); if(!p) return;
     var box=p.querySelector('.ai-msgs'); box.innerHTML=aiBody(); box.scrollTop=box.scrollHeight;
     var ta=p.querySelector('textarea'), sb=p.querySelector('.ai-ib.send');
     ta.disabled=!aiCanUse(); sb.disabled=AI.busy||!aiCanUse()||!ta.value.trim();
@@ -18503,11 +18559,12 @@ window.addEventListener('keydown', function(e){
     if(document.getElementById('ai-fab')) return;
     var st=document.createElement('style'); st.id='ai-css'; st.textContent=AI_CSS; document.head.appendChild(st);
     var fab=document.createElement('button'); fab.id='ai-fab'; fab.type='button'; fab.title='Assistente'; fab.setAttribute('aria-label','Abrir Assistente'); fab.innerHTML=AI_SPARK;
-    fab.onclick=function(e){ e.stopPropagation(); aiOpen(true); };
+    fab.onclick=function(e){ e.stopPropagation(); if(AI.pip){ try{ AI.pip.close(); }catch(_){ } return; } aiOpen(true); };
     document.body.appendChild(fab);
     var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-    var p=document.createElement('section'); p.id='ai-panel'; p.setAttribute('role','dialog'); p.setAttribute('aria-label','Assistente'); p.setAttribute('aria-hidden','true');
+    var p=document.createElement('section'); p.id='ai-panel'; AI.el=p; p.setAttribute('role','dialog'); p.setAttribute('aria-label','Assistente'); p.setAttribute('aria-hidden','true');
     p.innerHTML='<div class="ai-head"><span class="ai-logo">'+AI_SPARK+'</span><span class="ai-t"><b>Assistente</b><small>Claude · vê e organiza sua agenda</small></span>'+
+        (window.documentPictureInPicture ? '<button class="ai-hb ai-hb-pip" type="button" data-ai="pip" title="Abrir em janela separada (dá para levar para outra tela)" aria-label="Abrir em janela separada"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4l-8 8"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg></button>' : '') +
         '<button class="ai-hb" type="button" data-ai="fresh" title="Nova conversa" aria-label="Nova conversa">'+AI_ICO.fresh+'</button>'+
         '<button class="ai-hb" type="button" data-ai="close" title="Fechar" aria-label="Fechar">'+AI_ICO.close+'</button></div>'+
       '<div class="ai-modo" role="radiogroup" aria-label="Modo de resposta"><button type="button" data-ai-modo="auto">Automático</button><button type="button" data-ai-modo="economico">Econômico</button><button type="button" data-ai-modo="caprichado">Avançado</button><span class="ai-modo-d"></span></div>'+
@@ -18525,18 +18582,19 @@ window.addEventListener('keydown', function(e){
       if(e.key==='Enter' && !e.shiftKey && !e.isComposing){ e.preventDefault(); var v=ta.value; if(v.trim() && !AI.busy){ ta.value=''; fit(); aiSend(v); } }
     });
     // o campo de texto não pode disparar os atalhos de teclado do app (Ctrl+Alt+…, setas, etc.)
-    p.addEventListener('keydown', function(e){ if(e.key==='Escape'){ e.stopPropagation(); aiOpen(false); return; } e.stopPropagation(); });
+    p.addEventListener('keydown', function(e){ if(e.key==='Escape'){ e.stopPropagation(); if(!AI.pip) aiOpen(false); return; } e.stopPropagation(); });
     p.addEventListener('click', function(e){
       var s=e.target.closest('[data-ai-sug]'); if(s){ aiSend(s.getAttribute('data-ai-sug')); return; }
       if(e.target.closest('[data-ai-gasto]')){ aiGastoVer(!aiGastoVer()); aiGastoDraw(p); return; }
       var mo=e.target.closest('[data-ai-modo]'); if(mo){ aiModo(mo.getAttribute('data-ai-modo')); aiDraw(); return; }
       var b=e.target.closest('[data-ai]'); if(!b) return;
       var k=b.getAttribute('data-ai');
-      if(k==='close') aiOpen(false);
+      if(k==='close'){ if(AI.pip){ var pw=AI.pip; AI.fecharAoVoltar=true; try{ pw.close(); }catch(_){ } } else aiOpen(false); }
       else if(k==='send'){ var v=ta.value; if(v.trim() && !AI.busy){ ta.value=''; fit(); aiSend(v); } }
       else if(k==='login'){ try{ window.AgendaCloud.ui.showLogin(); }catch(_){ } }
       else if(k==='retry'){ var c=aiLoad(), last=c.log[c.log.length-1]; if(last && last.retry){ c.log.pop(); if(c.log.length && c.log[c.log.length-1].w==='eu') c.log.pop(); aiSend(last.retry); } }
       else if(k==='mic') aiMic(b, ta, fit);
+      else if(k==='pip') aiJanela();
     });
     // apagar a conversa em dois toques (o primeiro só arma); o wireArmConfirm do app trocaria o ícone por texto e não voltaria
     var fr=p.querySelector('[data-ai=fresh]'), frT=null;
@@ -18555,12 +18613,46 @@ window.addEventListener('keydown', function(e){
   /* v160: no computador o painel pode ser arrastado pelo cabeçalho para sair da frente (vira uma janela solta, mais
      baixa, e dá para mudar o tamanho pelo canto de baixo). Duplo clique no cabeçalho volta para o canto direito.
      Posição e tamanho ficam guardados no aparelho. No celular continua tela cheia. */
+  function aiP(){ return AI.el || document.getElementById('ai-panel'); }
+  /* v161: "levar para a outra tela". Uma página não consegue mandar um pedaço dela para fora da janela do
+     navegador; o jeito é a "janela flutuante de documento" do Chrome/Edge (Document Picture-in-Picture): abre uma
+     janelinha própria, sempre por cima, que pode ir para qualquer monitor — e o painel do Assistente MUDA para lá
+     (é o mesmo painel, a conversa continua). Fechar a janelinha devolve o painel para o app. Só aparece o botão
+     onde o navegador tem esse recurso (Chrome/Edge no computador). */
+  async function aiJanela(){
+    var p=aiP(); if(!p) return;
+    if(AI.pip){ try{ AI.pip.close(); }catch(_){ } return; }
+    if(!window.documentPictureInPicture) return;
+    var r=p.getBoundingClientRect(), pip;
+    try{ pip=await window.documentPictureInPicture.requestWindow({width:Math.round(Math.max(380, r.width)), height:Math.round(Math.max(560, Math.min(760, r.height)))}); }
+    catch(_){ showToast('O navegador não deixou abrir a janela separada.','🪟'); return; }
+    var d=pip.document;
+    // leva o visual junto: folhas de estilo, tema (atributos do <html>/<body>) e as variáveis de cor
+    Array.prototype.forEach.call(document.styleSheets, function(ss){
+      try{ var st=d.createElement('style'); st.textContent=Array.prototype.map.call(ss.cssRules, function(x){ return x.cssText; }).join('\n'); d.head.appendChild(st); }
+      catch(_){ if(ss.href){ var l=d.createElement('link'); l.rel='stylesheet'; l.href=ss.href; d.head.appendChild(l); } }
+    });
+    Array.prototype.forEach.call(document.documentElement.attributes, function(a){ try{ d.documentElement.setAttribute(a.name, a.value); }catch(_){ } });
+    d.body.className=document.body.className; d.body.classList.add('ai-open','ai-pip'); d.body.classList.remove('fw-open');
+    d.title='Assistente · Agenda';
+    p.classList.remove('ai-solto'); p.style.left=p.style.top=p.style.width=p.style.height='';
+    d.body.appendChild(p);
+    AI.pip=pip; document.body.classList.remove('ai-open'); document.body.classList.add('ai-na-janela');
+    var bt=p.querySelector('[data-ai=pip]'); if(bt){ bt.title='Voltar para dentro do app'; bt.setAttribute('aria-label','Voltar para dentro do app'); }
+    pip.addEventListener('pagehide', function(){
+      AI.pip=null; document.body.classList.remove('ai-na-janela');
+      document.body.appendChild(p);
+      var b2=p.querySelector('[data-ai=pip]'); if(b2){ b2.title='Abrir em janela separada (dá para levar para outra tela)'; b2.setAttribute('aria-label','Abrir em janela separada'); }
+      if(AI.fecharAoVoltar){ AI.fecharAoVoltar=false; aiOpen(false); } else aiOpen(true);
+    });
+    var ta=p.querySelector('textarea'); if(ta) setTimeout(function(){ try{ ta.focus(); }catch(_){ } }, 50);
+  }
   function aiPos(v){
     if(v!==undefined){ try{ if(v) localStorage.setItem('agenda-ai-pos', JSON.stringify(v)); else localStorage.removeItem('agenda-ai-pos'); }catch(_){ } return v; }
     try{ return JSON.parse(localStorage.getItem('agenda-ai-pos')||'null'); }catch(_){ return null; }
   }
   function aiPosAplicar(){
-    var p=document.getElementById('ai-panel'); if(!p) return;
+    var p=aiP(); if(!p || AI.pip) return;
     var pos=aiPos();
     if(!pos || window.innerWidth<=860){ p.classList.remove('ai-solto'); p.style.left=p.style.top=p.style.width=p.style.height=''; return; }
     p.classList.add('ai-solto');
@@ -18572,7 +18664,7 @@ window.addEventListener('keydown', function(e){
     var head=p.querySelector('.ai-head');
     head.title='Arraste para mover · duplo clique para voltar ao canto';
     head.addEventListener('pointerdown', function(e){
-      if(window.innerWidth<=860 || e.button>0 || e.target.closest('button')) return;
+      if(AI.pip || window.innerWidth<=860 || e.button>0 || e.target.closest('button')) return;
       e.preventDefault();
       var r=p.getBoundingClientRect(), dx=e.clientX-r.left, dy=e.clientY-r.top, moveu=false, x0=e.clientX, y0=e.clientY;
       try{ head.setPointerCapture(e.pointerId); }catch(_){}
@@ -18630,7 +18722,7 @@ window.addEventListener('keydown', function(e){
     aiMount();
     AI.open=!!o;
     document.body.classList.toggle('ai-open', AI.open);
-    var p=document.getElementById('ai-panel'); p.setAttribute('aria-hidden', AI.open?'false':'true');
+    var p=aiP(); p.setAttribute('aria-hidden', AI.open?'false':'true');
     if(AI.open){ aiPosAplicar(); aiDraw(); setTimeout(function(){ var ta=p.querySelector('textarea'); if(ta && !ta.disabled && window.innerWidth>860) ta.focus(); }, 60); }
     else { var f=document.getElementById('ai-fab'); if(f && document.activeElement && p.contains(document.activeElement)) f.focus(); }
   }
@@ -18656,7 +18748,7 @@ window.addEventListener('keydown', function(e){
       c.log.push({w:'erro', t:msg, retry:text});
     }
     AI.busy=false; aiSave();
-    if(document.getElementById('ai-panel')) aiDraw();
+    if(aiP()) aiDraw();
   }
   window.__assistente={open:function(){ aiOpen(true); }, close:function(){ aiOpen(false); }, send:aiSend};
 
