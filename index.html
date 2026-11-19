@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261119-160313';</script>
+<script>window.AGENDA_BUILD = '20261119-160729';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261119-160313"></script>
+<script src="cloud.js?v=20261119-160729"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -3505,6 +3505,11 @@ html.lay-off-faixas .faixa-zone{display:none;}
 .pvd-legend i.m{width:2px; height:12px; background:var(--ink);}
 .pvd-legend i.r{background:color-mix(in srgb, var(--accent) 38%, transparent);} .pvd-legend i.d{background:var(--accent);}
 .pvd-row{margin-top:12px;}
+.pvd-grid{margin-top:10px;}
+.pvd-panel:not(.pvd-mais) .pvd-x{display:none;}
+.pvd-toggle{margin-top:14px;} .pvd-panel.pvd-mais .pvd-t-m, .pvd-panel:not(.pvd-mais) .pvd-t-l{display:none;}
+.pvd-legend{flex-wrap:wrap;}
+@media (max-width:600px){ .pvd-grid{grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px;} .pvd-card{padding:14px 8px;} .pvd-card .sky-cat-val{font-size:12px;} }
 .pvd-top{display:flex; align-items:center; gap:7px; flex-wrap:wrap;}
 .pvd-top i{width:10px; height:10px; border-radius:50%; flex:none;}
 .pvd-top b{font-size:15px; font-weight:600; flex:1; min-width:90px;}
@@ -9987,21 +9992,52 @@ window.addEventListener('keydown', function(e){
     });
     var cats=state.categories.filter(function(c){ return catWeeklyGoalMin(c) || res[c.id] || done[c.id]; });
     if(!cats.length) return '';
-    var rows=cats.map(function(c){
-      var meta=catWeeklyGoalMin(c)||0, r=res[c.id]||0, dn=done[c.id]||0, max=Math.max(meta, r, dn, 1);
-      return '<div class="pvd-row"><div class="pvd-top"><i style="background:'+c.color+'"></i><b>'+catIconPrefix(c)+escapeHtml(c.name)+'</b><span class="mono">'+(meta?'meta '+fmtDuration(meta)+' · ':'')+'reservado '+fmtDuration(r)+' · feito '+fmtDuration(dn)+'</span></div>' +
-        '<div class="pvd-bar"><span class="r" style="width:'+(r/max*100).toFixed(1)+'%; background:color-mix(in srgb, '+c.color+' 38%, transparent)"></span><span class="d" style="width:'+(dn/max*100).toFixed(1)+'%; background:'+c.color+'"></span>'+(meta?'<span class="m" style="left:'+(meta/max*100).toFixed(1)+'%"></span>':'')+'</div></div>';
-    }).join('');
+    /* v155: o Gabriel achou as barras deitadas difíceis de ler e prefere o estilo de anel do "Esta semana por
+       categoria". Cada categoria vira um anel duplo: o de fora é o FEITO, o de dentro (mais claro) o RESERVADO,
+       os dois contra a meta (volta inteira = meta). Só as 4 com mais meta aparecem; o resto e o "Fora do plano"
+       ficam em "Ver mais", lembrado no aparelho. */
+    cats = cats.slice().sort(function(a,b){ return (catWeeklyGoalMin(b)||res[b.id]||0)-(catWeeklyGoalMin(a)||res[a.id]||0); });
+    var cards=cats.map(function(c){
+      var meta=catWeeklyGoalMin(c)||0, r=res[c.id]||0, dn=done[c.id]||0, base=meta||Math.max(r, dn, 1);
+      var pct=Math.round(dn/base*100), bateu=meta && dn>=meta;
+      return '<div class="sky-cat-card pvd-card" title="'+escapeHtml(c.name+': meta '+(meta?fmtDuration(meta):'—')+', reservado '+fmtDuration(r)+', feito '+fmtDuration(dn))+'">' +
+        '<div class="sky-cat-ring pvd-ring">'+pvdRings(dn/base, r/base, c.color)+'<div class="ic"><span class="pct">'+pct+'%</span></div></div>' +
+        '<div class="sky-cat-name">'+catIconPrefix(c)+escapeHtml(c.name)+'</div>' +
+        '<div class="sky-cat-val">feito <b>'+fmtDuration(dn)+'</b>'+(meta?' de '+fmtDuration(meta):'')+'</div>' +
+        '<div class="sky-cat-note" style="color:'+(bateu?'var(--success)':'var(--ink-soft)')+'">'+(bateu?'meta da semana batida':('reservado '+fmtDuration(r)))+'</div>' +
+      '</div>';
+    });
     var off=Object.keys(cross).sort(function(a,b){ return cross[b]-cross[a]; }).slice(0,4).map(function(k){
       var p=k.split('>'), bc=catById(p[0]), fc=catById(p[1]); if(!bc||!fc) return '';
       return '<li><i style="background:'+bc.color+'"></i>'+fmtDuration(cross[k])+' de '+escapeHtml(bc.name)+' no horário de '+escapeHtml(fc.name)+'</li>';
     }).join('');
     var unused=Object.keys(res).map(function(k){ return [k, res[k]-(covered[k]||0)]; }).filter(function(x){ return x[1]>=60 && catById(x[0]); })
       .sort(function(a,b){ return b[1]-a[1]; }).slice(0,3).map(function(x){ var c=catById(x[0]); return '<li><i class="hollow" style="border-color:'+c.color+'"></i>'+fmtDuration(x[1])+' reservadas para '+escapeHtml(c.name)+' ainda sem bloco</li>'; }).join('');
-    return '<div class="panel pvd-panel" style="margin-bottom:12px;"><div class="panel-head"><h2>Planejado e feito · esta semana</h2></div><div class="panel-body">' +
-      '<div class="pvd-legend"><span><i class="m"></i>Meta</span><span><i class="r"></i>Reservado</span><span><i class="d"></i>Feito</span></div>' + rows +
-      ((off||unused) ? '<div class="pvd-off"><b>Fora do plano</b><em>Só para você ver. Nada foi bloqueado.</em><ul>'+off+unused+'</ul></div>' : '') +
+    var VIS=4, extra=cards.length-VIS, temFora=!!(off||unused), mais=false;
+    try{ mais=localStorage.getItem('agenda-pvd-mais')==='1'; }catch(_){ }
+    var tem=extra>0 || temFora;
+    var rotulo=[extra>0?(extra+(extra>1?' categorias':' categoria')):'', temFora?'fora do plano':''].filter(Boolean).join(' e ');
+    return '<div class="panel pvd-panel'+(mais?' pvd-mais':'')+'" style="margin-bottom:12px;"><div class="panel-head"><h2>Planejado e feito · esta semana</h2></div><div class="panel-body">' +
+      '<div class="pvd-legend"><span><i class="d"></i>Feito (anel de fora)</span><span><i class="r"></i>Reservado (de dentro)</span><span>volta inteira = meta</span></div>' +
+      '<div class="sky-cat-grid pvd-grid">'+cards.map(function(h,i){ return i<VIS ? h : h.replace('class="sky-cat-card pvd-card"','class="sky-cat-card pvd-card pvd-x"'); }).join('')+'</div>' +
+      (temFora ? '<div class="pvd-off pvd-x"><b>Fora do plano</b><em>Só para você ver. Nada foi bloqueado.</em><ul>'+off+unused+'</ul></div>' : '') +
+      (tem ? '<button class="btn ghost small pvd-toggle" type="button" data-pvd-mais aria-expanded="'+(mais?'true':'false')+'"><span class="pvd-t-m">Ver mais ('+rotulo+')</span><span class="pvd-t-l">Ver menos</span></button>' : '') +
     '</div></div>';
+  }
+
+  // Anel duplo do "Planejado e feito": de fora = feito, de dentro = reservado; volta inteira = meta.
+  function pvdRings(fd, fr, color){
+    var size=118, w=11, wi=7, gap=4, c=size/2, T=Math.PI*2;
+    var r1=size/2-w/2-1, r2=r1-w/2-gap-wi/2;
+    function arco(r, f, sw, op){
+      f=Math.max(0, f||0); var m=Math.min(f,1);
+      var trilho='<circle cx="'+c+'" cy="'+c+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-opacity=".14" stroke-width="'+sw+'"/>';
+      var a = m>=0.999 ? '<circle cx="'+c+'" cy="'+c+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-opacity="'+op+'" stroke-width="'+sw+'"/>' :
+        (m>0.004 ? '<path d="'+skyArc(c,c,r,0,m*T)+'" fill="none" stroke="'+color+'" stroke-opacity="'+op+'" stroke-width="'+sw+'" stroke-linecap="round"/>' : '');
+      var over = f>1 ? '<path d="'+skyArc(c,c,r,0,Math.min(f-1,0.999)*T)+'" fill="none" stroke="var(--critical)" stroke-width="'+Math.max(2,sw-3)+'" stroke-linecap="round"/>' : '';
+      return trilho+a+over;
+    }
+    return '<svg class="sky-ring" width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" aria-hidden="true">'+arco(r1, fd, w, 1)+arco(r2, fr, wi, .45)+'</svg>';
   }
 
   GUIDES.horas = {name:'Por categoria', slides:[
@@ -17042,6 +17078,12 @@ window.addEventListener('keydown', function(e){
       punctualityHtml() +
       skipRollupHtml() +
       tagRollupHtml();
+    var pvdB=app.querySelector('[data-pvd-mais]');
+    if(pvdB) pvdB.onclick=function(){
+      var pn=pvdB.closest('.pvd-panel'), on=!pn.classList.contains('pvd-mais');
+      pn.classList.toggle('pvd-mais', on); pvdB.setAttribute('aria-expanded', on?'true':'false');
+      try{ localStorage.setItem('agenda-pvd-mais', on?'1':'0'); }catch(_){ }
+    };
     var exportBtn=document.getElementById('btn-export-csv');
     if(exportBtn) exportBtn.onclick=exportCsv;
     wireRadars(app);
@@ -18220,6 +18262,10 @@ window.addEventListener('keydown', function(e){
     '.ai-head .ai-t{flex:1; min-width:0;} .ai-head b{display:block; font-size:1rem;} .ai-head small{display:block; color:var(--ink-faint); font-size:.7222rem;}'+
     '.ai-hb{width:38px; height:38px; border:none; border-radius:12px; background:transparent; color:var(--ink-soft, var(--ink)); cursor:pointer; display:flex; align-items:center; justify-content:center; font:inherit;}'+
     '.ai-hb:hover{background:var(--surface-2);} .ai-hb.armed{background:var(--critical, #C1462F); color:#fff; width:auto; padding:0 10px; font-size:.7222rem; font-weight:700;}'+
+    '.ai-modo{display:flex; align-items:center; gap:4px; padding:8px 14px; border-bottom:1px solid var(--border-soft); flex-wrap:wrap;}'+
+    '.ai-modo button{border:1px solid var(--border-soft); background:transparent; color:var(--ink-soft, var(--ink)); border-radius:999px; padding:4px 11px; font:600 .7222rem/1.2 var(--sans); cursor:pointer;}'+
+    '.ai-modo button.on{background:var(--accent-soft); color:var(--accent); border-color:transparent;}'+
+    '.ai-modo-d{margin-left:4px; font-size:.6667rem; color:var(--ink-faint);}'+
     '.ai-msgs{flex:1; overflow-y:auto; padding:14px 14px 6px; display:flex; flex-direction:column; gap:10px; overscroll-behavior:contain;}'+
     '.ai-m{max-width:88%; padding:9px 13px; border-radius:18px; line-height:1.45; font-size:.9rem; overflow-wrap:anywhere;}'+
     '.ai-m.eu{align-self:flex-end; background:var(--accent); color:var(--accent-ink); border-bottom-right-radius:6px; white-space:pre-wrap;}'+
@@ -18305,11 +18351,21 @@ window.addEventListener('keydown', function(e){
     var ta=p.querySelector('textarea'), sb=p.querySelector('.ai-ib.send');
     ta.disabled=!aiCanUse(); sb.disabled=AI.busy||!aiCanUse()||!ta.value.trim();
     var fr=p.querySelector('[data-ai=fresh]'); if(fr) fr.style.visibility=aiLoad().log.length?'visible':'hidden';
+    var md=aiModo();
+    Array.prototype.forEach.call(p.querySelectorAll('[data-ai-modo]'), function(x){ var on=x.getAttribute('data-ai-modo')===md; x.classList.toggle('on', on); x.setAttribute('aria-checked', on?'true':'false'); x.setAttribute('role','radio'); });
+    var mdd=p.querySelector('.ai-modo-d'); if(mdd) mdd.textContent = md==='economico' ? 'pedidos simples · ~R$ 0,02 cada' : 'pensa junto e monta a semana · ~R$ 0,25 cada';
     var g=aiGasto(), gs=p.querySelector('.ai-gasto');
     if(gs) gs.textContent = g.usd>0 ? 'Gasto este mês: US$ '+(g.usd<0.01 ? g.usd.toFixed(4) : g.usd.toFixed(2)).replace('.',',')+' · ' : '';
   }
   /* Quanto a assistente custou neste mês (soma o custo que a função calcula a cada resposta). Fica no aparelho:
      é só para o Gabriel ter noção; o valor oficial está no painel da Anthropic. */
+  /* Caprichado (Sonnet) pensa junto e monta a semana; Econômico (Haiku) custa ~20x menos e serve para
+     pedidos simples. Fica guardado no aparelho. */
+  function aiModo(set){
+    if(set){ try{ localStorage.setItem('agenda-ai-modo', set); }catch(_){ } return set; }
+    var m=null; try{ m=localStorage.getItem('agenda-ai-modo'); }catch(_){ }
+    return m==='economico' ? 'economico' : 'caprichado';
+  }
   function aiGasto(add){
     var mes=todayStr().slice(0,7), g={mes:mes, usd:0};
     try{ var x=JSON.parse(localStorage.getItem('agenda-ai-gasto')||'null'); if(x && x.mes===mes) g=x; }catch(_){ }
@@ -18327,6 +18383,7 @@ window.addEventListener('keydown', function(e){
     p.innerHTML='<div class="ai-head"><span class="ai-logo">'+AI_SPARK+'</span><span class="ai-t"><b>Assistente</b><small>Claude · vê e organiza sua agenda</small></span>'+
         '<button class="ai-hb" type="button" data-ai="fresh" title="Nova conversa" aria-label="Nova conversa">'+AI_ICO.fresh+'</button>'+
         '<button class="ai-hb" type="button" data-ai="close" title="Fechar" aria-label="Fechar">'+AI_ICO.close+'</button></div>'+
+      '<div class="ai-modo" role="radiogroup" aria-label="Jeito da assistente"><button type="button" data-ai-modo="caprichado">Caprichado</button><button type="button" data-ai-modo="economico">Econômico</button><span class="ai-modo-d"></span></div>'+
       '<div class="ai-msgs" aria-live="polite"></div>'+
       '<div class="ai-in">'+(SR?'<button class="ai-ib mic" type="button" data-ai="mic" title="Falar" aria-label="Falar">'+AI_ICO.mic+'</button>':'')+
         '<textarea rows="1" placeholder="Peça algo para a sua agenda…" aria-label="Mensagem para a assistente"></textarea>'+
@@ -18343,6 +18400,7 @@ window.addEventListener('keydown', function(e){
     p.addEventListener('keydown', function(e){ if(e.key==='Escape'){ e.stopPropagation(); aiOpen(false); return; } e.stopPropagation(); });
     p.addEventListener('click', function(e){
       var s=e.target.closest('[data-ai-sug]'); if(s){ aiSend(s.getAttribute('data-ai-sug')); return; }
+      var mo=e.target.closest('[data-ai-modo]'); if(mo){ aiModo(mo.getAttribute('data-ai-modo')); aiDraw(); return; }
       var b=e.target.closest('[data-ai]'); if(!b) return;
       var k=b.getAttribute('data-ai');
       if(k==='close') aiOpen(false);
@@ -18385,7 +18443,7 @@ window.addEventListener('keydown', function(e){
     AI.busy=true; aiSave(); aiDraw();
     try{
       try{ await C.sync.run(); }catch(_){ }   // sobe o que mudou aqui antes: a assistente lê a agenda do servidor
-      var r=await C.fn('assistente', {messages:c.api});
+      var r=await C.fn('assistente', {messages:c.api, modo:aiModo()});
       c.api=c.api.concat((r&&r.novas)||[]);
       c.log.push({w:'ai', t:(r&&r.texto)||'', a:(r&&r.acoes)||[]});
       if(r && r.custo_usd) aiGasto(+r.custo_usd);
