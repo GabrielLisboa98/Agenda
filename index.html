@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261119-102514';</script>
+<script>window.AGENDA_BUILD = '20261119-160313';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261119-102514"></script>
+<script src="cloud.js?v=20261119-160313"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -18305,6 +18305,16 @@ window.addEventListener('keydown', function(e){
     var ta=p.querySelector('textarea'), sb=p.querySelector('.ai-ib.send');
     ta.disabled=!aiCanUse(); sb.disabled=AI.busy||!aiCanUse()||!ta.value.trim();
     var fr=p.querySelector('[data-ai=fresh]'); if(fr) fr.style.visibility=aiLoad().log.length?'visible':'hidden';
+    var g=aiGasto(), gs=p.querySelector('.ai-gasto');
+    if(gs) gs.textContent = g.usd>0 ? 'Gasto este mês: US$ '+(g.usd<0.01 ? g.usd.toFixed(4) : g.usd.toFixed(2)).replace('.',',')+' · ' : '';
+  }
+  /* Quanto a assistente custou neste mês (soma o custo que a função calcula a cada resposta). Fica no aparelho:
+     é só para o Gabriel ter noção; o valor oficial está no painel da Anthropic. */
+  function aiGasto(add){
+    var mes=todayStr().slice(0,7), g={mes:mes, usd:0};
+    try{ var x=JSON.parse(localStorage.getItem('agenda-ai-gasto')||'null'); if(x && x.mes===mes) g=x; }catch(_){ }
+    if(add>0){ g.usd=Math.round((g.usd+add)*1e6)/1e6; try{ localStorage.setItem('agenda-ai-gasto', JSON.stringify(g)); }catch(_){ } }
+    return g;
   }
   function aiMount(){
     if(document.getElementById('ai-fab')) return;
@@ -18321,7 +18331,7 @@ window.addEventListener('keydown', function(e){
       '<div class="ai-in">'+(SR?'<button class="ai-ib mic" type="button" data-ai="mic" title="Falar" aria-label="Falar">'+AI_ICO.mic+'</button>':'')+
         '<textarea rows="1" placeholder="Peça algo para a sua agenda…" aria-label="Mensagem para a assistente"></textarea>'+
         '<button class="ai-ib send" type="button" data-ai="send" title="Enviar" aria-label="Enviar">'+AI_ICO.send+'</button></div>'+
-      '<div class="ai-note">Ela só mexe na agenda, nos afazeres e nas metas — nunca nas configurações.</div>';
+      '<div class="ai-note"><span class="ai-gasto"></span>Ela só mexe na agenda, nos afazeres e nas metas — nunca nas configurações.</div>';
     document.body.appendChild(p);
     var ta=p.querySelector('textarea');
     function fit(){ ta.style.height='auto'; ta.style.height=Math.min(140, ta.scrollHeight+2)+'px'; var sb=p.querySelector('.ai-ib.send'); sb.disabled=AI.busy||!aiCanUse()||!ta.value.trim(); }
@@ -18378,6 +18388,7 @@ window.addEventListener('keydown', function(e){
       var r=await C.fn('assistente', {messages:c.api});
       c.api=c.api.concat((r&&r.novas)||[]);
       c.log.push({w:'ai', t:(r&&r.texto)||'', a:(r&&r.acoes)||[]});
+      if(r && r.custo_usd) aiGasto(+r.custo_usd);
       if(r && r.mudou){ Promise.resolve(C.sync.run()).then(function(){ try{ render(); }catch(_){ } }); }
     }catch(e){
       // tira a pergunta sem resposta do histórico, para a próxima não sair "duas perguntas seguidas"
