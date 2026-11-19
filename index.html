@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261119-190006';</script>
+<script>window.AGENDA_BUILD = '20261119-190233';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261119-190006"></script>
+<script src="cloud.js?v=20261119-190233"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -13821,7 +13821,7 @@ window.addEventListener('keydown', function(e){
   ];
 
   function renderQuickFabs(pm){
-    aiMount();
+    aiMount(); aiNuvemOuvir();
     var host=document.getElementById('quick-fabs');
     if(!host){ host=document.createElement('div'); host.id='quick-fabs'; document.body.appendChild(host); }
     var pg = !pm && state.view==='pages';
@@ -18450,8 +18450,37 @@ window.addEventListener('keydown', function(e){
     AI.conv = (c && Array.isArray(c.api) && Array.isArray(c.log)) ? c : {api:[], log:[]};
     return AI.conv;
   }
-  function aiSave(){
+  /* v162: a conversa também vai para a nuvem (aiConversa/atual), para continuar no PC o que começou no celular.
+     O aparelho guarda a cópia dele; ao chegar uma versão mais nova (campo "em"), ela substitui a local.
+     Os resultados de ferramenta antigos viram um resumo antes de subir (podem ser agendas inteiras). */
+  function aiNuvemSalvar(){
+    clearTimeout(AI.nuvemT);
+    AI.nuvemT=setTimeout(function(){
+      var c=AI.conv; if(!c || !state.db) return;
+      var api=c.api.map(function(m, i){
+        if(i>=c.api.length-2 || !Array.isArray(m.content) || !m.content.some(function(x){ return x.type==='tool_result'; })) return m;
+        return {role:m.role, content:m.content.map(function(x){ return x.type==='tool_result' ? {type:'tool_result', tool_use_id:x.tool_use_id, content:'(resultado antigo; consulte de novo se precisar)'} : x; })};
+      });
+      try{ state.db.collection('aiConversa').doc('atual').set({api:api.slice(-60), log:c.log.slice(-100), nivel:c.nivel||'', em:c.em||Date.now()}); }catch(_){ }
+    }, 700);
+  }
+  function aiNuvemOuvir(){
+    if(AI.ouvindoNuvem || !state.db) return;
+    AI.ouvindoNuvem=true;
+    try{
+      state.db.collection('aiConversa').doc('atual').onSnapshot(function(snap){
+        if(!snap || !snap.exists) return;
+        var d=snap.data()||{}, c=aiLoad();
+        if(AI.busy || !(d.em>(c.em||0)) || !Array.isArray(d.api) || !Array.isArray(d.log)) return;
+        AI.conv={api:d.api, log:d.log, nivel:d.nivel||'', em:d.em};
+        try{ localStorage.setItem(AI.key||aiKey(), JSON.stringify(AI.conv)); }catch(_){ }
+        if(aiP()) aiDraw();
+      }, function(){ AI.ouvindoNuvem=false; });
+    }catch(_){ AI.ouvindoNuvem=false; }
+  }
+  function aiSave(nuvem){
     var c=AI.conv; if(!c) return;
+    if(nuvem!==false){ c.em=Date.now(); aiNuvemSalvar(); }
     // o servidor corta o histórico também; aqui é só para não crescer sem fim no aparelho
     if(c.api.length>80) c.api=c.api.slice(-60);
     if(c.log.length>120) c.log=c.log.slice(-100);
@@ -18719,7 +18748,7 @@ window.addEventListener('keydown', function(e){
     iniciar();
   }
   function aiOpen(o){
-    aiMount();
+    aiMount(); aiNuvemOuvir();
     AI.open=!!o;
     document.body.classList.toggle('ai-open', AI.open);
     var p=aiP(); p.setAttribute('aria-hidden', AI.open?'false':'true');
