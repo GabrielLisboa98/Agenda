@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261119-160729';</script>
+<script>window.AGENDA_BUILD = '20261119-162110';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261119-160729"></script>
+<script src="cloud.js?v=20261119-162110"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -18266,6 +18266,7 @@ window.addEventListener('keydown', function(e){
     '.ai-modo button{border:1px solid var(--border-soft); background:transparent; color:var(--ink-soft, var(--ink)); border-radius:999px; padding:4px 11px; font:600 .7222rem/1.2 var(--sans); cursor:pointer;}'+
     '.ai-modo button.on{background:var(--accent-soft); color:var(--accent); border-color:transparent;}'+
     '.ai-modo-d{margin-left:4px; font-size:.6667rem; color:var(--ink-faint);}'+
+    '.ai-nivel{align-self:flex-start; margin-top:-6px; font-size:.6667rem; color:var(--ink-faint);}'+
     '.ai-msgs{flex:1; overflow-y:auto; padding:14px 14px 6px; display:flex; flex-direction:column; gap:10px; overscroll-behavior:contain;}'+
     '.ai-m{max-width:88%; padding:9px 13px; border-radius:18px; line-height:1.45; font-size:.9rem; overflow-wrap:anywhere;}'+
     '.ai-m.eu{align-self:flex-end; background:var(--accent); color:var(--accent-ink); border-bottom-right-radius:6px; white-space:pre-wrap;}'+
@@ -18339,6 +18340,7 @@ window.addEventListener('keydown', function(e){
       if(m.w==='eu') h+='<div class="ai-m eu">'+escapeHtml(m.t)+'</div>';
       else if(m.w==='ai'){
         if(m.t) h+='<div class="ai-m ai">'+aiMd(m.t)+'</div>';
+        if(m.n && AI_NIVEL[m.n]) h+='<div class="ai-nivel">'+AI_NIVEL[m.n]+'</div>';
         if(m.a && m.a.length) h+='<div class="ai-acts">'+m.a.map(function(x){ return '<span class="ai-act'+(/não (criado|alterado)/.test(x)?' no':'')+'">'+(/não (criado|alterado)/.test(x)?'':'✓ ')+escapeHtml(x)+'</span>'; }).join('')+'</div>';
       } else if(m.w==='erro') h+='<div class="ai-m erro">'+escapeHtml(m.t)+(m.retry && i===c.log.length-1?'<br><button class="btn small" type="button" data-ai="retry">Tentar de novo</button>':'')+'</div>';
     });
@@ -18353,19 +18355,20 @@ window.addEventListener('keydown', function(e){
     var fr=p.querySelector('[data-ai=fresh]'); if(fr) fr.style.visibility=aiLoad().log.length?'visible':'hidden';
     var md=aiModo();
     Array.prototype.forEach.call(p.querySelectorAll('[data-ai-modo]'), function(x){ var on=x.getAttribute('data-ai-modo')===md; x.classList.toggle('on', on); x.setAttribute('aria-checked', on?'true':'false'); x.setAttribute('role','radio'); });
-    var mdd=p.querySelector('.ai-modo-d'); if(mdd) mdd.textContent = md==='economico' ? 'pedidos simples · ~R$ 0,02 cada' : 'pensa junto e monta a semana · ~R$ 0,25 cada';
+    var mdd=p.querySelector('.ai-modo-d'); if(mdd) mdd.textContent = md==='economico' ? 'sempre o modelo barato' : md==='caprichado' ? 'sempre o modelo forte · ~R$ 0,25 cada' : 'barato no dia a dia, forte para planejar';
     var g=aiGasto(), gs=p.querySelector('.ai-gasto');
     if(gs) gs.textContent = g.usd>0 ? 'Gasto este mês: US$ '+(g.usd<0.01 ? g.usd.toFixed(4) : g.usd.toFixed(2)).replace('.',',')+' · ' : '';
   }
   /* Quanto a assistente custou neste mês (soma o custo que a função calcula a cada resposta). Fica no aparelho:
      é só para o Gabriel ter noção; o valor oficial está no painel da Anthropic. */
-  /* Caprichado (Sonnet) pensa junto e monta a semana; Econômico (Haiku) custa ~20x menos e serve para
-     pedidos simples. Fica guardado no aparelho. */
+  /* Automático (padrão): a função escolhe — Haiku rápido no dia a dia, Haiku pensando para decidir, Sonnet só
+     para montar a semana. Econômico = nunca Sonnet; Caprichado = sempre Sonnet. Fica guardado no aparelho. */
   function aiModo(set){
-    if(set){ try{ localStorage.setItem('agenda-ai-modo', set); }catch(_){ } return set; }
-    var m=null; try{ m=localStorage.getItem('agenda-ai-modo'); }catch(_){ }
-    return m==='economico' ? 'economico' : 'caprichado';
+    if(set){ try{ localStorage.setItem('agenda-ai-modo2', set); }catch(_){ } return set; }
+    var m=null; try{ m=localStorage.getItem('agenda-ai-modo2'); }catch(_){ }
+    return (m==='economico'||m==='caprichado') ? m : 'auto';
   }
+  var AI_NIVEL={rapido:'⚡ rápido', pensando:'💭 pensou com calma', caprichado:'✦ caprichado'};
   function aiGasto(add){
     var mes=todayStr().slice(0,7), g={mes:mes, usd:0};
     try{ var x=JSON.parse(localStorage.getItem('agenda-ai-gasto')||'null'); if(x && x.mes===mes) g=x; }catch(_){ }
@@ -18383,7 +18386,7 @@ window.addEventListener('keydown', function(e){
     p.innerHTML='<div class="ai-head"><span class="ai-logo">'+AI_SPARK+'</span><span class="ai-t"><b>Assistente</b><small>Claude · vê e organiza sua agenda</small></span>'+
         '<button class="ai-hb" type="button" data-ai="fresh" title="Nova conversa" aria-label="Nova conversa">'+AI_ICO.fresh+'</button>'+
         '<button class="ai-hb" type="button" data-ai="close" title="Fechar" aria-label="Fechar">'+AI_ICO.close+'</button></div>'+
-      '<div class="ai-modo" role="radiogroup" aria-label="Jeito da assistente"><button type="button" data-ai-modo="caprichado">Caprichado</button><button type="button" data-ai-modo="economico">Econômico</button><span class="ai-modo-d"></span></div>'+
+      '<div class="ai-modo" role="radiogroup" aria-label="Jeito da assistente"><button type="button" data-ai-modo="auto">Automático</button><button type="button" data-ai-modo="economico">Econômico</button><button type="button" data-ai-modo="caprichado">Caprichado</button><span class="ai-modo-d"></span></div>'+
       '<div class="ai-msgs" aria-live="polite"></div>'+
       '<div class="ai-in">'+(SR?'<button class="ai-ib mic" type="button" data-ai="mic" title="Falar" aria-label="Falar">'+AI_ICO.mic+'</button>':'')+
         '<textarea rows="1" placeholder="Peça algo para a sua agenda…" aria-label="Mensagem para a assistente"></textarea>'+
@@ -18443,9 +18446,10 @@ window.addEventListener('keydown', function(e){
     AI.busy=true; aiSave(); aiDraw();
     try{
       try{ await C.sync.run(); }catch(_){ }   // sobe o que mudou aqui antes: a assistente lê a agenda do servidor
-      var r=await C.fn('assistente', {messages:c.api, modo:aiModo()});
+      var r=await C.fn('assistente', {messages:c.api, modo:aiModo(), ultimo_nivel:c.nivel||''});
+      if(r && r.nivel) c.nivel=r.nivel;
       c.api=c.api.concat((r&&r.novas)||[]);
-      c.log.push({w:'ai', t:(r&&r.texto)||'', a:(r&&r.acoes)||[]});
+      c.log.push({w:'ai', t:(r&&r.texto)||'', a:(r&&r.acoes)||[], n:(r&&r.nivel)||''});
       if(r && r.custo_usd) aiGasto(+r.custo_usd);
       if(r && r.mudou){ Promise.resolve(C.sync.run()).then(function(){ try{ render(); }catch(_){ } }); }
     }catch(e){
