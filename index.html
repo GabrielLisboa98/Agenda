@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261119-163919';</script>
+<script>window.AGENDA_BUILD = '20261119-164155';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261119-163919"></script>
+<script src="cloud.js?v=20261119-164155"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -18435,15 +18435,42 @@ window.addEventListener('keydown', function(e){
       AI.conv={api:[], log:[]}; aiSave(); aiDraw(); ta.focus();
     });
   }
+  /* Microfone (v158): o reconhecimento do navegador desligava na primeira pausa e cortava o Gabriel no meio da frase.
+     Agora fica em modo contínuo e quem decide parar é o app: só depois de AI_MIC_SILENCIO sem nenhuma palavra nova
+     (ou de AI_MIC_INICIO se nada foi dito), ou quando a pessoa toca no microfone de novo. Se o navegador encerrar
+     sozinho antes disso (alguns encerram em ~5–10 s), o app religa e continua de onde parou. */
+  var AI_MIC_SILENCIO=3500, AI_MIC_INICIO=8000;
   function aiMic(btn, ta, fit){
     var SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return;
-    if(AI.listening && AI.rec){ try{ AI.rec.stop(); }catch(_){ } return; }
-    var r=new SR(), base=ta.value?ta.value.replace(/\s*$/,' '):'';
-    r.lang='pt-BR'; r.interimResults=true; r.continuous=false;
-    r.onresult=function(ev){ var t=''; for(var i=0;i<ev.results.length;i++) t+=ev.results[i][0].transcript; ta.value=base+t; fit(); };
-    r.onerror=function(ev){ if(ev.error==='not-allowed') showToast('Libere o microfone para falar com a assistente.','🎙️'); };
-    r.onend=function(){ AI.listening=false; btn.classList.remove('on'); ta.focus(); };
-    try{ r.start(); AI.rec=r; AI.listening=true; btn.classList.add('on'); }catch(_){ }
+    if(AI.listening){ AI.micStop=true; clearTimeout(AI.micT); try{ AI.rec.stop(); }catch(_){ } return; }
+    var base=ta.value?ta.value.replace(/\s*$/,' '):'', finais='', ph=ta.placeholder, falou=false;
+    AI.micStop=false; AI.listening=true; btn.classList.add('on'); btn.setAttribute('aria-label','Parar de ouvir');
+    ta.placeholder='Ouvindo… toque no microfone para parar';
+    function armar(ms){ clearTimeout(AI.micT); AI.micT=setTimeout(function(){ AI.micStop=true; try{ AI.rec.stop(); }catch(_){ parar(); } }, ms); }
+    function parar(){
+      clearTimeout(AI.micT); AI.listening=false; AI.rec=null; btn.classList.remove('on'); btn.setAttribute('aria-label','Falar');
+      ta.placeholder=ph; ta.value=ta.value.replace(/\s+$/,''); fit(); ta.focus();
+    }
+    function iniciar(){
+      var r=new SR(), sess='';
+      r.lang='pt-BR'; r.interimResults=true; r.continuous=true;
+      r.onresult=function(ev){
+        var fin='', tmp='';
+        for(var i=0;i<ev.results.length;i++){ var t=ev.results[i][0].transcript; if(ev.results[i].isFinal) fin+=t; else tmp+=t; }
+        sess=fin; ta.value=base+finais+fin+tmp; fit();
+        if((fin+tmp).trim()){ falou=true; armar(AI_MIC_SILENCIO); }
+      };
+      r.onerror=function(ev){ if(ev.error==='not-allowed'||ev.error==='service-not-allowed'||ev.error==='audio-capture'){ AI.micStop=true; showToast('Libere o microfone para falar com o Assistente.','🎙️'); } };
+      r.onend=function(){
+        if(sess){ finais+=sess; if(!/\s$/.test(finais)) finais+=' '; }
+        if(!AI.micStop){ try{ iniciar(); return; }catch(_){ } }
+        parar();
+      };
+      AI.rec=r;
+      try{ r.start(); }catch(_){ AI.micStop=true; parar(); }
+    }
+    armar(AI_MIC_INICIO);
+    iniciar();
   }
   function aiOpen(o){
     aiMount();
