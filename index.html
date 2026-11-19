@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261119-164155';</script>
+<script>window.AGENDA_BUILD = '20261119-164718';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261119-164155"></script>
+<script src="cloud.js?v=20261119-164718"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -18280,6 +18280,9 @@ window.addEventListener('keydown', function(e){
     '.ai-modo button{border:1px solid var(--border-soft); background:transparent; color:var(--ink-soft, var(--ink)); border-radius:999px; padding:4px 11px; font:600 .7222rem/1.2 var(--sans); cursor:pointer;}'+
     '.ai-modo button.on{background:var(--accent-soft); color:var(--accent); border-color:transparent;}'+
     '.ai-modo-d{margin-left:4px; font-size:.6667rem; color:var(--ink-faint);}'+
+    '.ai-gasto{display:flex; align-items:center; justify-content:center; gap:6px; padding:0 14px 2px; font-size:.7222rem; color:var(--ink-soft); flex-wrap:wrap;}'+
+    '.ai-gasto[hidden]{display:none;} .ai-gasto b{color:var(--ink); font-weight:700;} .ai-gasto small{margin-left:6px; color:var(--ink-faint); font-size:.6667rem;}'+
+    '.ai-gasto button{border:none; background:transparent; color:inherit; width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer;} .ai-gasto button:hover{background:var(--surface-2);}'+
     '.ai-nivel{align-self:flex-start; margin-top:-6px; font-size:.6667rem; color:var(--ink-faint);}'+
     '.ai-msgs{flex:1; overflow-y:auto; padding:14px 14px 6px; display:flex; flex-direction:column; gap:10px; overscroll-behavior:contain;}'+
     '.ai-m{max-width:88%; padding:9px 13px; border-radius:18px; line-height:1.45; font-size:.9rem; overflow-wrap:anywhere;}'+
@@ -18370,8 +18373,43 @@ window.addEventListener('keydown', function(e){
     var md=aiModo();
     Array.prototype.forEach.call(p.querySelectorAll('[data-ai-modo]'), function(x){ var on=x.getAttribute('data-ai-modo')===md; x.classList.toggle('on', on); x.setAttribute('aria-checked', on?'true':'false'); x.setAttribute('role','radio'); });
     var mdd=p.querySelector('.ai-modo-d'); if(mdd) mdd.textContent = md==='economico' ? 'sempre o modelo barato' : md==='caprichado' ? 'sempre o modelo forte · ~R$ 0,25 cada' : 'barato no dia a dia, forte para planejar';
-    var g=aiGasto(), gs=p.querySelector('.ai-gasto');
-    if(gs) gs.textContent = g.usd>0 ? 'Gasto este mês: US$ '+(g.usd<0.01 ? g.usd.toFixed(4) : g.usd.toFixed(2)).replace('.',',')+' · ' : '';
+    aiGastoDraw(p);
+  }
+  /* Gasto do mês (v159): dá para esconder/mostrar (fica lembrado) e vem em reais pela cotação do dólar do dia.
+     A cotação vem da AwesomeAPI (economia.awesomeapi.com.br, gratuita) e fica guardada até o dia virar; se não
+     der para buscar, mostra só em dólar ou usa a última cotação conhecida, avisando a data. */
+  function aiGastoVer(set){
+    if(set!=null){ try{ localStorage.setItem('agenda-ai-gasto-ver', set?'1':'0'); }catch(_){ } return set; }
+    try{ return localStorage.getItem('agenda-ai-gasto-ver')!=='0'; }catch(_){ return true; }
+  }
+  function aiCotacao(){
+    var c=null; try{ c=JSON.parse(localStorage.getItem('agenda-usd-brl')||'null'); }catch(_){ }
+    if((!c || c.dia!==todayStr()) && !AI.cotBusca && navigator.onLine!==false){
+      AI.cotBusca=true;
+      fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL').then(function(r){ return r.json(); }).then(function(j){
+        var v=parseFloat(j && j.USDBRL && j.USDBRL.bid); if(!(v>0)) throw new Error('sem cotação');
+        try{ localStorage.setItem('agenda-usd-brl', JSON.stringify({dia:todayStr(), v:v})); }catch(_){ }
+        aiDraw();
+      }).catch(function(){ }).then(function(){ setTimeout(function(){ AI.cotBusca=false; }, 600000); });
+    }
+    return c && c.v>0 ? c : null;
+  }
+  function aiGastoDraw(p){
+    var gs=p.querySelector('.ai-gasto'); if(!gs) return;
+    var g=aiGasto();
+    if(!(g.usd>0)){ gs.hidden=true; return; }
+    gs.hidden=false;
+    var ver=aiGastoVer();
+    var eye = ver ? '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>'
+                  : '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6C3.7 8.3 2 12 2 12s3.5 7 10 7c1.7 0 3.2-.5 4.5-1.2"/></svg>';
+    var txt;
+    if(!ver) txt='Gasto do mês: <b>••••</b>';
+    else {
+      var usd='US$ '+(g.usd<0.01 ? g.usd.toFixed(4) : g.usd.toFixed(2)).replace('.',','), c=aiCotacao(), brl='';
+      if(c){ var r=g.usd*c.v; brl=' ≈ <b>'+(r<0.01 ? 'menos de R$ 0,01' : 'R$ '+r.toFixed(2).replace('.',','))+'</b>'; }
+      txt='Gasto do mês: <b>'+usd+'</b>'+brl+(c?'<small>dólar '+(c.dia===todayStr()?'hoje':'em '+c.dia.split('-').reverse().slice(0,2).join('/'))+': R$ '+c.v.toFixed(2).replace('.',',')+'</small>':'');
+    }
+    gs.innerHTML='<button type="button" data-ai-gasto aria-pressed="'+(ver?'true':'false')+'" title="'+(ver?'Esconder o gasto':'Mostrar o gasto')+'" aria-label="'+(ver?'Esconder o gasto':'Mostrar o gasto')+'">'+eye+'</button><span>'+txt+'</span>';
   }
   /* Quanto a assistente custou neste mês (soma o custo que a função calcula a cada resposta). Fica no aparelho:
      é só para o Gabriel ter noção; o valor oficial está no painel da Anthropic. */
@@ -18405,7 +18443,7 @@ window.addEventListener('keydown', function(e){
       '<div class="ai-in">'+(SR?'<button class="ai-ib mic" type="button" data-ai="mic" title="Falar" aria-label="Falar">'+AI_ICO.mic+'</button>':'')+
         '<textarea rows="1" placeholder="Peça algo para a sua agenda…" aria-label="Mensagem para a assistente"></textarea>'+
         '<button class="ai-ib send" type="button" data-ai="send" title="Enviar" aria-label="Enviar">'+AI_ICO.send+'</button></div>'+
-      '<div class="ai-note"><span class="ai-gasto"></span>Só mexe na agenda, nos afazeres e nas metas — nunca nas configurações.</div>';
+      '<div class="ai-gasto" hidden></div><div class="ai-note">Só mexe na agenda, nos afazeres e nas metas — nunca nas configurações.</div>';
     document.body.appendChild(p);
     var ta=p.querySelector('textarea');
     function fit(){ ta.style.height='auto'; ta.style.height=Math.min(140, ta.scrollHeight+2)+'px'; var sb=p.querySelector('.ai-ib.send'); sb.disabled=AI.busy||!aiCanUse()||!ta.value.trim(); }
@@ -18417,6 +18455,7 @@ window.addEventListener('keydown', function(e){
     p.addEventListener('keydown', function(e){ if(e.key==='Escape'){ e.stopPropagation(); aiOpen(false); return; } e.stopPropagation(); });
     p.addEventListener('click', function(e){
       var s=e.target.closest('[data-ai-sug]'); if(s){ aiSend(s.getAttribute('data-ai-sug')); return; }
+      if(e.target.closest('[data-ai-gasto]')){ aiGastoVer(!aiGastoVer()); aiGastoDraw(p); return; }
       var mo=e.target.closest('[data-ai-modo]'); if(mo){ aiModo(mo.getAttribute('data-ai-modo')); aiDraw(); return; }
       var b=e.target.closest('[data-ai]'); if(!b) return;
       var k=b.getAttribute('data-ai');
