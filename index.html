@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261119-162110';</script>
+<script>window.AGENDA_BUILD = '20261119-163919';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261119-162110"></script>
+<script src="cloud.js?v=20261119-163919"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -962,7 +962,12 @@
   .rd-scope-seg button{border:none; background:transparent; color:var(--ink-soft); font-family:var(--sans, inherit); font-size:0.7222rem; font-weight:700; padding:4px 12px; border-radius:999px; cursor:pointer;}
   .rd-scope-seg button.on{background:var(--accent); color:var(--accent-ink);}
   .sky-radar{width:100%; max-width:430px; height:auto; align-self:center; overflow:visible;}
-  .radar-foot{font-size:0.7222rem; color:var(--ink-soft); margin-top:4px; max-width:52ch;}
+  .radar-foot{font-size:0.7222rem; color:var(--ink-soft); margin-top:6px; max-width:none;}
+  details.radar-foot summary{cursor:pointer; list-style:none; display:inline-flex; align-items:center; gap:6px; font-weight:600; color:var(--ink-soft); padding:4px 0;}
+  details.radar-foot summary::-webkit-details-marker{display:none;}
+  details.radar-foot summary::before{content:'ⓘ'; font-size:.85rem;}
+  details.radar-foot summary::after{content:'›'; transition:transform .15s;} details.radar-foot[open] summary::after{transform:rotate(90deg);}
+  details.radar-foot p{margin:4px 0 0; line-height:1.5;}
   .chart-legend i.lg-dash{background:none; border-top:2px dashed var(--ink-soft); height:0; width:14px; border-radius:0; vertical-align:3px;}
   .chart-legend i.lg-ring{background:none; border:2px solid color-mix(in srgb, var(--ink) 55%, transparent); border-radius:50%;}
   .chart-sub{font-size:0.7222rem; color:var(--ink-soft); margin:0 0 12px; max-width:62ch;}
@@ -997,6 +1002,18 @@
   .metric-cat-row:last-child{margin-bottom:0;}
   .metric-overshoot{font-size:0.8333rem; margin-top:5px;}
   .wk-narrative{font-size:0.9444rem; line-height:1.55; color:var(--ink);}
+  .wk2{display:flex; align-items:center; gap:22px;}
+  .wk2-ring{position:relative; width:112px; height:112px; flex:none;}
+  .wk2-pct{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.1;}
+  .wk2-pct b{font-size:1.6rem; font-weight:700;} .wk2-pct span{font-size:.6667rem; color:var(--ink-soft);}
+  .wk2-main{min-width:0; flex:1;}
+  .wk2-t{font-family:var(--serif); font-size:1.4rem; font-weight:600; line-height:1.2;}
+  .wk2-sub{font-size:.9444rem; color:var(--ink-soft); margin-top:2px;} .wk2-sub b{color:var(--ink);}
+  .wk2-list{list-style:none; margin:10px 0 0; padding:0; display:grid; grid-template-columns:repeat(auto-fit, minmax(230px,1fr)); gap:6px 18px;}
+  .wk2-list li{display:flex; align-items:center; gap:8px; font-size:.8889rem; min-height:28px;}
+  .wk2-list li i{font-style:normal; width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:var(--surface-2, rgba(127,127,127,.1)); flex:none; font-size:.8rem;}
+  .wk2-list em{font-style:normal; font-size:.7222rem; font-weight:700; margin-left:4px;} .wk2-list em.up{color:var(--success);} .wk2-list em.dn{color:var(--critical);}
+  @media (max-width:600px){ .wk2{gap:14px; align-items:flex-start;} .wk2-ring{width:88px; height:88px;} .wk2-ring svg{width:88px; height:88px;} .wk2-pct b{font-size:1.25rem;} .wk2-t{font-size:1.15rem;} .wk2-list{grid-template-columns:1fr;} }
   .wk-compare-row{display:flex; gap:22px; margin-top:16px; padding-top:14px; border-top:1px solid var(--border-soft); flex-wrap:wrap;}
   .wk-compare-item{display:flex; flex-direction:column; align-items:center; gap:5px; cursor:default;}
   .wk-compare-bars{display:flex; align-items:flex-end; gap:4px; height:64px;}
@@ -16798,36 +16815,27 @@ window.addEventListener('keydown', function(e){
     catKeys.forEach(function(k){ if(!topCatId || lastStats.perCat[k].doneMin > lastStats.perCat[topCatId].doneMin) topCatId = k; });
     var topCat = topCatId ? catById(topCatId==='none'?null:topCatId) : null;
 
-    var narrative = abertura+': você concluiu '+lastStats.done+' de '+lastStats.scheduled+' blocos planejados ('+pct+'%)'+deltaTxt+', totalizando '+fmtDuration(lastStats.doneMin)+' de tempo registrado.';
-    if(topCat && lastStats.perCat[topCatId].doneMin>0) narrative += ' '+catIconPrefix(topCat)+escapeHtml(topCat.name)+' foi onde você mais colocou tempo ('+fmtDuration(lastStats.perCat[topCatId].doneMin)+').';
-    if(lastStats.skipped>0) narrative += ' '+lastStats.skipped+' bloco'+(lastStats.skipped===1?'':'s')+' planejado'+(lastStats.skipped===1?'':'s')+' ('+fmtDuration(lastStats.skippedMin)+') não '+(lastStats.skipped===1?'aconteceu':'aconteceram')+'.';
-
-    var kpis = [
-      {label:'Conclusão', valLast:pct, valPrev:prevStats.pct, fmt:function(v){ return v==null?'—':v+'%'; }},
-      {label:'Horas registradas', valLast:Math.round(lastStats.doneMin/6)/10, valPrev:Math.round(prevStats.doneMin/6)/10, fmt:function(v){ return v+'h'; }},
-      {label:'Blocos planejados', valLast:lastStats.scheduled, valPrev:prevStats.scheduled, fmt:function(v){ return String(v); }}
-    ];
-    var maxVal = Math.max.apply(null, kpis.map(function(k){ return Math.max(k.valLast||0, k.valPrev||0); })) || 1;
-    var compareHtml = kpis.map(function(k){
-      var hLast = Math.max(3, Math.round((k.valLast||0)/maxVal*64));
-      var hPrev = Math.max(3, Math.round((k.valPrev||0)/maxVal*64));
-      return '<div class="wk-compare-item" title="Semana passada: '+k.fmt(k.valLast)+' · retrasada: '+k.fmt(k.valPrev)+'">' +
-        '<div class="wk-compare-bars">' +
-          '<div class="wk-compare-bar prev" style="height:'+hPrev+'px;"></div>' +
-          '<div class="wk-compare-bar last" style="height:'+hLast+'px;"></div>' +
-        '</div>' +
-        '<div class="wk-compare-val">'+k.fmt(k.valLast)+'</div>' +
-        '<div class="wk-compare-label">'+k.label+'</div>' +
-      '</div>';
-    }).join('');
+    /* v157: o Gabriel achou o parágrafo corrido difícil de ler. Agora: anel com a % à esquerda; à direita o título
+       ("Semana forte"), uma linha com o principal e o resto em tópicos curtos, cada um com o seu ícone. */
+    var dH = Math.round((lastStats.doneMin-prevStats.doneMin)/6)/10;
+    var seta = function(d, un){ return d>0 ? '<em class="up">▲ '+d+un+'</em>' : (d<0 ? '<em class="dn">▼ '+Math.abs(d)+un+'</em>' : ''); };
+    var topicos = [];
+    topicos.push(['⏱', '<b>'+fmtDuration(lastStats.doneMin)+'</b> de tempo registrado'+(prevStats.scheduled? ' '+seta(dH,'h'):'')]);
+    if(deltaPct!=null) topicos.push(['↕', Math.abs(deltaPct)<=3 ? 'Parecida com a semana retrasada' : ('<b>'+Math.abs(deltaPct)+' pontos</b> '+(deltaPct>0?'acima':'abaixo')+' da semana retrasada')]);
+    if(topCat && lastStats.perCat[topCatId].doneMin>0) topicos.push(['🏆', 'Mais tempo em <b>'+catIconPrefix(topCat)+escapeHtml(topCat.name)+'</b> ('+fmtDuration(lastStats.perCat[topCatId].doneMin)+')']);
+    if(lastStats.skipped>0) topicos.push(['⏭', '<b>'+lastStats.skipped+'</b> bloco'+(lastStats.skipped===1?'':'s')+' não '+(lastStats.skipped===1?'aconteceu':'aconteceram')+' ('+fmtDuration(lastStats.skippedMin)+')']);
+    var cor = pct>=85 ? 'var(--success)' : (pct>=60 ? 'var(--accent)' : 'var(--warning)');
 
     return '<div class="panel week-summary" style="margin-bottom:12px;">' +
       '<div class="panel-head"><h2>Resumo da semana passada</h2><span class="mono" style="font-size:.66rem; color:var(--ink-soft);">'+periodLabel+'</span></div>' +
-      '<div class="panel-body">' +
-        '<div class="wk-narrative">'+narrative+'</div>' +
-        '<div class="wk-compare-row">'+compareHtml+'</div>' +
-        '<div class="wk-compare-legend"><span><i class="wk-dot last"></i>semana passada</span><span><i class="wk-dot prev"></i>retrasada</span></div>' +
-      '</div>' +
+      '<div class="panel-body"><div class="wk2">' +
+        '<div class="wk2-ring">'+skyRing((pct||0)/100, cor, 112, 11)+'<div class="wk2-pct"><b>'+(pct==null?'—':pct+'%')+'</b><span>concluído</span></div></div>' +
+        '<div class="wk2-main">' +
+          '<div class="wk2-t">'+abertura+'</div>' +
+          '<div class="wk2-sub">Realizado <b>'+lastStats.done+' de '+lastStats.scheduled+'</b> blocos planejados</div>' +
+          '<ul class="wk2-list">'+topicos.map(function(t){ return '<li><i>'+t[0]+'</i><span>'+t[1]+'</span></li>'; }).join('')+'</ul>' +
+        '</div>' +
+      '</div></div>' +
     '</div>';
   }
 
@@ -17161,6 +17169,12 @@ window.addEventListener('keydown', function(e){
       if(radarPinned[key]!=null && det[radarPinned[key]]){ mark(radarPinned[key]); svg.classList.add('pinned'); } else { radarPinned[key]=null; list(); }
     });
   }
+  /* "Como ler" dos radares começa fechado; o app lembra se a pessoa abriu (o Painel é redesenhado com frequência). */
+  function radarLer(){ try{ return localStorage.getItem('agenda-radar-ler')==='1'; }catch(_){ return false; } }
+  document.addEventListener('toggle', function(e){
+    var d=e.target; if(!d || !d.classList || !d.classList.contains('radar-foot')) return;
+    try{ localStorage.setItem('agenda-radar-ler', d.open?'1':'0'); }catch(_){ }
+  }, true);
   function radarWeekHtml(mondayStr){
     var sleepId = sleepCategoryId(), dates = weekDates(mondayStr), today = todayStr();
     var per = {};
@@ -17215,7 +17229,7 @@ window.addEventListener('keydown', function(e){
       r1 = '<div class="radar-card" data-radar="r1">'+r1h +
         '<div class="chart-legend"><span><i class="lg-dash"></i>planejado na agenda ('+(scope==='day'?dayLbl:'semana toda')+')</span><span><i style="background:var(--accent);"></i>feito (tempo real)</span></div>' +
         '<div class="radar-body"><div class="radar-svg">'+svg1+'</div><div class="radar-det"></div></div>' +
-        '<div class="radar-foot">Embaixo de cada nome: feito / planejado. Anéis de '+fmtDuration(step)+' em '+fmtDuration(step)+'. Passe o mouse numa categoria para ver o detalhe; clique para fixar.</div></div>';
+        '<details class="radar-foot"'+(radarLer()?' open':'')+'><summary>Como ler</summary><p>Embaixo de cada nome: feito / planejado. Anéis de '+fmtDuration(step)+' em '+fmtDuration(step)+'. Passe o mouse numa categoria para ver o detalhe; clique para fixar.</p></details></div>';
     }
 
     var nowD=new Date(), dayFrac=(nowD.getHours()*60+nowD.getMinutes())/1440;
@@ -17268,7 +17282,7 @@ window.addEventListener('keydown', function(e){
       r2 = '<div class="radar-card" data-radar="r2"><div class="radar-h">Meta × executado <span class="rd-scope">semana · seg a dom</span></div>' +
         '<div class="chart-legend"><span><i class="lg-ring"></i>meta da semana (100%)</span><span><i class="lg-dash"></i>onde deveria estar hoje</span><span><i style="background:var(--success);"></i>feito</span></div>' +
         '<div class="radar-body"><div class="radar-svg">'+svg2+'</div><div class="radar-det"></div></div>' +
-        '<div class="radar-foot">Cada eixo é medido contra a própria meta, então 2h de estudo e 20h de trabalho ficam comparáveis. Forma cheia passando do tracejado = adiantado. Passe o mouse numa categoria para ver o detalhe; clique para fixar.</div></div>';
+        '<details class="radar-foot"'+(radarLer()?' open':'')+'><summary>Como ler</summary><p>Cada eixo é medido contra a própria meta, então 2h de estudo e 20h de trabalho ficam comparáveis. Forma cheia passando do tracejado = adiantado. Passe o mouse numa categoria para ver o detalhe; clique para fixar.</p></details></div>';
     }
     return head + r1 + r2 + '</div></div></div>';
   }
@@ -18216,9 +18230,9 @@ window.addEventListener('keydown', function(e){
         '<p class="cfg-note">Seus dados ficam na sua conta, num banco na nuvem (Supabase), e só abrem com o seu login. Ninguém mais vê. Você pode baixar uma cópia de tudo quando quiser.</p>' +
         '<div class="cfg-times"><button class="btn small" type="button" id="acct-dl">Baixar meus dados (.json)</button><button class="btn small" type="button" id="acct-imp">Importar uma cópia…</button></div></div></div>' +
       '<div class="panel"><div class="panel-head"><h2>Conectores</h2></div><div class="panel-body">' +
-        '<p class="acct-p"><b>Assistente dentro do app</b> — em teste.</p><p class="cfg-note">O botão ✦ acima do + abre uma conversa com o Claude aqui mesmo: ele vê sua agenda e suas metas e cria ou move blocos e afazeres quando você pede. Também dá para falar pelo microfone.</p>' +
-        '<div class="cfg-times"><button class="btn small" type="button" id="acct-ai">Abrir a assistente</button></div>' +
-        '<p class="acct-p" style="margin-top:12px"><b>Claude como secretária (pelo claude.ai)</b> — em teste.</p><p class="cfg-note">Pelo conector, o mesmo acontece de dentro do Claude. Nenhum dos dois mexe nestas configurações.</p></div></div>';
+        '<p class="acct-p"><b>Assistente dentro do app</b> — em teste.</p><p class="cfg-note">O botão ✦ acima do + abre uma conversa com o Claude aqui mesmo: vê sua agenda e suas metas e cria ou move blocos e afazeres quando você pede. Também dá para falar pelo microfone.</p>' +
+        '<div class="cfg-times"><button class="btn small" type="button" id="acct-ai">Abrir Assistente</button></div>' +
+        '<p class="acct-p" style="margin-top:12px"><b>Claude como assistente (pelo claude.ai)</b> — em teste.</p><p class="cfg-note">Pelo conector, o mesmo acontece de dentro do Claude. Nenhum dos dois mexe nestas configurações.</p></div></div>';
   }
   function wireAccountPanel(app){
     var C=window.AgendaCloud; if(!C) return;
@@ -18328,11 +18342,11 @@ window.addEventListener('keydown', function(e){
   function aiBody(){
     var c=aiLoad(), h='';
     if(!aiCanUse()){
-      return '<div class="ai-hello"><div class="ai-logo">'+AI_SPARK+'</div><h3>Assistente</h3><p>A assistente trabalha na sua conta na nuvem. Entre na sua conta para conversar com ela.</p>'+
+      return '<div class="ai-hello"><div class="ai-logo">'+AI_SPARK+'</div><h3>Assistente</h3><p>O Assistente trabalha na sua conta na nuvem. Entre na sua conta para usar.</p>'+
         ((window.AgendaCloud&&window.AgendaCloud.cloudEnabled)?'<button class="btn primary" type="button" data-ai="login">Entrar</button>':'')+'</div>';
     }
     if(!c.log.length && !AI.busy){
-      h='<div class="ai-hello"><div class="ai-logo">'+AI_SPARK+'</div><h3>Oi! Sou sua secretária.</h3><p>Vejo sua agenda e suas metas, e crio ou mudo blocos e afazeres quando você pede.</p><div class="ai-sugs">'+
+      h='<div class="ai-hello"><div class="ai-logo">'+AI_SPARK+'</div><h3>Oi! Como posso ajudar?</h3><p>Assistente da Agenda: vejo sua agenda e suas metas, penso junto com você e crio ou mudo blocos e afazeres quando você pede.</p><div class="ai-sugs">'+
         AI_SUGS.map(function(s){ return '<button class="ai-sug" type="button" data-ai-sug="'+escapeHtml(s)+'">'+escapeHtml(s)+'</button>'; }).join('')+'</div></div>';
       return h;
     }
@@ -18378,7 +18392,7 @@ window.addEventListener('keydown', function(e){
   function aiMount(){
     if(document.getElementById('ai-fab')) return;
     var st=document.createElement('style'); st.id='ai-css'; st.textContent=AI_CSS; document.head.appendChild(st);
-    var fab=document.createElement('button'); fab.id='ai-fab'; fab.type='button'; fab.title='Assistente'; fab.setAttribute('aria-label','Abrir a assistente'); fab.innerHTML=AI_SPARK;
+    var fab=document.createElement('button'); fab.id='ai-fab'; fab.type='button'; fab.title='Assistente'; fab.setAttribute('aria-label','Abrir Assistente'); fab.innerHTML=AI_SPARK;
     fab.onclick=function(e){ e.stopPropagation(); aiOpen(true); };
     document.body.appendChild(fab);
     var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -18386,12 +18400,12 @@ window.addEventListener('keydown', function(e){
     p.innerHTML='<div class="ai-head"><span class="ai-logo">'+AI_SPARK+'</span><span class="ai-t"><b>Assistente</b><small>Claude · vê e organiza sua agenda</small></span>'+
         '<button class="ai-hb" type="button" data-ai="fresh" title="Nova conversa" aria-label="Nova conversa">'+AI_ICO.fresh+'</button>'+
         '<button class="ai-hb" type="button" data-ai="close" title="Fechar" aria-label="Fechar">'+AI_ICO.close+'</button></div>'+
-      '<div class="ai-modo" role="radiogroup" aria-label="Jeito da assistente"><button type="button" data-ai-modo="auto">Automático</button><button type="button" data-ai-modo="economico">Econômico</button><button type="button" data-ai-modo="caprichado">Caprichado</button><span class="ai-modo-d"></span></div>'+
+      '<div class="ai-modo" role="radiogroup" aria-label="Modo de resposta"><button type="button" data-ai-modo="auto">Automático</button><button type="button" data-ai-modo="economico">Econômico</button><button type="button" data-ai-modo="caprichado">Caprichado</button><span class="ai-modo-d"></span></div>'+
       '<div class="ai-msgs" aria-live="polite"></div>'+
       '<div class="ai-in">'+(SR?'<button class="ai-ib mic" type="button" data-ai="mic" title="Falar" aria-label="Falar">'+AI_ICO.mic+'</button>':'')+
         '<textarea rows="1" placeholder="Peça algo para a sua agenda…" aria-label="Mensagem para a assistente"></textarea>'+
         '<button class="ai-ib send" type="button" data-ai="send" title="Enviar" aria-label="Enviar">'+AI_ICO.send+'</button></div>'+
-      '<div class="ai-note"><span class="ai-gasto"></span>Ela só mexe na agenda, nos afazeres e nas metas — nunca nas configurações.</div>';
+      '<div class="ai-note"><span class="ai-gasto"></span>Só mexe na agenda, nos afazeres e nas metas — nunca nas configurações.</div>';
     document.body.appendChild(p);
     var ta=p.querySelector('textarea');
     function fit(){ ta.style.height='auto'; ta.style.height=Math.min(140, ta.scrollHeight+2)+'px'; var sb=p.querySelector('.ai-ib.send'); sb.disabled=AI.busy||!aiCanUse()||!ta.value.trim(); }
@@ -18456,8 +18470,8 @@ window.addEventListener('keydown', function(e){
       // tira a pergunta sem resposta do histórico, para a próxima não sair "duas perguntas seguidas"
       if(c.api.length && c.api[c.api.length-1].role==='user') c.api.pop();
       var msg = (e && e.message) || '';
-      if(!navigator.onLine) msg='Sem internet agora. A assistente precisa de conexão.';
-      else if(!msg || /Failed to fetch|NetworkError|HTTP 404/.test(msg)) msg='Não consegui falar com a assistente. Ela já foi publicada no Supabase (função "assistente")?';
+      if(!navigator.onLine) msg='Sem internet agora. É preciso conexão.';
+      else if(!msg || /Failed to fetch|NetworkError|HTTP 404/.test(msg)) msg='Assistente sem resposta. A função "assistente" já foi publicada no Supabase?';
       c.log.push({w:'erro', t:msg, retry:text});
     }
     AI.busy=false; aiSave();

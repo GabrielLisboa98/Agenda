@@ -729,8 +729,8 @@
 
   // Chama uma Edge Function do Supabase com o login da pessoa (a assistente usa isso).
   async function callFn(name, body){
-    if(!CLOUD || !session) throw new Error('Entre na sua conta para usar a assistente.');
-    if(!online()) throw new Error('Sem internet agora. A assistente precisa de conexão.');
+    if(!CLOUD || !session) throw new Error('Entre na sua conta para usar esta função.');
+    if(!online()) throw new Error('Sem internet agora. É preciso conexão.');
     return authed('/functions/v1/' + name, {method:'POST', json:body || {}});
   }
 
