@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261118-223002';</script>
+<script>window.AGENDA_BUILD = '20261118-231733';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261118-223002"></script>
+<script src="cloud.js?v=20261118-231733"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -2911,7 +2911,7 @@ body.fw-open{overflow:hidden;}
 html[data-mode="dark"] #fw{background:#1B1E1B;}
 @media (prefers-color-scheme:dark){ html:not([data-mode="light"]) #fw{background:#1B1E1B;} }
 .fw-body{contain:content;}
-body.fw-open #sky-fab, body.fw-open #sky-panel, body.fw-open #quick-fabs{display:none!important;}
+body.fw-open #sky-fab, body.fw-open #sky-panel, body.fw-open #quick-fabs, body.fw-open #agenda-cloud-ui{display:none!important;}
 .fw-h .fw-b[data-fw=min]{margin-left:auto;}
 #fw-body[data-sec=home] .cfg-title h1{display:none;}
 #fw-body[data-sec=home] .cfg-title{padding-top:0;}
@@ -2921,6 +2921,16 @@ body.fw-open #sky-fab, body.fw-open #sky-panel, body.fw-open #quick-fabs{display
 .fx-h.open{display:block!important; padding-right:0!important;}
 .fx-h .fx-more{position:absolute; right:0; top:50%; transform:translateY(-50%); border:0; background:color-mix(in srgb, var(--ink) 8%, transparent); color:var(--ink); font:inherit; font-size:0.6667rem; font-weight:700; padding:2px 9px; border-radius:999px; cursor:pointer; line-height:1.5;}
 .fx-h.open .fx-more{position:static; transform:none; margin-left:6px; vertical-align:1px;}
+
+
+[data-sec=conta] .cfg-sec:not([data-sec-p=conta]){display:none!important;}
+.acct-who{display:flex; align-items:center; gap:12px; margin-bottom:12px;}
+.acct-who > span:last-child{display:flex; flex-direction:column; gap:2px; min-width:0;}
+.acct-who b{font-size:1rem; overflow-wrap:anywhere;}
+.acct-who em{font-style:normal; font-size:.8333rem; color:var(--ink-soft);}
+.acct-av{flex:none; width:44px; height:44px; border-radius:50%; display:grid; place-items:center; background:var(--accent); color:var(--accent-ink); font-weight:700; font-size:1.1rem;}
+.acct-p{margin:0 0 6px;}
+.btn.danger-ghost{color:var(--danger, #B4442E);}
 </style><style id="ios-clock">
 .sb-switch.sb-switch4{grid-template-columns:repeat(4,1fr);}
 body[data-app="settings"] .sidebar-nav{display:none!important;}
@@ -12094,6 +12104,7 @@ window.addEventListener('keydown', function(e){
   function pnIc(n){
     var P = {
       check:'<path d="M3.5 8.5l3 3 6-7"/>',
+      user:'<circle cx="8" cy="5.5" r="2.6"/><path d="M2.8 13.6c.8-2.5 2.8-3.8 5.2-3.8s4.4 1.3 5.2 3.8"/>',
       plus:'<path d="M8 3v10M3 8h10"/>',
       dots:'<circle cx="3.5" cy="8" r="1.1" fill="currentColor"/><circle cx="8" cy="8" r="1.1" fill="currentColor"/><circle cx="12.5" cy="8" r="1.1" fill="currentColor"/>',
       x:'<path d="M4 4l8 8M12 4l-8 8"/>',
@@ -18125,6 +18136,7 @@ window.addEventListener('keydown', function(e){
   }
 
   var CFG_SECS = [
+    ['conta','user','Conta','E-mail conectado, assinatura, privacidade e cópia dos seus dados'],
 
     /* Antes "Visual do app" e "Aparência" pareciam a mesma coisa. Agora: uma diz QUANTO aparece, a outra as CORES. */
     ['visual','layers','O que aparece na tela','Quanta coisa a Agenda mostra: Simples, Equilibrado, Completo ou do seu jeito'],
@@ -18136,6 +18148,43 @@ window.addEventListener('keydown', function(e){
     ['lembretes','flag','Eventos','Aniversários e datas especiais que aparecem no topo do dia, o dia todo'],
     ['calendario','cal','Calendário','Feriados extras e horários da grade que você prefere esconder, como a madrugada']
   ];
+  /* Conta: o Gabriel não sabia com qual e-mail estava logado (antes só aparecia no pontinho de sincronização).
+     Aqui fica tudo da conta, no padrão dos apps: quem está conectado, assinatura, privacidade, cópia dos dados e sair. */
+  function acctInfo(){
+    var C=window.AgendaCloud||null, s=C&&C.session, u=s&&s.user;
+    var sy=C&&C.sync, st=sy&&sy.state;
+    return {cloud:!!(C&&C.cloudEnabled), email:(u&&u.email)||'', state:st||'', lastOk:sy&&sy.lastOk};
+  }
+  function acctAgo(t){ if(!t) return 'ainda não'; var m=Math.round((Date.now()-t)/60000); return m<1?'agora há pouco':m<60?'há '+m+' min':'há '+Math.round(m/60)+' h'; }
+  function accountPanelHtml(){
+    var a=acctInfo();
+    var stT = !a.cloud ? 'Só neste aparelho — a nuvem não está ligada.' : !a.email ? 'Desconectado.' :
+      a.state==='offline' ? 'Sem internet: tudo fica salvo aqui e sobe quando voltar.' : a.state==='error' ? 'Erro ao sincronizar — tente “Sincronizar agora”.' :
+      'Sincronizado com os outros aparelhos ('+acctAgo(a.lastOk)+').';
+    return '<div class="panel acct"><div class="panel-head"><h2>Sua conta</h2></div><div class="panel-body">' +
+        '<div class="acct-who"><span class="acct-av">'+escapeHtml(((a.email||'?')[0]||'?').toUpperCase())+'</span><span><b>'+(a.email?escapeHtml(a.email):'Sem conta conectada')+'</b><em>'+escapeHtml(stT)+'</em></span></div>' +
+        '<div class="cfg-times">' +
+          (a.cloud && a.email ? '<button class="btn small" type="button" id="acct-sync">Sincronizar agora</button><button class="btn small danger-ghost" type="button" id="acct-out">Sair desta conta</button>' : '') +
+          (a.cloud && !a.email ? '<button class="btn small" type="button" id="acct-in">Entrar</button>' : '') +
+        '</div></div></div>' +
+      '<div class="panel"><div class="panel-head"><h2>Assinatura e cobrança</h2></div><div class="panel-body">' +
+        '<p class="acct-p"><b>Plano de teste</b> — sem cobrança.</p><p class="cfg-note">Quando a assinatura abrir, o plano, o próximo pagamento e as faturas aparecem aqui.</p></div></div>' +
+      '<div class="panel"><div class="panel-head"><h2>Privacidade e seus dados</h2></div><div class="panel-body">' +
+        '<p class="cfg-note">Seus dados ficam na sua conta, num banco na nuvem (Supabase), e só abrem com o seu login. Ninguém mais vê. Você pode baixar uma cópia de tudo quando quiser.</p>' +
+        '<div class="cfg-times"><button class="btn small" type="button" id="acct-dl">Baixar meus dados (.json)</button><button class="btn small" type="button" id="acct-imp">Importar uma cópia…</button></div></div></div>' +
+      '<div class="panel"><div class="panel-head"><h2>Conectores</h2></div><div class="panel-body">' +
+        '<p class="acct-p"><b>Claude como secretária</b> — em teste.</p><p class="cfg-note">Pelo conector, o Claude vê sua agenda e suas metas e cria ou move blocos e afazeres quando você pede. Ele não mexe nestas configurações.</p></div></div>';
+  }
+  function wireAccountPanel(app){
+    var C=window.AgendaCloud; if(!C) return;
+    var q=function(id){ return app.querySelector('#'+id); };
+    var b;
+    if((b=q('acct-sync'))) b.onclick=function(){ try{ C.sync.run(); showToast('Sincronizando…','🔄'); setTimeout(render, 1500); }catch(_){} };
+    if((b=q('acct-out'))) wireArmConfirm(b, 'Toque de novo para sair', function(){ Promise.resolve(C.auth.signOut()).then(function(){ location.reload(); }); });
+    if((b=q('acct-in'))) b.onclick=function(){ try{ C.ui.showLogin(); }catch(_){} };
+    if((b=q('acct-dl'))) b.onclick=function(){ try{ var bl=new Blob([JSON.stringify(C.exportAll())],{type:'application/json'}); C.downloads.save({filename:'agenda-meus-dados-'+todayStr()+'.json', data:bl}); }catch(_){ showToast('Não deu para gerar a cópia agora.','⚠️'); } };
+    if((b=q('acct-imp'))) b.onclick=function(){ try{ C.ui.pickImport('missing'); }catch(_){} };
+  }
   function cfgTitleHtml(){
     var sec=null; CFG_SECS.forEach(function(x){ if(x[0]===state.cfgSec) sec=x; });
     return sec ? '<button class="cfg-back" id="cfg-back">'+pnIc('left')+'Configurações</button><h1>'+sec[2]+'</h1><p>'+sec[3]+'</p>'
@@ -18202,7 +18251,8 @@ window.addEventListener('keydown', function(e){
     app.innerHTML='<div class="cfg-set cfg-title">'+cfgTitleHtml()+'</div>' +
       '<div class="panel cfg-cat"><div class="panel-head"><h2>Categorias</h2><button class="iconbtn" id="cat-add">+</button></div><div class="panel-body" id="cat-list"></div></div>' +
       '<div class="cfg-cat">'+weekPieHtml()+'</div>' +
-      '<div class="cfg-set cfg-home">'+CFG_SECS.map(function(x){ return '<button class="cfg-row" data-cfgsec="'+x[0]+'"><span class="cfg-row-ic">'+pnIc(x[1])+'</span><span class="cfg-row-t"><b>'+x[2]+'</b><em>'+x[3]+'</em></span>'+pnIc('chev')+'</button>'; }).join('')+'</div>' +
+      '<div class="cfg-set cfg-home">'+CFG_SECS.map(function(x){ var em=x[3]; if(x[0]==='conta'){ var ai=acctInfo(); if(ai.email) em='Conectado como '+escapeHtml(ai.email)+' · assinatura, privacidade e seus dados'; } return '<button class="cfg-row" data-cfgsec="'+x[0]+'"><span class="cfg-row-ic">'+pnIc(x[1])+'</span><span class="cfg-row-t"><b>'+x[2]+'</b><em>'+em+'</em></span>'+pnIc('chev')+'</button>'; }).join('')+'</div>' +
+      '<div class="cfg-set cfg-sec" data-sec-p="conta">'+accountPanelHtml()+'</div>' +
       '<div class="cfg-set cfg-sec" data-sec-p="visual">'+layoutPanelHtml()+'</div>' +
       '<div class="cfg-set cfg-sec" data-sec-p="aparencia">'+appearancePanelHtml()+'</div>' +
       '<div class="cfg-set cfg-sec" data-sec-p="alertas">'+alertsPanelHtml()+'</div>' +
@@ -18217,6 +18267,7 @@ window.addEventListener('keydown', function(e){
     wireAppearancePanel(app);
     wireRestPanels(app);
     wireLayoutPanel(app);
+    wireAccountPanel(app);
     document.getElementById('cat-add').onclick=function(){
       if(!state.db) return;
       state.db.collection('categories').doc(uid()).set({name:'Nova categoria', color:COLOR_SWATCHES[state.categories.length % COLOR_SWATCHES.length], icon:null, order:state.categories.length});
