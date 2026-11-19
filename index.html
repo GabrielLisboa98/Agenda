@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261119-170832';</script>
+<script>window.AGENDA_BUILD = '20261119-190006';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261119-170832"></script>
+<script src="cloud.js?v=20261119-190006"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -18375,7 +18375,7 @@ window.addEventListener('keydown', function(e){
      assistente lembrar o que já viu e fez. Antes de perguntar, sobe o que está pendente (a assistente
      vê a agenda do servidor); depois de ela mudar algo, puxa de volta para a tela atualizar na hora. */
   var AI={open:false, busy:false, conv:null, key:null, rec:null, listening:false};
-  var AI_SUGS=['Como está meu dia hoje?','O que tenho amanhã?','Passa os afazeres atrasados para hoje','Me ajuda a encaixar as mini-metas da semana'];
+  var AI_SUGS=['Como está meu dia hoje?','Me ajuda a encaixar as mini-metas da semana','Monta uma lista do que levar numa viagem','Passa os afazeres atrasados para hoje'];
   var AI_SPARK='<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 2.5c.5 3.9 2.1 6.6 6.9 7.6.5.1.5.8 0 .9-4.8 1-6.4 3.7-6.9 7.6-.1.5-.8.5-.9 0-.5-3.9-2.1-6.6-6.9-7.6-.5-.1-.5-.8 0-.9 4.8-1 6.4-3.7 6.9-7.6.1-.5.8-.5.9 0z"/><path d="M19 15.5c.2 1.5.8 2.4 2.5 2.8.2 0 .2.3 0 .4-1.7.4-2.3 1.3-2.5 2.8 0 .2-.3.2-.4 0-.2-1.5-.8-2.4-2.5-2.8-.2-.1-.2-.4 0-.4 1.7-.4 2.3-1.3 2.5-2.8 0-.2.4-.2.4 0z" opacity=".7"/></svg>';
   var AI_ICO={
     close:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
@@ -18477,7 +18477,7 @@ window.addEventListener('keydown', function(e){
         ((window.AgendaCloud&&window.AgendaCloud.cloudEnabled)?'<button class="btn primary" type="button" data-ai="login">Entrar</button>':'')+'</div>';
     }
     if(!c.log.length && !AI.busy){
-      h='<div class="ai-hello"><div class="ai-logo">'+AI_SPARK+'</div><h3>Oi! Como posso ajudar?</h3><p>Assistente da Agenda: vejo sua agenda e suas metas, penso junto com você e crio ou mudo blocos e afazeres quando você pede.</p><div class="ai-sugs">'+
+      h='<div class="ai-hello"><div class="ai-logo">'+AI_SPARK+'</div><h3>Oi! Como posso ajudar?</h3><p>Assistente da Agenda: penso junto com você e mexo na agenda, nas reservas, nas Notas, no Metas, no Planner e nos despertadores quando você pede.</p><div class="ai-sugs">'+
         AI_SUGS.map(function(s){ return '<button class="ai-sug" type="button" data-ai-sug="'+escapeHtml(s)+'">'+escapeHtml(s)+'</button>'; }).join('')+'</div></div>';
       return h;
     }
@@ -18572,7 +18572,7 @@ window.addEventListener('keydown', function(e){
       '<div class="ai-in">'+(SR?'<button class="ai-ib mic" type="button" data-ai="mic" title="Falar" aria-label="Falar">'+AI_ICO.mic+'</button>':'')+
         '<textarea rows="1" placeholder="Peça algo para a sua agenda…" aria-label="Mensagem para a assistente"></textarea>'+
         '<button class="ai-ib send" type="button" data-ai="send" title="Enviar" aria-label="Enviar">'+AI_ICO.send+'</button></div>'+
-      '<div class="ai-gasto" hidden></div><div class="ai-note">Só mexe na agenda, nos afazeres e nas metas — nunca nas configurações.</div>';
+      '<div class="ai-gasto" hidden></div><div class="ai-note">Mexe na agenda, Notas, Metas, Planner e despertadores — nunca nas configurações.</div>';
     document.body.appendChild(p);
     aiArrastar(p);
     var ta=p.querySelector('textarea');
