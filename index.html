@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261119-190233';</script>
+<script>window.AGENDA_BUILD = '20261119-190428';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261119-190233"></script>
+<script src="cloud.js?v=20261119-190428"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -1918,6 +1918,12 @@ button.sb-pn-stat:hover{background:var(--hover-glass, rgba(239,231,216,.1));}
 .rest-zone .rz-lab .gi{width:24px; height:24px; vertical-align:0;}
 .rest-zone .rz-t{font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:12px; font-weight:600; color:var(--ink-soft);}
 .rest-zone.unlocked .rz-lab{background:color-mix(in srgb, var(--glass-bg-strong) 70%, transparent); color:var(--ink-soft);}
+/* liberado: a faixa não segura mais o clique (dá para criar bloco); o cadeado aberto fica pequeno no canto de cima */
+.rest-zone.unlocked{pointer-events:none; align-items:flex-start; justify-content:flex-end;}
+.rest-zone.unlocked .rz-lab{pointer-events:auto; position:absolute; top:4px; right:4px; bottom:auto; padding:2px 8px 2px 5px; gap:4px; font-size:11px; cursor:pointer; opacity:.85;}
+.rest-zone.unlocked .rz-lab:hover{opacity:1;}
+.rest-zone.unlocked.thin .rz-lab{display:inline-flex;} .rest-zone.unlocked.narrow .rz-lab, .rest-zone.unlocked.wk .rz-lab{padding:2px 4px;}
+.rest-zone.unlocked.wk .rz-w{display:none;}
 .rest-zone.narrow .rz-t, .rest-zone.wk .rz-t{display:none;}
 .rest-zone.narrow .rz-lab{padding:3px; gap:0;}
 .rest-zone.narrow .rz-w{display:none;}
@@ -10212,10 +10218,13 @@ window.addEventListener('keydown', function(e){
       if(blocksForDate(d).some(function(x){ if(x.isLoose||!x.plannedStart||!x.plannedEnd||x.status==='skipped') return false;
         var a=minutesOf(x.plannedStart), e=minutesOf(x.plannedEnd); if(e<=a) e=1440; return Math.min(e,s1)-Math.max(a,s0) >= (s1-s0)*0.5; })) z.classList.add('thin');
       if(state.view==='week'){ z.classList.add('wk'); if(window.innerWidth<1100) z.classList.add('narrow'); }
-      z.innerHTML='<span class="rz-lab"><span class="rz-ic">'+(unl?'🔓':'🔒')+'</span><span class="rz-w">'+(unl?'Liberado neste dia':'Descanso')+'</span>'+(unl?'':'<span class="rz-t">'+state.rest.start+'–'+state.rest.end+'</span>')+'</span>';
+      z.innerHTML='<span class="rz-lab"><span class="rz-ic">'+(unl?'🔓':'🔒')+'</span><span class="rz-w">'+(unl?'Liberado':'Descanso')+'</span>'+(unl?'':'<span class="rz-t">'+state.rest.start+'–'+state.rest.end+'</span>')+'</span>';
       z.title = unl ? 'Descanso liberado só neste dia — clique para travar de novo' : 'Horário de descanso '+state.rest.start+'–'+state.rest.end;
-      z.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
-      z.addEventListener('click', function(e){ e.stopPropagation(); restZoneClick(z, d); });
+      /* v163: liberado, o horário volta a ser usável — clicar/arrastar na grade cria bloco normalmente. Só o
+         selinho 🔓 no canto de cima (que abre "Travar de novo") responde ao clique. */
+      var alvo = unl ? z.querySelector('.rz-lab') : z;
+      alvo.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+      alvo.addEventListener('click', function(e){ e.stopPropagation(); restZoneClick(z, d); });
       col.appendChild(z);
     });
   }
