@@ -250,7 +250,7 @@
     var txt = await res.text(), body = null;
     try{ body = txt ? JSON.parse(txt) : null; }catch(_){ body = txt; }
     if(!res.ok){
-      var msg = (body && (body.msg || body.message || body.error_description || body.error)) || ('HTTP ' + res.status);
+      var msg = (body && (body.erro || body.msg || body.message || body.error_description || body.error)) || ('HTTP ' + res.status);
       var e = new Error(msg); e.status = res.status; e.body = body; throw e;
     }
     return body;
@@ -727,7 +727,14 @@
     return true;
   })();
 
-  window.AgendaCloud = {db:db, assets:assets, downloads:downloads, sync:Sync, auth:Auth, ui:Ui,
+  // Chama uma Edge Function do Supabase com o login da pessoa (a assistente usa isso).
+  async function callFn(name, body){
+    if(!CLOUD || !session) throw new Error('Entre na sua conta para usar a assistente.');
+    if(!online()) throw new Error('Sem internet agora. A assistente precisa de conexão.');
+    return authed('/functions/v1/' + name, {method:'POST', json:body || {}});
+  }
+
+  window.AgendaCloud = {db:db, assets:assets, downloads:downloads, sync:Sync, auth:Auth, ui:Ui, fn:callFn,
     exportAll:exportAll, importAll:importAll, assetUrl:assetPublicUrl, ready:ready,
     get session(){ return session; }, cloudEnabled:CLOUD};
 

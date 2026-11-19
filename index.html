@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261118-231733';</script>
+<script>window.AGENDA_BUILD = '20261119-102514';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261118-231733"></script>
+<script src="cloud.js?v=20261119-102514"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -13707,6 +13707,7 @@ window.addEventListener('keydown', function(e){
   ];
 
   function renderQuickFabs(pm){
+    aiMount();
     var host=document.getElementById('quick-fabs');
     if(!host){ host=document.createElement('div'); host.id='quick-fabs'; document.body.appendChild(host); }
     var pg = !pm && state.view==='pages';
@@ -14292,7 +14293,7 @@ window.addEventListener('keydown', function(e){
     if(!e.ctrlKey || !e.altKey || e.shiftKey || e.metaKey) return;
     var d=QF_DEFS.filter(function(x){ return x[1]!=='N' && e.code==='Key'+x[1]; })[0]; if(!d) return;
     e.preventDefault(); e.stopPropagation();
-    if(state.modal || PN.detailId || document.getElementById('nt-capture') || document.getElementById('bed-ov')) return;
+    if(state.modal || PN.detailId || document.getElementById('nt-capture') || document.getElementById('bed-ov') || document.body.classList.contains('ai-open')) return;
     d[4]();
   }, true);
 
@@ -18173,7 +18174,9 @@ window.addEventListener('keydown', function(e){
         '<p class="cfg-note">Seus dados ficam na sua conta, num banco na nuvem (Supabase), e só abrem com o seu login. Ninguém mais vê. Você pode baixar uma cópia de tudo quando quiser.</p>' +
         '<div class="cfg-times"><button class="btn small" type="button" id="acct-dl">Baixar meus dados (.json)</button><button class="btn small" type="button" id="acct-imp">Importar uma cópia…</button></div></div></div>' +
       '<div class="panel"><div class="panel-head"><h2>Conectores</h2></div><div class="panel-body">' +
-        '<p class="acct-p"><b>Claude como secretária</b> — em teste.</p><p class="cfg-note">Pelo conector, o Claude vê sua agenda e suas metas e cria ou move blocos e afazeres quando você pede. Ele não mexe nestas configurações.</p></div></div>';
+        '<p class="acct-p"><b>Assistente dentro do app</b> — em teste.</p><p class="cfg-note">O botão ✦ acima do + abre uma conversa com o Claude aqui mesmo: ele vê sua agenda e suas metas e cria ou move blocos e afazeres quando você pede. Também dá para falar pelo microfone.</p>' +
+        '<div class="cfg-times"><button class="btn small" type="button" id="acct-ai">Abrir a assistente</button></div>' +
+        '<p class="acct-p" style="margin-top:12px"><b>Claude como secretária (pelo claude.ai)</b> — em teste.</p><p class="cfg-note">Pelo conector, o mesmo acontece de dentro do Claude. Nenhum dos dois mexe nestas configurações.</p></div></div>';
   }
   function wireAccountPanel(app){
     var C=window.AgendaCloud; if(!C) return;
@@ -18184,7 +18187,211 @@ window.addEventListener('keydown', function(e){
     if((b=q('acct-in'))) b.onclick=function(){ try{ C.ui.showLogin(); }catch(_){} };
     if((b=q('acct-dl'))) b.onclick=function(){ try{ var bl=new Blob([JSON.stringify(C.exportAll())],{type:'application/json'}); C.downloads.save({filename:'agenda-meus-dados-'+todayStr()+'.json', data:bl}); }catch(_){ showToast('Não deu para gerar a cópia agora.','⚠️'); } };
     if((b=q('acct-imp'))) b.onclick=function(){ try{ C.ui.pickImport('missing'); }catch(_){} };
+    if((b=q('acct-ai'))) b.onclick=function(){ aiOpen(true); };
   }
+  /* ================= Assistente (o Claude dentro da Agenda) =================
+     Botão ✦ acima do "+"; abre um painel de conversa. Quem responde é a função "assistente" no Supabase,
+     que tem a chave da Anthropic e as mesmas ferramentas do conector (ver/criar/mover blocos e afazeres,
+     metas). O app só guarda a conversa neste aparelho e manda o histórico a cada pergunta, para a
+     assistente lembrar o que já viu e fez. Antes de perguntar, sobe o que está pendente (a assistente
+     vê a agenda do servidor); depois de ela mudar algo, puxa de volta para a tela atualizar na hora. */
+  var AI={open:false, busy:false, conv:null, key:null, rec:null, listening:false};
+  var AI_SUGS=['Como está meu dia hoje?','O que tenho amanhã?','Passa os afazeres atrasados para hoje','Me ajuda a encaixar as mini-metas da semana'];
+  var AI_SPARK='<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 2.5c.5 3.9 2.1 6.6 6.9 7.6.5.1.5.8 0 .9-4.8 1-6.4 3.7-6.9 7.6-.1.5-.8.5-.9 0-.5-3.9-2.1-6.6-6.9-7.6-.5-.1-.5-.8 0-.9 4.8-1 6.4-3.7 6.9-7.6.1-.5.8-.5.9 0z"/><path d="M19 15.5c.2 1.5.8 2.4 2.5 2.8.2 0 .2.3 0 .4-1.7.4-2.3 1.3-2.5 2.8 0 .2-.3.2-.4 0-.2-1.5-.8-2.4-2.5-2.8-.2-.1-.2-.4 0-.4 1.7-.4 2.3-1.3 2.5-2.8 0-.2.4-.2.4 0z" opacity=".7"/></svg>';
+  var AI_ICO={
+    close:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+    fresh:'<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+    send:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
+    mic:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>'
+  };
+  var AI_CSS=
+    '#ai-fab{position:fixed; right:20px; bottom:88px; z-index:46; width:48px; height:48px; border-radius:50%; border:1px solid var(--glass-border); display:flex; align-items:center; justify-content:center; cursor:pointer;'+
+      'background:var(--glass-bg-strong); color:var(--accent); box-shadow:var(--shadow-lg); transition:transform .15s ease-out, opacity .15s;}'+
+    '#ai-fab:hover{transform:scale(1.06);} #ai-fab:active{transform:scale(.94);}'+
+    'body.ai-open #ai-fab, body.fw-open #ai-fab, body:has(#quick-fabs.open) #ai-fab, body:has(#modal-overlay) #ai-fab, body:has(#pn-detail) #ai-fab, body:has(#bed-ov) #ai-fab{opacity:0; pointer-events:none;}'+
+    '#ai-panel{position:fixed; right:16px; top:16px; bottom:16px; width:min(410px, calc(100vw - 32px)); z-index:9500; display:flex; flex-direction:column; border-radius:22px; overflow:hidden;'+
+      'background:#F4EFE5; color:var(--ink); border:1px solid var(--glass-border); box-shadow:var(--shadow-lg); contain:layout paint;'+
+      'transform:translateX(24px); opacity:0; pointer-events:none; transition:transform .2s cubic-bezier(.2,.8,.2,1), opacity .16s ease-out;}'+
+    'html[data-mode="dark"] #ai-panel{background:#1B1E1B;} @media (prefers-color-scheme:dark){ html:not([data-mode="light"]) #ai-panel{background:#1B1E1B;} }'+
+    'body.ai-open #ai-panel{transform:none; opacity:1; pointer-events:auto;}'+
+    'body.ai-open #agenda-cloud-ui{display:none!important;}'+
+    '.ai-head{display:flex; align-items:center; gap:10px; padding:14px 12px 12px 16px; border-bottom:1px solid var(--border-soft);}'+
+    '.ai-head .ai-logo{width:34px; height:34px; border-radius:11px; display:flex; align-items:center; justify-content:center; background:var(--accent-soft); color:var(--accent); flex:none;}'+
+    '.ai-head .ai-t{flex:1; min-width:0;} .ai-head b{display:block; font-size:1rem;} .ai-head small{display:block; color:var(--ink-faint); font-size:.7222rem;}'+
+    '.ai-hb{width:38px; height:38px; border:none; border-radius:12px; background:transparent; color:var(--ink-soft, var(--ink)); cursor:pointer; display:flex; align-items:center; justify-content:center; font:inherit;}'+
+    '.ai-hb:hover{background:var(--surface-2);} .ai-hb.armed{background:var(--critical, #C1462F); color:#fff; width:auto; padding:0 10px; font-size:.7222rem; font-weight:700;}'+
+    '.ai-msgs{flex:1; overflow-y:auto; padding:14px 14px 6px; display:flex; flex-direction:column; gap:10px; overscroll-behavior:contain;}'+
+    '.ai-m{max-width:88%; padding:9px 13px; border-radius:18px; line-height:1.45; font-size:.9rem; overflow-wrap:anywhere;}'+
+    '.ai-m.eu{align-self:flex-end; background:var(--accent); color:var(--accent-ink); border-bottom-right-radius:6px; white-space:pre-wrap;}'+
+    '.ai-m.ai{align-self:flex-start; background:var(--surface-2); border-bottom-left-radius:6px;}'+
+    '.ai-m.ai ul{margin:4px 0; padding-left:18px;} .ai-m.ai li{margin:2px 0;} .ai-m.ai p{margin:0 0 6px;} .ai-m.ai p:last-child{margin:0;}'+
+    '.ai-m.erro{align-self:stretch; max-width:none; background:transparent; border:1px dashed var(--critical, #C1462F); color:var(--ink); font-size:.8333rem;}'+
+    '.ai-m.erro button{margin-top:6px;}'+
+    '.ai-acts{align-self:flex-start; display:flex; flex-direction:column; gap:4px; margin-top:-4px; max-width:88%;}'+
+    '.ai-act{font-size:.7222rem; font-weight:700; color:var(--success, #3E8E55); background:color-mix(in srgb, var(--success, #3E8E55) 12%, transparent); border-radius:10px; padding:4px 9px;}'+
+    '.ai-act.no{color:var(--ink-faint); background:var(--surface-2);}'+
+    '.ai-typing{align-self:flex-start; display:flex; align-items:center; gap:8px; color:var(--ink-faint); font-size:.7778rem; padding:4px 2px;}'+
+    '.ai-typing i{width:6px; height:6px; border-radius:50%; background:var(--accent); animation:aiDot 1.1s infinite ease-in-out;} .ai-typing i:nth-child(2){animation-delay:.15s;} .ai-typing i:nth-child(3){animation-delay:.3s;}'+
+    '@keyframes aiDot{0%,80%,100%{opacity:.25; transform:scale(.8);} 40%{opacity:1; transform:none;}}'+
+    '@media (prefers-reduced-motion:reduce){ .ai-typing i{animation:none;} #ai-panel{transition:opacity .15s;} }'+
+    '.ai-hello{margin:auto 0; padding:8px 4px; text-align:center;} .ai-hello .ai-logo{margin:0 auto 10px; width:52px; height:52px; border-radius:16px; display:flex; align-items:center; justify-content:center; background:var(--accent-soft); color:var(--accent);}'+
+    '.ai-hello h3{margin:0 0 4px; font-size:1.1rem;} .ai-hello p{margin:0 auto 14px; color:var(--ink-faint); font-size:.8333rem; max-width:290px;}'+
+    '.ai-sugs{display:flex; flex-direction:column; gap:6px; align-items:stretch;}'+
+    '.ai-sug{border:1px solid var(--border-soft); background:transparent; color:var(--ink); border-radius:14px; padding:10px 12px; text-align:left; font:500 .8333rem/1.3 var(--sans); cursor:pointer;}'+
+    '.ai-sug:hover{background:var(--surface-2);}'+
+    '.ai-in{display:flex; align-items:flex-end; gap:6px; padding:10px 10px calc(10px + env(safe-area-inset-bottom,0px)); border-top:1px solid var(--border-soft);}'+
+    '.ai-in textarea{flex:1; min-height:42px; max-height:140px; resize:none; border:1px solid var(--border); border-radius:21px; padding:10px 14px; background:var(--surface, transparent); color:var(--ink); font:400 .9rem/1.35 var(--sans); outline:none;}'+
+    '.ai-in textarea:focus{border-color:var(--accent);}'+
+    '.ai-ib{width:42px; height:42px; flex:none; border:none; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; background:var(--surface-2); color:var(--ink);}'+
+    '.ai-ib.send{background:var(--accent); color:var(--accent-ink);} .ai-ib:disabled{opacity:.4; cursor:default;}'+
+    '.ai-ib.mic.on{background:var(--critical, #C1462F); color:#fff; animation:aiDot 1.4s infinite ease-in-out;}'+
+    '.ai-note{padding:0 14px 2px; font-size:.6667rem; color:var(--ink-faint); text-align:center;}'+
+    '@media (max-width:860px){ #ai-fab{right:18px; bottom:calc(127px + env(safe-area-inset-bottom,0px)); width:46px; height:46px;}'+
+      ' #ai-panel{inset:0; width:auto; border-radius:0; border:none; padding-top:env(safe-area-inset-top,0px); transform:translateY(24px);} body.ai-open{overflow:hidden;} }';
+
+  function aiKey(){ var C=window.AgendaCloud, s=C&&C.session; return 'agenda-ai-'+((s&&s.user&&s.user.id)||'local'); }
+  function aiLoad(){
+    // uma conversa por conta: trocar de conta no aparelho não mostra a conversa da outra
+    if(AI.conv && AI.key===aiKey()) return AI.conv;
+    AI.key=aiKey();
+    var c=null; try{ c=JSON.parse(localStorage.getItem(AI.key)||'null'); }catch(_){ }
+    AI.conv = (c && Array.isArray(c.api) && Array.isArray(c.log)) ? c : {api:[], log:[]};
+    return AI.conv;
+  }
+  function aiSave(){
+    var c=AI.conv; if(!c) return;
+    // o servidor corta o histórico também; aqui é só para não crescer sem fim no aparelho
+    if(c.api.length>80) c.api=c.api.slice(-60);
+    if(c.log.length>120) c.log=c.log.slice(-100);
+    try{ localStorage.setItem(AI.key||aiKey(), JSON.stringify(c)); }catch(_){ }
+  }
+  function aiMd(t){
+    var out=[], ul=null;
+    String(t||'').split('\n').forEach(function(line){
+      var h=escapeHtml(line).replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
+      var m=/^\s*(?:[-•*]|\d+[.)])\s+(.*)$/.exec(h);
+      if(m){ if(!ul){ ul=[]; } ul.push('<li>'+m[1]+'</li>'); return; }
+      if(ul){ out.push('<ul>'+ul.join('')+'</ul>'); ul=null; }
+      if(h.trim()) out.push('<p>'+h+'</p>');
+    });
+    if(ul) out.push('<ul>'+ul.join('')+'</ul>');
+    return out.join('');
+  }
+  function aiCanUse(){ var C=window.AgendaCloud; return !!(C && C.cloudEnabled && C.session && C.fn); }
+  function aiBody(){
+    var c=aiLoad(), h='';
+    if(!aiCanUse()){
+      return '<div class="ai-hello"><div class="ai-logo">'+AI_SPARK+'</div><h3>Assistente</h3><p>A assistente trabalha na sua conta na nuvem. Entre na sua conta para conversar com ela.</p>'+
+        ((window.AgendaCloud&&window.AgendaCloud.cloudEnabled)?'<button class="btn primary" type="button" data-ai="login">Entrar</button>':'')+'</div>';
+    }
+    if(!c.log.length && !AI.busy){
+      h='<div class="ai-hello"><div class="ai-logo">'+AI_SPARK+'</div><h3>Oi! Sou sua secretária.</h3><p>Vejo sua agenda e suas metas, e crio ou mudo blocos e afazeres quando você pede.</p><div class="ai-sugs">'+
+        AI_SUGS.map(function(s){ return '<button class="ai-sug" type="button" data-ai-sug="'+escapeHtml(s)+'">'+escapeHtml(s)+'</button>'; }).join('')+'</div></div>';
+      return h;
+    }
+    c.log.forEach(function(m, i){
+      if(m.w==='eu') h+='<div class="ai-m eu">'+escapeHtml(m.t)+'</div>';
+      else if(m.w==='ai'){
+        if(m.t) h+='<div class="ai-m ai">'+aiMd(m.t)+'</div>';
+        if(m.a && m.a.length) h+='<div class="ai-acts">'+m.a.map(function(x){ return '<span class="ai-act'+(/não (criado|alterado)/.test(x)?' no':'')+'">'+(/não (criado|alterado)/.test(x)?'':'✓ ')+escapeHtml(x)+'</span>'; }).join('')+'</div>';
+      } else if(m.w==='erro') h+='<div class="ai-m erro">'+escapeHtml(m.t)+(m.retry && i===c.log.length-1?'<br><button class="btn small" type="button" data-ai="retry">Tentar de novo</button>':'')+'</div>';
+    });
+    if(AI.busy) h+='<div class="ai-typing" role="status"><i></i><i></i><i></i><span>Olhando sua agenda…</span></div>';
+    return h;
+  }
+  function aiDraw(){
+    var p=document.getElementById('ai-panel'); if(!p) return;
+    var box=p.querySelector('.ai-msgs'); box.innerHTML=aiBody(); box.scrollTop=box.scrollHeight;
+    var ta=p.querySelector('textarea'), sb=p.querySelector('.ai-ib.send');
+    ta.disabled=!aiCanUse(); sb.disabled=AI.busy||!aiCanUse()||!ta.value.trim();
+    var fr=p.querySelector('[data-ai=fresh]'); if(fr) fr.style.visibility=aiLoad().log.length?'visible':'hidden';
+  }
+  function aiMount(){
+    if(document.getElementById('ai-fab')) return;
+    var st=document.createElement('style'); st.id='ai-css'; st.textContent=AI_CSS; document.head.appendChild(st);
+    var fab=document.createElement('button'); fab.id='ai-fab'; fab.type='button'; fab.title='Assistente'; fab.setAttribute('aria-label','Abrir a assistente'); fab.innerHTML=AI_SPARK;
+    fab.onclick=function(e){ e.stopPropagation(); aiOpen(true); };
+    document.body.appendChild(fab);
+    var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    var p=document.createElement('section'); p.id='ai-panel'; p.setAttribute('role','dialog'); p.setAttribute('aria-label','Assistente'); p.setAttribute('aria-hidden','true');
+    p.innerHTML='<div class="ai-head"><span class="ai-logo">'+AI_SPARK+'</span><span class="ai-t"><b>Assistente</b><small>Claude · vê e organiza sua agenda</small></span>'+
+        '<button class="ai-hb" type="button" data-ai="fresh" title="Nova conversa" aria-label="Nova conversa">'+AI_ICO.fresh+'</button>'+
+        '<button class="ai-hb" type="button" data-ai="close" title="Fechar" aria-label="Fechar">'+AI_ICO.close+'</button></div>'+
+      '<div class="ai-msgs" aria-live="polite"></div>'+
+      '<div class="ai-in">'+(SR?'<button class="ai-ib mic" type="button" data-ai="mic" title="Falar" aria-label="Falar">'+AI_ICO.mic+'</button>':'')+
+        '<textarea rows="1" placeholder="Peça algo para a sua agenda…" aria-label="Mensagem para a assistente"></textarea>'+
+        '<button class="ai-ib send" type="button" data-ai="send" title="Enviar" aria-label="Enviar">'+AI_ICO.send+'</button></div>'+
+      '<div class="ai-note">Ela só mexe na agenda, nos afazeres e nas metas — nunca nas configurações.</div>';
+    document.body.appendChild(p);
+    var ta=p.querySelector('textarea');
+    function fit(){ ta.style.height='auto'; ta.style.height=Math.min(140, ta.scrollHeight+2)+'px'; var sb=p.querySelector('.ai-ib.send'); sb.disabled=AI.busy||!aiCanUse()||!ta.value.trim(); }
+    ta.addEventListener('input', fit);
+    ta.addEventListener('keydown', function(e){
+      if(e.key==='Enter' && !e.shiftKey && !e.isComposing){ e.preventDefault(); var v=ta.value; if(v.trim() && !AI.busy){ ta.value=''; fit(); aiSend(v); } }
+    });
+    // o campo de texto não pode disparar os atalhos de teclado do app (Ctrl+Alt+…, setas, etc.)
+    p.addEventListener('keydown', function(e){ if(e.key==='Escape'){ e.stopPropagation(); aiOpen(false); return; } e.stopPropagation(); });
+    p.addEventListener('click', function(e){
+      var s=e.target.closest('[data-ai-sug]'); if(s){ aiSend(s.getAttribute('data-ai-sug')); return; }
+      var b=e.target.closest('[data-ai]'); if(!b) return;
+      var k=b.getAttribute('data-ai');
+      if(k==='close') aiOpen(false);
+      else if(k==='send'){ var v=ta.value; if(v.trim() && !AI.busy){ ta.value=''; fit(); aiSend(v); } }
+      else if(k==='login'){ try{ window.AgendaCloud.ui.showLogin(); }catch(_){ } }
+      else if(k==='retry'){ var c=aiLoad(), last=c.log[c.log.length-1]; if(last && last.retry){ c.log.pop(); if(c.log.length && c.log[c.log.length-1].w==='eu') c.log.pop(); aiSend(last.retry); } }
+      else if(k==='mic') aiMic(b, ta, fit);
+    });
+    // apagar a conversa em dois toques (o primeiro só arma); o wireArmConfirm do app trocaria o ícone por texto e não voltaria
+    var fr=p.querySelector('[data-ai=fresh]'), frT=null;
+    fr.addEventListener('click', function(){
+      if(!fr.classList.contains('armed')){ fr.classList.add('armed'); fr.textContent='Apagar conversa?'; frT=setTimeout(function(){ fr.classList.remove('armed'); fr.innerHTML=AI_ICO.fresh; }, 4000); return; }
+      clearTimeout(frT); fr.classList.remove('armed'); fr.innerHTML=AI_ICO.fresh;
+      if(AI.busy) return;
+      AI.conv={api:[], log:[]}; aiSave(); aiDraw(); ta.focus();
+    });
+  }
+  function aiMic(btn, ta, fit){
+    var SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return;
+    if(AI.listening && AI.rec){ try{ AI.rec.stop(); }catch(_){ } return; }
+    var r=new SR(), base=ta.value?ta.value.replace(/\s*$/,' '):'';
+    r.lang='pt-BR'; r.interimResults=true; r.continuous=false;
+    r.onresult=function(ev){ var t=''; for(var i=0;i<ev.results.length;i++) t+=ev.results[i][0].transcript; ta.value=base+t; fit(); };
+    r.onerror=function(ev){ if(ev.error==='not-allowed') showToast('Libere o microfone para falar com a assistente.','🎙️'); };
+    r.onend=function(){ AI.listening=false; btn.classList.remove('on'); ta.focus(); };
+    try{ r.start(); AI.rec=r; AI.listening=true; btn.classList.add('on'); }catch(_){ }
+  }
+  function aiOpen(o){
+    aiMount();
+    AI.open=!!o;
+    document.body.classList.toggle('ai-open', AI.open);
+    var p=document.getElementById('ai-panel'); p.setAttribute('aria-hidden', AI.open?'false':'true');
+    if(AI.open){ aiDraw(); setTimeout(function(){ var ta=p.querySelector('textarea'); if(ta && !ta.disabled && window.innerWidth>860) ta.focus(); }, 60); }
+    else { var f=document.getElementById('ai-fab'); if(f && document.activeElement && p.contains(document.activeElement)) f.focus(); }
+  }
+  async function aiSend(text){
+    text=String(text||'').trim(); if(!text || AI.busy || !aiCanUse()) return;
+    var C=window.AgendaCloud, c=aiLoad();
+    c.log.push({w:'eu', t:text}); c.api.push({role:'user', content:text});
+    AI.busy=true; aiSave(); aiDraw();
+    try{
+      try{ await C.sync.run(); }catch(_){ }   // sobe o que mudou aqui antes: a assistente lê a agenda do servidor
+      var r=await C.fn('assistente', {messages:c.api});
+      c.api=c.api.concat((r&&r.novas)||[]);
+      c.log.push({w:'ai', t:(r&&r.texto)||'', a:(r&&r.acoes)||[]});
+      if(r && r.mudou){ Promise.resolve(C.sync.run()).then(function(){ try{ render(); }catch(_){ } }); }
+    }catch(e){
+      // tira a pergunta sem resposta do histórico, para a próxima não sair "duas perguntas seguidas"
+      if(c.api.length && c.api[c.api.length-1].role==='user') c.api.pop();
+      var msg = (e && e.message) || '';
+      if(!navigator.onLine) msg='Sem internet agora. A assistente precisa de conexão.';
+      else if(!msg || /Failed to fetch|NetworkError|HTTP 404/.test(msg)) msg='Não consegui falar com a assistente. Ela já foi publicada no Supabase (função "assistente")?';
+      c.log.push({w:'erro', t:msg, retry:text});
+    }
+    AI.busy=false; aiSave();
+    if(document.getElementById('ai-panel')) aiDraw();
+  }
+  window.__assistente={open:function(){ aiOpen(true); }, close:function(){ aiOpen(false); }, send:aiSend};
+
   function cfgTitleHtml(){
     var sec=null; CFG_SECS.forEach(function(x){ if(x[0]===state.cfgSec) sec=x; });
     return sec ? '<button class="cfg-back" id="cfg-back">'+pnIc('left')+'Configurações</button><h1>'+sec[2]+'</h1><p>'+sec[3]+'</p>'
