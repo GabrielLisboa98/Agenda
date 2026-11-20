@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261119-211051';</script>
+<script>window.AGENDA_BUILD = '20261119-211329';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261119-211051"></script>
+<script src="cloud.js?v=20261119-211329"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -3964,6 +3964,26 @@ html.lay-off-faixas .faixa-zone{display:none;}
 <input type="file" id="nt-import" accept=".md,.markdown,.txt,text/markdown,text/plain" multiple hidden>
 <input type="file" id="nt-upfile" multiple hidden>
 <script>
+/* v169: "cartão levantado" ao arrastar para ordenar, como no quadro do Planner: uma cópia do item segue o dedo/mouse
+   e o lugar onde ele vai cair fica marcado (tracejado) na lista. Serve para qualquer lista — inclusive dentro do
+   Metas (shadow DOM: a cópia vai para a mesma raiz, para levar o mesmo visual). */
+window.__fantasma=function(el, ev){
+  var r=el.getBoundingClientRect(), root=el.getRootNode ? el.getRootNode() : document;
+  var alvo=(root && root.host) ? root : document.body;
+  var g=el.cloneNode(true); g.removeAttribute('id'); Array.prototype.forEach.call(g.querySelectorAll('[id]'), function(x){ x.removeAttribute('id'); });
+  var bg=getComputedStyle(el).backgroundColor; if(!bg || bg==='rgba(0, 0, 0, 0)' || bg==='transparent') bg='var(--surface-3, var(--surface, #fff))';
+  g.style.cssText+=';position:fixed;left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;margin:0;z-index:9999;pointer-events:none;opacity:.97;'+
+    'box-shadow:0 22px 44px -14px rgba(0,0,0,.5),0 0 0 1px rgba(0,0,0,.06);transform:rotate(1.5deg) scale(1.03);border-radius:14px;background:'+bg+';transition:transform .14s cubic-bezier(.23,1,.32,1);';
+  g.setAttribute('aria-hidden','true'); alvo.appendChild(g);
+  var dx=ev.clientX-r.left, dy=ev.clientY-r.top, velho=el.getAttribute('style');
+  el.style.outline='2px dashed var(--accent)'; el.style.outlineOffset='-2px'; el.style.opacity='.4'; el.style.borderRadius=el.style.borderRadius||'12px';
+  return {
+    move:function(e){ g.style.left=(e.clientX-dx)+'px'; g.style.top=(e.clientY-dy)+'px'; },
+    fim:function(){ g.remove(); if(velho==null) el.removeAttribute('style'); else el.setAttribute('style', velho); }
+  };
+};
+</script>
+<script>
 
 /* v166: o código do Mapa virou uma "fábrica" que roda duas vezes. __mvFabrica({}) é o app Metas de sempre;
    __mvFabrica({livre:true}) é o Mapa mental das Notas (antiga aba Diagramas): o mesmo mapa — arrastar, pinça,
@@ -4439,10 +4459,10 @@ function wireDrag(){
 
   addEventListener('pointermove',e=>{const d=vdrag;if(!d||e.pointerId!==d.pid)return;e.preventDefault();
     if(!d.moved&&Math.abs(e.clientY-d.y0)+Math.abs(e.clientX-d.x0)<4)return;
-    if(!d.moved){d.moved=true;d.tick=setInterval(autoScroll,16)}
-    d.x=e.clientX;d.y=e.clientY;place(d.x,d.y);
+    if(!d.moved){d.moved=true;d.tick=setInterval(autoScroll,16);if(window.__fantasma)d.fant=window.__fantasma(d.el,e)}
+    d.x=e.clientX;d.y=e.clientY;if(d.fant)d.fant.move(e);place(d.x,d.y);
   });
-  const end=e=>{const d=vdrag;if(!d||e.pointerId!==d.pid)return;vdrag=null;clearInterval(d.tick);d.el.classList.remove('dragging');M.classList.remove('grp-compact');
+  const end=e=>{const d=vdrag;if(!d||e.pointerId!==d.pid)return;vdrag=null;clearInterval(d.tick);if(d.fant)d.fant.fim();d.el.classList.remove('dragging');M.classList.remove('grp-compact');
     if(!d.moved)return;suppressClick=true;setTimeout(()=>suppressClick=false,60);
     if(d.k==='val'){const ord=[...$$('.vcard[data-val]')].map(x=>x.dataset.val);S.values.sort((a,b)=>ord.indexOf(a.id)-ord.indexOf(b.id));commit();return}
     const out=[];for(const g of $$('.grp')){const tm=g.dataset.tema;for(const r of g.querySelectorAll('.row[data-why]')){const w=S.whys.find(x=>x.id===r.dataset.why);if(w){if((w.tema||'Geral')!==tm)w.tema=tm;out.push(w)}}}
@@ -13530,15 +13550,16 @@ window.addEventListener('keydown', function(e){
     Array.prototype.forEach.call(list.querySelectorAll('[data-ck] .pn-ck-handle'), function(h){
       h.addEventListener('pointerdown', function(e){
         e.preventDefault();
-        var row=h.closest('[data-ck]'); row.style.opacity='.5'; row.style.background='var(--accent-soft)';
+        var row=h.closest('[data-ck]'), fant=window.__fantasma ? window.__fantasma(row, e) : null;
         function move(ev){
+          if(fant) fant.move(ev);
           var rows=Array.prototype.slice.call(list.querySelectorAll('[data-ck]'));
           for(var i=0;i<rows.length;i++){ if(rows[i]===row) continue; var r=rows[i].getBoundingClientRect();
             if(ev.clientY>r.top && ev.clientY<r.bottom){ if(ev.clientY<r.top+r.height/2) list.insertBefore(row, rows[i]); else list.insertBefore(row, rows[i].nextSibling); break; } }
         }
         function up(){
           window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up);
-          row.style.opacity=''; row.style.background='';
+          if(fant) fant.fim();
           var ids=Array.prototype.map.call(list.querySelectorAll('[data-ck]'), function(r){ return r.getAttribute('data-ck'); });
           setCk(function(l){ return ids.map(function(x){ return l.filter(function(c){ return c.id===x; })[0]; }).filter(Boolean); });
         }
@@ -17430,7 +17451,7 @@ window.addEventListener('keydown', function(e){
       });
       g.addEventListener('pointerdown', function(e){
         if(e.button>0) return; e.preventDefault();
-        var y0=e.clientY, moved=false, tick=null, lastY=e.clientY;
+        var y0=e.clientY, moved=false, tick=null, lastY=e.clientY, fant=null;
         try{ g.setPointerCapture(e.pointerId); }catch(_){}
         function lugar(y){
           var irmaos=Array.prototype.filter.call(app.querySelectorAll('.pn-sec'), function(x){ return x!==sec; });
@@ -17444,12 +17465,14 @@ window.addEventListener('keydown', function(e){
             var t0=sec.getBoundingClientRect().top; app.classList.add('pn-arrastando'); sec.classList.add('pn-pego');
             window.scrollBy(0, sec.getBoundingClientRect().top-t0);
             tick=setInterval(function(){ var m=60, v=0; if(lastY<m+40) v=-12; else if(lastY>innerHeight-m) v=12; if(v){ window.scrollBy(0,v); lugar(lastY); } }, 16);
+            if(window.__fantasma) fant=window.__fantasma(sec, ev);
           }
+          if(fant) fant.move(ev);
           lugar(ev.clientY);
         }
         function fim(){
           window.removeEventListener('pointermove', mover); window.removeEventListener('pointerup', fim); window.removeEventListener('pointercancel', fim);
-          clearInterval(tick); dragActive=false; PN_DRAG=false;
+          clearInterval(tick); dragActive=false; PN_DRAG=false; if(fant){ fant.fim(); fant=null; }
           if(!moved){ if(PN_DRAG_PEND){ PN_DRAG_PEND=false; render(); } return; }
           PN_DRAG_PEND=false;
           app.classList.remove('pn-arrastando'); sec.classList.remove('pn-pego');
