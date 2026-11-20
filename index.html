@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261119-210410';</script>
+<script>window.AGENDA_BUILD = '20261119-211051';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261119-210410"></script>
+<script src="cloud.js?v=20261119-211051"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -1745,6 +1745,7 @@ button.pn-crumb-root:hover{background:var(--accent-soft); color:var(--ink);}
 .pn-empty h2{font-family:var(--serif); font-size:1.5556rem; margin:0 0 8px;letter-spacing:-0.015em}
 .pn-empty p{color:var(--ink-soft); font-size:0.8333rem; line-height:1.55; margin:0 0 18px;}
 .pn-overlay{z-index:60; padding:3vh 3vw;}
+#modal-overlay.sobre-pn{z-index:70;}
 .overlay.pn-overlay, :root[data-sky] .overlay.pn-overlay{backdrop-filter:none; -webkit-backdrop-filter:none; background:rgba(12,14,24,.42);}
 :root[data-sky] .overlay{backdrop-filter:none; -webkit-backdrop-filter:none; background:rgba(12,14,24,.42);}
 .detail-catpick .cat-pick{display:inline-block; width:auto;}
@@ -1802,6 +1803,10 @@ button.pn-crumb-root:hover{background:var(--accent-soft); color:var(--ink);}
 .pn-ck input:focus{border-color:var(--accent); background:var(--surface-3);}
 .pn-ck.ok input{color:var(--ink-faint); text-decoration:line-through;}
 .pn-ck .pn-ck-del{opacity:0;}
+.pn-ck .pn-ck-cal{opacity:.45;} .pn-ck:hover .pn-ck-cal, .pn-ck:focus-within .pn-ck-cal{opacity:1;}
+.pn-ck .pn-ck-ag{font-size:0.7222rem; font-weight:600; color:var(--accent); white-space:nowrap; flex:none;} .pn-ck .pn-ck-ag:empty{display:none;}
+.pn-ck.na-agenda .pn-ck-cal{color:var(--accent); opacity:1;}
+@media (hover:none){ .pn-ck .pn-ck-cal{opacity:1;} }
 .pn-ck:hover .pn-ck-del, .pn-ck:focus-within .pn-ck-del{opacity:1;}
 .pn-ck-handle{cursor:grab; color:var(--ink-faint); opacity:0; width:14px; flex:none; display:flex; justify-content:center;}
 .pn-ck:hover .pn-ck-handle{opacity:1;}
@@ -11680,10 +11685,10 @@ window.addEventListener('keydown', function(e){
     taskId: v.taskId||null,
 
     lateMin: (typeof v.lateMin==='number') ? v.lateMin : null, lateReason: v.lateReason||null,
-    mvTask: v.mvTask||null, mvCounted: !!v.mvCounted
+    mvTask: v.mvTask||null, mvCounted: !!v.mvCounted, pnLink: v.pnLink||null
   };}
 
-  function docToCheck(d){ var v=d.data()||{}; return {id:d.id, mvTask:v.mvTask||null, mvCounted:!!v.mvCounted, title:v.title||'', note:v.note||'', date:(v.date===undefined?null:v.date), timeLabel:v.timeLabel||null, done:!!v.done, createdAt:v.createdAt||0, order:(v.order!=null?v.order:null), tags: v.tags||[],
+  function docToCheck(d){ var v=d.data()||{}; return {id:d.id, mvTask:v.mvTask||null, mvCounted:!!v.mvCounted, pnLink:v.pnLink||null, title:v.title||'', note:v.note||'', date:(v.date===undefined?null:v.date), timeLabel:v.timeLabel||null, done:!!v.done, createdAt:v.createdAt||0, order:(v.order!=null?v.order:null), tags: v.tags||[],
 
     plannedBlockId:v.plannedBlockId||null, plannedDate:v.plannedDate||null, plannedStart:v.plannedStart||null, doneByBlock:!!v.doneByBlock,
 
@@ -11918,7 +11923,36 @@ window.addEventListener('keydown', function(e){
       var r=window.__metas.markTask(item.mvTask);
       if(r){ state.db.collection('checklist').doc(item.id).update({mvCounted:true}); setTimeout(function(){ showToast(r.lv ? 'Mini-meta feita! Subiu para o nível '+r.lv+'.' : '+'+r.xp+' XP · '+(r.why||r.title), '⭐'); }, 900); }
     }
+    if(!item.done && item.pnLink) pnMarcarItem(item.pnLink, true);
     state.db.collection('checklist').doc(item.id).update({done:!item.done});
+  }
+  /* v169: afazer/bloco nascido de um item da lista de verificação do Planner (pnLink = "tarefa|item"): concluir na
+     agenda marca o item no Planner. */
+  var PN_CAL_IC='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17M12 13v4M10 15h4"/></svg>';
+  function pnCkMarcas(list){
+    var tid=PN.detailId, map=state.pnPlanned||{};
+    Array.prototype.forEach.call(list.querySelectorAll('[data-ck]'), function(row){
+      var cid=row.getAttribute('data-ck'), sp=row.querySelector('[data-cka]'); if(!sp) return;
+      var it=map[tid+'|'+cid]||null;
+      row.classList.toggle('na-agenda', !!it);
+      sp.textContent = it ? 'na agenda · '+(it.date ? DOW[new Date(it.date+'T12:00:00').getDay()].toLowerCase()+' '+String(it.date).slice(8)+'/'+String(it.date).slice(5,7) : 'sem dia')+(it.start?' · '+it.start:'') : '';
+      sp.title = it ? (it.kind==='block'?'Bloco na agenda':'Afazer na agenda') : '';
+    });
+  }
+  /* dica do balão do Assistente: itens de tarefas do Planner com prazo nos próximos 7 dias que ainda não estão na agenda */
+  window.__plannerDicas=function(){
+    var hoje=todayStr(), lim=addDays(hoje,7), map=state.pnPlanned||{}, itens=[];
+    (PN.tasks||[]).forEach(function(t){ if(t.status==='ok' || !t.due || t.due>lim) return;
+      (t.checklist||[]).forEach(function(c){ if(!c.done && !map[t.id+'|'+c.id]) itens.push({t:t.title, i:c.t, due:t.due}); }); });
+    if(!itens.length) return null;
+    return {k:'pn', txt:(itens.length===1?'1 item do Planner':itens.length+' itens do Planner')+' com prazo esta semana ainda fora da agenda. Quer ajuda?',
+      pedido:'Estes itens de tarefas do Planner têm prazo nos próximos dias e ainda não estão na minha agenda: '+itens.slice(0,8).map(function(x){ return '“'+x.i+'” ('+x.t+', prazo '+x.due.slice(8)+'/'+x.due.slice(5,7)+')'; }).join('; ')+'. Olhe a agenda e me proponha quando fazer cada um (ainda sem criar). Quando eu aprovar, crie com o título exatamente igual ao texto do item.'};
+  };
+  function pnMarcarItem(link, feito){
+    var pr=String(link||'').split('|'), t=pr[0]&&pnTaskById(pr[0]); if(!t || !t.id) return;
+    var nome='', mudou=false, l=(t.checklist||[]).map(function(c){ c=Object.assign({},c); if(c.id===pr[1]){ nome=c.t; if(!!c.done!==feito){ c.done=feito; mudou=true; } } return c; });
+    if(!mudou) return; pnUpdTask(t.id, Object.assign({checklist:l}, feito && t.status==='nao' ? {status:'and'} : {}));
+    setTimeout(function(){ showToast('Marcado no Planner: '+(nome||'item'), '📋'); }, 700);
   }
   function updateCheck(id, patch){ if(state.db) state.db.collection('checklist').doc(id).update(patch); }
   function deleteCheck(id){ if(state.db) state.db.collection('checklist').doc(id).delete(); }
@@ -12212,6 +12246,7 @@ window.addEventListener('keydown', function(e){
   }
   /* Bloco nascido de uma missão do Metas: concluir dá o XP da missão (uma vez por bloco). */
   function mvBlockDone(b){
+    if(b && b.pnLink && !b.pnCounted){ pnMarcarItem(b.pnLink, true); updateBlock(b.id,{pnCounted:true}); }
     if(!b || !b.mvTask || b.mvCounted || !window.__metas || !window.__metas.markTask) return;
     var r=window.__metas.markTask(b.mvTask); if(!r) return;
     updateBlock(b.id, {mvCounted:true});
@@ -13378,7 +13413,7 @@ window.addEventListener('keydown', function(e){
           '<div><div class="pn-sec-h"><h4>Lista de verificação</h4><span class="pn-sec-meta">'+(ck.total?ck.done+' de '+ck.total+' concluídos':'')+'</span></div>' +
             '<label class="pn-showcard"><input type="checkbox" id="pn-d-showck"'+(t.showChecklist?' checked':'')+'> Mostrar no cartão do quadro</label>' +
             '<div class="pn-checklist" id="pn-d-ck">' + t.checklist.map(function(c){
-              return '<div class="pn-ck'+(c.done?' ok':'')+'" data-ck="'+escapeHtml(c.id)+'"><span class="pn-ck-handle" title="Arraste para reordenar">'+pnIc('grip')+'</span><button class="pn-ring'+(c.done?' on':'')+'" data-ckt title="Marcar">'+pnIc('check')+'</button><input type="text" data-f="ck:'+escapeHtml(c.id)+'" value="'+escapeHtml(c.t)+'"><button class="pn-iconbtn pn-ck-del" data-ckd title="Remover item">'+pnIc('x')+'</button></div>';
+              return '<div class="pn-ck'+(c.done?' ok':'')+'" data-ck="'+escapeHtml(c.id)+'"><span class="pn-ck-handle" title="Arraste para reordenar">'+pnIc('grip')+'</span><button class="pn-ring'+(c.done?' on':'')+'" data-ckt title="Marcar">'+pnIc('check')+'</button><input type="text" data-f="ck:'+escapeHtml(c.id)+'" value="'+escapeHtml(c.t)+'"><span class="pn-ck-ag" data-cka></span><button class="pn-iconbtn pn-ck-cal" data-ckc title="Levar para a agenda (afazer ou bloco)" aria-label="Levar para a agenda">'+PN_CAL_IC+'</button><button class="pn-iconbtn pn-ck-del" data-ckd title="Remover item">'+pnIc('x')+'</button></div>';
             }).join('') +
             '<div class="pn-ck new"><span class="pn-ck-handle"></span><span class="pn-ring" style="pointer-events:none;"></span><input type="text" data-f="ck-new" placeholder="Adicionar um item (Enter)"></div>' +
             '</div></div>' +
@@ -13458,6 +13493,11 @@ window.addEventListener('keydown', function(e){
         setCk(function(l){ l.forEach(function(c){ if(c.id===cid) c.done=!c.done; }); return l; });
         var cur=fresh(); if(cur.status==='nao') pnUpdTask(id,{status:'and'});
       };
+      row.querySelector('[data-ckc]').onclick=function(){
+        var cur=fresh(), c=(cur.checklist||[]).filter(function(x){ return x.id===cid; })[0]; if(!c) return;
+        var pl=pnPlanById(cur.planId);
+        openModal({type:'createCheck', preDate:null, preTime:'', prePeriod:null, carryTitle:c.t, carryNote:'Planner: '+cur.title+(pl&&pl.name?' ('+pl.name+')':''), pnLink:cur.id+'|'+c.id});
+      };
       row.querySelector('[data-ckd]').onclick=function(){ setCk(function(l){ return l.filter(function(c){ return c.id!==cid; }); }); };
       inp.oninput=function(){ inp.setAttribute('data-dirty','1'); };
       inp.onkeydown=function(e){ if(e.key==='Enter'){ e.preventDefault(); inp.blur(); var nw=ov.querySelector('[data-f=ck-new]'); if(nw) nw.focus(); } };
@@ -13486,6 +13526,7 @@ window.addEventListener('keydown', function(e){
 
   function pnWireChecklistDrag(ov, id, setCk){
     var list=ov.querySelector('#pn-d-ck'); if(!list) return;
+    pnCkMarcas(list);
     Array.prototype.forEach.call(list.querySelectorAll('[data-ck] .pn-ck-handle'), function(h){
       h.addEventListener('pointerdown', function(e){
         e.preventDefault();
@@ -14459,7 +14500,20 @@ window.addEventListener('keydown', function(e){
   /* Quais mini-metas já viraram bloco nesta semana (de segunda em diante). O Metas usa isso para marcar
      "Não programada" nas que ainda não foram para a agenda — nada é criado sozinho, o Gabriel escolhe. */
   var mvPlanUnsub=null, mvPlanB=[], mvPlanC=[];
+  var pnPlanB=[], pnPlanC=[], pnAutoFeito={};
+  /* v169: o Assistente cria afazeres/blocos pela função do servidor, que não sabe do vínculo com o Planner. Quando
+     ele cria um com o MESMO texto de um item ainda aberto da lista de verificação (e só um item bate), o app liga
+     sozinho — assim concluir na agenda marca no Planner, sem precisar mudar a função. */
+  function pnAutoLigar(col, id, titulo){
+    if(pnAutoFeito[id] || !state.db || !PN.tasks || !PN.tasks.length) return;
+    var n=function(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim(); }, alvo=n(titulo); if(!alvo) return;
+    var achou=[]; PN.tasks.forEach(function(t){ if(t.status==='ok') return; (t.checklist||[]).forEach(function(c){ if(!c.done && n(c.t)===alvo) achou.push(t.id+'|'+c.id); }); });
+    pnAutoFeito[id]=1; if(achou.length!==1) return;
+    state.db.collection(col).doc(id).update({pnLink:achou[0]});
+  }
   function mvPlanEmit(){
+    var pm={}; pnPlanB.concat(pnPlanC).forEach(function(it){ var cur=pm[it.task]; if(!cur || ((it.date||'9999')<(cur.date||'9999'))) pm[it.task]=it; });
+    var pj=JSON.stringify(pm); if(pj!==state._pnPlanJ){ state._pnPlanJ=pj; state.pnPlanned=pm; var dt=document.getElementById('pn-d-ck'); if(dt) pnCkMarcas(dt); }
     var map={};
     mvPlanB.concat(mvPlanC).forEach(function(it){ var cur=map[it.task];
       var k=(it.date||'9999')+(it.start||''), ck=cur?((cur.date||'9999')+(cur.start||'')):'';
@@ -14472,12 +14526,14 @@ window.addEventListener('keydown', function(e){
     var mon=addDays(todayStr(), -dowIndex(new Date()));
     try{
       mvPlanUnsub=state.db.collection('blocks').where('date','>=',mon).onSnapshot(function(snap){
-        mvPlanB=[]; snap.docs.forEach(function(d){ var b=d.data(); if(b && b.mvTask) mvPlanB.push({task:b.mvTask, kind:'block', date:b.date, start:b.plannedStart||'', done:b.status==='done', id:d.id}); });
+        mvPlanB=[]; pnPlanB=[]; snap.docs.forEach(function(d){ var b=d.data(); if(b && b.mvTask) mvPlanB.push({task:b.mvTask, kind:'block', date:b.date, start:b.plannedStart||'', done:b.status==='done', id:d.id});
+          if(b && !b.pnLink && !b.mvTask && b.createdBy==='claude' && b.status!=='done') pnAutoLigar('blocks', d.id, b.title);
+          if(b && b.pnLink && b.status!=='done') pnPlanB.push({task:b.pnLink, kind:'block', date:b.date, start:b.plannedStart||'', done:false, id:d.id}); });
         mvPlanEmit();
       }, function(){});
       /* Afazer também conta como programado: com data desta semana em diante, ou sem data ainda não feito. */
       state.db.collection('checklist').onSnapshot(function(snap){
-        mvPlanC=[]; snap.docs.forEach(function(d){ var c=d.data(); if(!c || !c.mvTask) return;
+        mvPlanC=[]; pnPlanC=[]; snap.docs.forEach(function(d){ var c=d.data(); if(c && !c.pnLink && !c.mvTask && c.createdBy==='claude' && !c.done) pnAutoLigar('checklist', d.id, c.title); if(c && c.pnLink && !c.done) pnPlanC.push({task:c.pnLink, kind:'check', date:c.date||null, start:c.timeLabel||'', done:false, id:d.id}); if(!c || !c.mvTask) return;
           if(c.date ? c.date<mon : c.done) return;
           mvPlanC.push({task:c.mvTask, kind:'check', date:c.date||null, start:c.timeLabel||'', done:!!c.done, id:d.id}); });
         mvPlanEmit();
@@ -19630,6 +19686,7 @@ window.addEventListener('keydown', function(e){
     document.documentElement.classList.toggle('modal-lock', !!state.modal);
     if(!state.modal){ lastRenderedModal=null; return; }
     var overlay=document.createElement('div'); overlay.className='overlay'; overlay.id='modal-overlay';
+    if(state.modal && state.modal.pnLink) overlay.classList.add('sobre-pn');   // v169: aberto de dentro do detalhe do Planner (z 60) — fica por cima
 
     overlay.addEventListener('pointerdown', function(e){ overlay.__downOnSelf = (e.target===overlay); });
     overlay.onclick=function(e){ if(e.target===overlay && overlay.__downOnSelf) closeModal(); overlay.__downOnSelf=false; };
@@ -20515,7 +20572,7 @@ window.addEventListener('keydown', function(e){
       var b = e.target.closest('[data-kind]'); if(!b) return;
       var k = b.getAttribute('data-kind');
       /* Mini-meta do Metas: a ligação (mvTask) e a anotação vão junto na troca, nos dois sentidos. */
-      var mvKeep = m.mvTask ? {mvTask:m.mvTask, carryNote:m.carryNote, carryCat:m.carryCat, mvQuando:m.mvQuando} : {};
+      var mvKeep = m.mvTask ? {mvTask:m.mvTask, carryNote:m.carryNote, carryCat:m.carryCat, mvQuando:m.mvQuando} : m.pnLink ? {pnLink:m.pnLink, carryNote:m.carryNote, carryCat:m.carryCat} : {};
       if(k==='check' && m.type==='create'){
         var t = modal.querySelector('#f-title'), fn=modal.querySelector('#f-note');
         var cd = (m.mvTask && startOfWeek(m.date)!==startOfWeek(state.selectedDate)) ? null : m.date;
@@ -20599,6 +20656,7 @@ window.addEventListener('keydown', function(e){
       if(!catId) return;
       var linkF = pnCreateLink(modal);
       if(m.mvTask) linkF = Object.assign({}, linkF, {mvTask:m.mvTask});
+      if(m.pnLink) linkF = Object.assign({}, linkF, {pnLink:m.pnLink});
       var title=document.getElementById('f-title').value.trim();
       var project=document.getElementById('f-project').value.trim();
       if(!project && linkF.taskId) project=pnTaskById(linkF.taskId).title;
@@ -20684,6 +20742,7 @@ window.addEventListener('keydown', function(e){
     modal.innerHTML = '<div class="modal-head"><h3>'+(isEdit?'Editar afazer':'Novo afazer')+'</h3><button class="iconbtn" data-act="close">✕</button></div>' +
       '<div class="modal-body">' +
         (!isEdit && m.fromGrid ? gridKindSwitchHtml('check') : '') +
+        (!isEdit && m.pnLink ? '<div class="create-from-list">📋 Item do Planner. Fica nos afazeres; depois é só encaixar o horário olhando a agenda. Ao marcar como feito, o item é marcado no Planner.</div>' : '') +
         (!isEdit && m.mvTask ? '<div class="create-from-list">🎯 Mini-meta do Metas. Fica nos afazeres; depois é só encaixar o horário olhando a agenda. Ao marcar como feito, a mini-meta conta (XP).</div>' : '') +
 
         '<div class="field"><label>Tarefa</label><textarea id="c-title" class="c-autogrow" rows="1" placeholder="ex: ir à padaria">'+(isEdit?escapeHtml(existing.title):escapeHtml(m.carryTitle||''))+'</textarea></div>' +
@@ -20742,8 +20801,9 @@ window.addEventListener('keydown', function(e){
 
       var perVal = (curPeriod && curPeriod===periodOfTime(time)) ? null : (curPeriod||null);
       if(isEdit) updateCheck(existing.id, {title:title, note:note, date:dateVal, timeLabel:time, tags:tags, week:weekVal, period:perVal});
-      else addCheck(Object.assign({title:title, note:note, date:dateVal, timeLabel:time, tags:tags, week:weekVal, period:perVal}, m.mvTask ? {mvTask:m.mvTask} : {}));
+      else addCheck(Object.assign({title:title, note:note, date:dateVal, timeLabel:time, tags:tags, week:weekVal, period:perVal}, m.mvTask ? {mvTask:m.mvTask} : {}, m.pnLink ? {pnLink:m.pnLink} : {}));
       closeModal();
+      if(!isEdit && m.pnLink) setTimeout(function(){ showToast('Item do Planner nos afazeres'+(dateVal?': '+longDateLabel(dateVal):'')+'.', '📋'); }, 50);
       if(!isEdit && m.mvTask) setTimeout(function(){ showToast('Mini-meta nos afazeres'+(dateVal?': '+longDateLabel(dateVal):'')+'.', '🎯'); }, 50);
     };
   }
