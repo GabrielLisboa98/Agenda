@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261119-211329';</script>
+<script>window.AGENDA_BUILD = '20261123-1230';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261119-211329"></script>
+<script src="cloud.js?v=20261123-1230"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -2056,6 +2056,46 @@ button.sb-pn-stat:hover{background:var(--hover-glass, rgba(239,231,216,.1));}
 .pn-tray-more:hover{color:var(--ink);}
 .pn-tray-hint{font-size:0.6667rem; color:var(--ink-faint); padding:6px 4px 0; line-height:1.4;}
 .pn-tray-ghost{position:fixed; z-index:300; pointer-events:none; max-width:240px; padding:7px 12px; border-radius:12px; background:var(--accent); color:var(--accent-ink); font-size:0.7222rem; font-weight:700; box-shadow:var(--shadow-lg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+/* v171: Mini-metas para encaixar (faixa acima da grade do Dia/Semana e do Planejamento › Afazeres) */
+.mv-strip{margin:0 0 12px;}
+.mv-strip .panel-head{gap:10px;}
+.mv-strip .mvs-hint{flex:1; min-width:0; font-size:0.6667rem; color:var(--ink-faint); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.mv-strip .panel-body{padding:4px 12px 12px;}
+.mvs-row{display:flex; gap:8px; overflow-x:auto; padding:2px 2px 4px; scrollbar-width:thin; -webkit-overflow-scrolling:touch;}
+.mvs-chip{flex:none; display:flex; align-items:center; gap:7px; max-width:260px; padding:7px 12px 7px 10px; border-radius:999px; background:var(--surface,rgba(255,255,255,.55)); border:1.5px solid color-mix(in srgb, var(--c) 55%, transparent); cursor:grab; user-select:none; -webkit-user-select:none; touch-action:pan-x; transition:transform .15s ease, box-shadow .15s ease, background .15s ease;}
+.mvs-chip:hover{background:color-mix(in srgb, var(--c) 12%, transparent); transform:translateY(-1px);}
+.mvs-chip:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+.mvs-chip.is-on{background:color-mix(in srgb, var(--c) 20%, transparent); border-color:var(--c); box-shadow:0 0 0 3px color-mix(in srgb, var(--c) 22%, transparent);}
+.mvs-chip.is-planned{border-style:dashed; opacity:.78;}
+.mvs-chip.is-done{opacity:.5;}
+.mvs-chip.dragging{opacity:.35;}
+.mvs-dot{width:9px; height:9px; border-radius:50%; background:var(--c); flex:none;}
+.mvs-t{font-size:0.7778rem; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;}
+.mvs-tag{flex:none; font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:0.6111rem; color:var(--ink-soft); padding:1px 7px; border-radius:999px; background:var(--accent-soft);}
+.mvs-chip:not(.is-planned) .mvs-tag{color:var(--critical); background:var(--critical-soft);}
+.mvs-fit-bar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:8px 10px; margin:0 0 8px; border-radius:12px; background:var(--success-soft); font-size:0.7778rem;}
+.mvs-fit-bar > span:first-child{flex:1; min-width:180px;}
+.mvs-fit-acts{display:flex; gap:6px;}
+.mvs-star{color:var(--ink-soft); white-space:nowrap;}
+.mv-ghost{background:var(--c); color:#fff;}
+.mv-ghost .ldg-time{font-family:var(--mono); font-weight:600; opacity:.9;}
+.mv-fit{position:absolute; left:3px; right:3px; z-index:2; border-radius:8px; border:1.5px dashed var(--success); background:color-mix(in srgb, var(--success) 16%, transparent); pointer-events:none; padding:0; text-align:left; font:inherit; animation:mvfit-in .25s ease;}
+.mv-fit.best{border-style:solid; border-color:var(--c); background:color-mix(in srgb, var(--c) 24%, transparent);}
+.mv-fit.tap{pointer-events:auto; cursor:pointer; z-index:4;}
+.mv-fit.tap:hover{background:color-mix(in srgb, var(--success) 18%, transparent);}
+.mv-fit.best.tap:hover{background:color-mix(in srgb, var(--c) 28%, transparent);}
+.mvf-lab{position:absolute; left:6px; top:4px; font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:0.6111rem; font-weight:700; color:var(--success); background:var(--bg,rgba(255,255,255,.8)); padding:1px 5px; border-radius:6px; white-space:nowrap;}
+.mv-fit.best .mvf-lab{color:var(--ink);}
+@keyframes mvfit-in{from{opacity:0;}to{opacity:1;}}
+.pl-cell.pl-fit-no{opacity:.55;}
+.pl-cell.pl-fit-ok{box-shadow:inset 0 0 0 1.5px var(--success);}
+.pl-fit{display:block; width:100%; margin-top:4px; padding:4px 6px; border-radius:8px; border:1.5px dashed var(--success); background:var(--success-soft); color:var(--ink); font:inherit; font-size:0.6667rem; text-align:left; cursor:pointer;}
+div.pl-fit{cursor:default;}
+.check-group.drop-target{outline:2px dashed var(--accent); outline-offset:2px; border-radius:10px;}
+.mv-strip .side-fold-n{white-space:nowrap;}
+@media (min-width:861px){ .mvs-row{flex-wrap:wrap; overflow:visible;} .mvs-chip{max-width:340px;} }
+@media (max-width:600px){ .mv-strip .mvs-hint{display:none;} .mv-strip .panel-head .side-fold{flex:1; min-width:0;} }
+@media (prefers-reduced-motion:reduce){ .mv-fit{animation:none;} .mvs-chip{transition:none;} }
 .ghost-range[data-label]::after{content:attr(data-label); position:absolute; left:6px; top:3px; font-family:var(--mono);font-variant-numeric:tabular-nums; font-size:0.6111rem; font-weight:700; color:var(--ink);}
 .grid-time-tip{position:fixed; z-index:300; pointer-events:none; display:flex; align-items:center; gap:10px; padding:8px 14px; border-radius:14px; background:var(--glass-bg-strong); backdrop-filter:blur(20px) saturate(1.6); -webkit-backdrop-filter:blur(20px) saturate(1.6); border:1px solid var(--border); color:var(--ink); font-size:0.8333rem; box-shadow:var(--shadow-lg); white-space:nowrap; font-variant-numeric:tabular-nums;}
 .grid-time-tip b{font-weight:800; color:var(--accent);}
@@ -3355,7 +3395,7 @@ input[type=time]::-webkit-date-and-time-value, input[type=date]::-webkit-date-an
 @keyframes ck-bump{40%{box-shadow:0 3px 10px rgba(0,0,0,.28);}}
 @media (prefers-reduced-motion:reduce){ .ck-switch span::after{transition:none;} .ck-switch:active span::after{width:27px;} }
 html.lay-off-night #wake-panel, html.lay-off-habits #habits-panel, html.lay-off-pie #day-pie-panel,
-html.lay-off-check [data-fold="check"], html.lay-off-loose [data-fold="loose"], html.lay-off-tray #pn-tray,
+html.lay-off-check [data-fold="check"], html.lay-off-loose [data-fold="loose"], html.lay-off-tray #pn-tray, html.lay-off-mvstrip #mv-strip,
 html.lay-off-noteday [data-fold="noteday"], html.lay-off-noteweek [data-fold="noteweek"],
 html.lay-off-weekstats .week-stats, html.lay-off-progress #sidebar-progress, html.lay-off-budget #sidebar-budget{display:none!important;}
 html.lay-off-check.lay-off-loose.lay-off-tray .main-grid{grid-template-columns:1fr;}
@@ -5011,6 +5051,8 @@ window[LIVRE?'__mapaLivre':'__metas']={
   },
   hide(){if(!active)return;active=false;closeD();closeCtx();const m=$('#map');if(m&&m.classList.contains('full'))toggleFull();const h=mvHostEl();if(h)h.hidden=true},
   data(){return S},
+  /* v171: a faixa de mini-metas da Agenda mostra o mesmo "porquê" que o cartão daqui (sorteado por dia). */
+  whyOf(id){const t=S&&S.tasks.find(x=>x.id===id);return t?whyPick(t):''},
   whys(){return S&&S.areas&&S.areas.length?S.whys:null},
   title(tab){return TITLES[tab]||'Metas'},
   importSeed(){importSeed()},
@@ -9610,6 +9652,7 @@ window.addEventListener('keydown', function(e){
     ['check',    'Afazeres da semana',         'Lista de afazeres ao lado da grade',                     'Dia e Semana'],
     ['loose',    'Tarefas soltas',             'Tarefas com cronômetro, sem hora marcada',               'Dia e Semana'],
     ['tray',     'Planner ao lado da grade',   'Tarefas dos seus planos, prontas para arrastar',         'Dia e Semana'],
+    ['mvstrip',  'Mini-metas para encaixar',   'Suas mini-metas acima da grade, para arrastar e ver onde cabem', 'Dia, Semana e Planejamento'],
     ['faixas',   'Horas reservadas',           'Fundo com as faixas do molde (Planejamento › Por categoria)',   'Dia e Semana'],
     ['noteday',  'Anotações do dia',           'Texto livre abaixo da grade',                            'Dia e Semana'],
     ['noteweek', 'Anotações da semana',        'Texto livre da semana inteira',                          'Dia e Semana'],
@@ -9622,9 +9665,9 @@ window.addEventListener('keydown', function(e){
     ['stats',    'Totais e contagens',         'Ex.: "4h57 na tarefa", "início real", "30min ✓", "1 tarefa · 1 concluída", "8 blocos concluídos".', 'App inteiro']
   ];
   var LAYOUT_MODES = {
-    simples:     {name:'Simples',     on:['check'],
+    simples:     {name:'Simples',     on:['check','mvstrip'],
       desc:'Só a grade de horários e os afazeres, sem dicas nem números extras. O mais limpo possível.'},
-    equilibrado: {name:'Equilibrado', on:['night','habits','check','tray','faixas','noteday','progress','why','tips','stats'],
+    equilibrado: {name:'Equilibrado', on:['night','habits','check','tray','mvstrip','faixas','noteday','progress','why','tips','stats'],
       desc:'O essencial do dia: sono, hábitos, afazeres, Planner, anotações do dia e seu progresso, com dicas.'},
     completo:    {name:'Completo',    on:LAYOUT_PANELS.map(function(p){ return p[0]; }),
       desc:'Tudo à vista: distribuição do dia, tarefas soltas, resumo e orçamento da semana.'}
@@ -13891,6 +13934,251 @@ window.addEventListener('keydown', function(e){
     if(touch) hold=setTimeout(function(){ if(!started){ startDrag(); } }, 350);
   }
 
+  /* ===== v171: Mini-metas para encaixar =====
+     Pedido do Gabriel (23/11): ver as mini-metas DENTRO do Dia, da Semana e do Planejamento › Afazeres, e
+     enxergar onde cada uma cabe — não só programar pelo Metas às cegas. Uma faixa de chips acima da grade:
+     arrastar para um horário cria o bloco; arrastar para um dia dos afazeres (ou uma célula do Planejamento)
+     cria o afazer; tocar num chip acende os espaços livres que comportam a duração dela (os que caem na faixa
+     reservada da categoria dela ficam mais fortes). Nada é criado sozinho: só onde ele soltar ou tocar. */
+  var MVFIT = null;   // {id, ctx:'grid'|'plan'} enquanto o "onde cabe" está aceso
+  var mvJustDragged = false;
+  function mvCatFor(areaName){
+    var an=normText(areaName||''), id=null; if(!an) return null;
+    (state.categories||[]).some(function(c){ var cn=normText(c.name||''); if(!c.archived && cn && (cn===an || cn.indexOf(an)>=0 || an.indexOf(cn)>=0)){ id=c.id; return true; } return false; });
+    return id;
+  }
+  function mvPickList(){
+    var S=null; try{ S=window.__metas && window.__metas.data && window.__metas.data(); }catch(_){ }
+    if(!S || !S.tasks || !S.tasks.length) return [];
+    var G={}, A={}, pl=state.mvPlanned||{};
+    (S.goals||[]).forEach(function(g){ G[g.id]=g; }); (S.areas||[]).forEach(function(a){ A[a.id]=a; });
+    var out=[];
+    S.tasks.forEach(function(t){
+      var g=G[t.goalId]; if(t.noAgenda || !g || g.done) return;   // hábito sem horário e meta concluída não entram
+      var a=A[g.areaId]||{}, p=mvParseQuando(t.quando, t.title), dur=Math.max(15, minutesOf(p.end)-minutesOf(p.start));
+      out.push({id:t.id, title:t.title, xp:+t.xp||0, quando:t.quando||'', minima:t.minima||'', goal:g.title||'', area:a.name||'', color:a.color||'var(--accent)',
+        cat:mvCatFor(a.name), dur:dur, plan:pl[t.id]||null});
+    });
+    var ord=function(x){ return !x.plan ? '0' : x.plan.done ? '3' : x.plan.date ? '2'+x.plan.date+(x.plan.start||'') : '1'; };
+    return out.sort(function(a,b){ var oa=ord(a), ob=ord(b); return oa<ob?-1:oa>ob?1:0; });
+  }
+  function mvPickById(id){ return mvPickList().filter(function(x){ return x.id===id; })[0]||null; }
+  function mvPickNote(x){
+    var w=''; try{ w=window.__metas.whyOf(x.id)||''; }catch(_){ }
+    return 'Mini-meta do Metas'+(x.goal?' · '+x.goal:'')+(x.minima?'\nVersão mínima (dia ruim): '+x.minima:'')+(w?'\nPor quê: '+w:'');
+  }
+  function mvPickTag(x){
+    var p=x.plan; if(!p) return 'sem dia';
+    if(p.done) return '✓ feita';
+    if(!p.date) return '☑ nos afazeres';
+    return weekdayLabel(p.date).toLowerCase().slice(0,3)+' '+dayNum(p.date)+(p.start?' · '+p.start:'');
+  }
+  function mvDurTxt(m){ return m%60 ? (m>=60?Math.floor(m/60)+'h'+pad2(m%60):m+'min') : (m/60)+'h'; }
+  function mvStripHtml(ctx){
+    var list=mvPickList(); if(!list.length) return '';
+    var sem=list.filter(function(x){ return !x.plan; }).length, fit=MVFIT && MVFIT.ctx===ctx ? mvPickById(MVFIT.id) : null;
+    var chips=list.map(function(x){
+      var on=fit && fit.id===x.id;
+      return '<div class="mvs-chip'+(x.plan?' is-planned':'')+(x.plan&&x.plan.done?' is-done':'')+(on?' is-on':'')+'" data-mvs="'+x.id+'" role="button" tabindex="0" style="--c:'+x.color+'" ' +
+        'title="'+escapeHtml(x.title+' · '+mvDurTxt(x.dur)+(x.goal?' · meta: '+x.goal:'')+' — arraste para '+(ctx==='plan'?'um dia':'um horário')+' ou toque para ver onde cabe')+'">' +
+        '<span class="mvs-dot"></span><span class="mvs-t">'+escapeHtml(x.title)+'</span><span class="mvs-tag">'+escapeHtml(mvPickTag(x))+'</span></div>';
+    }).join('');
+    var banner = fit ? '<div class="mvs-fit-bar"><span>Onde cabe <b>'+escapeHtml(fit.title)+'</b> ('+mvDurTxt(fit.dur)+'): '+(ctx==='plan'?'toque em <b>+ aqui</b> num dia':'toque num espaço verde')+'.'+(ctx==='grid' && fit.cat && catById(fit.cat) && layOn('faixas') ? ' <span class="mvs-star">★ = no horário reservado para '+escapeHtml(catById(fit.cat).name)+'</span>' : '')+'</span>' +
+        '<span class="mvs-fit-acts">'+(ctx==='grid'?'<button class="btn small" data-mvs-afz="1">Pôr nos afazeres</button>':'')+'<button class="btn small ghost" data-mvs-x="1">Fechar</button></span></div>' : '';
+    return '<div class="panel mv-strip'+sideFoldCls('mvstrip')+'" id="mv-strip" data-fold="mvstrip" data-ctx="'+ctx+'"><div class="panel-head">' +
+        sideFoldHead('mvstrip','Mini-metas', sem?sem+' sem dia':'') +
+        '<span class="mvs-hint lay-tip">'+(ctx==='plan'?'Arraste para um dia':'Arraste para um horário')+' · toque para ver onde cabe</span>' +
+        '<button class="btn small ghost" id="mvs-open" title="Abrir as mini-metas no Metas">Abrir</button></div>' +
+      '<div class="panel-body">'+banner+'<div class="mvs-row">'+chips+'</div></div></div>';
+  }
+  function mvStripWire(root){
+    var st=(root||document).querySelector('#mv-strip'); if(!st) return;
+    var ctx=st.getAttribute('data-ctx');
+    var op=st.querySelector('#mvs-open'); if(op) op.onclick=function(){ MVFIT=null; setView('mv-missoes'); };
+    var x=st.querySelector('[data-mvs-x]'); if(x) x.onclick=function(){ mvFitSet(null); };
+    var af=st.querySelector('[data-mvs-afz]'); if(af) af.onclick=function(){ var it=mvPickById(MVFIT&&MVFIT.id); mvFitSet(null); if(it) mvPickAfazer(it); };
+    Array.prototype.forEach.call(st.querySelectorAll('[data-mvs]'), function(ch){
+      ch.addEventListener('pointerdown', function(e){ if(e.button>0) return; mvPickDrag(e, ch, ctx); });
+      ch.addEventListener('click', function(){ if(mvJustDragged) return; var id=ch.getAttribute('data-mvs'); mvFitSet(MVFIT && MVFIT.id===id ? null : {id:id, ctx:ctx}); });
+      ch.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); ch.click(); } });
+      ch.addEventListener('touchmove', function(e){ if(dragActive) e.preventDefault(); }, {passive:false});   // depois do toque longo, o dedo arrasta o chip em vez de rolar a faixa
+    });
+  }
+  /* Atualiza só a faixa (sem redesenhar a tela) quando o Metas ou o "já programada" mudam. */
+  /* O Metas carrega depois da Agenda: na 1ª vez que os dados chegam, a faixa ainda não existe na tela. */
+  function mvStripAposMetas(){
+    if(document.getElementById('mv-strip')) mvStripRefresh();
+    else if(/^(day|week|plan)$/.test(state.view) && !dragActive && mvPickList().length) render();
+  }
+  function mvStripRefresh(){
+    var st=document.getElementById('mv-strip'); if(!st || dragActive) return;
+    var ctx=st.getAttribute('data-ctx'), h=mvStripHtml(ctx);
+    if(!h){ st.remove(); return; }
+    var tmp=document.createElement('div'); tmp.innerHTML=h; var nu=tmp.firstChild;
+    var row=st.querySelector('.mvs-row'), sl=row?row.scrollLeft:0;
+    st.parentNode.replaceChild(nu, st); var r2=nu.querySelector('.mvs-row'); if(r2) r2.scrollLeft=sl;
+    mvStripWire(nu.parentNode);
+  }
+  function mvFitSet(v){
+    MVFIT=v; mvStripRefresh(); mvFitPaint();
+    if(v){ var it=mvPickById(v.id), z=document.querySelector('.mv-fit.best')||document.querySelector('.mv-fit, .pl-fit-ok');
+      if(z && v.ctx==='grid'){ var sc=document.getElementById('cal-scroll'); if(sc){ var zr=z.getBoundingClientRect(), sr=sc.getBoundingClientRect(); if(zr.top<sr.top || zr.bottom>sr.bottom) sc.scrollTop+=zr.top-sr.top-60; } }
+      if(it && !z) showToast('Não achei um espaço livre de '+mvDurTxt(it.dur)+' nesta '+(state.view==='day'?'data':'semana')+'.', '🔍'); }
+  }
+
+  /* Espaços livres de um dia que comportam `dur` minutos. Ocupado = blocos com horário (não pulados), afazeres
+     com hora (20 min) e o descanso. Fora do descanso, considera o dia acordado 07:00–23:00. Hoje começa de agora;
+     dias que já passaram não têm espaço. `best` = trecho dentro da faixa reservada da categoria da mini-meta. */
+  function mvLivres(d, dur, cat){
+    var today=todayStr(); if(d<today) return [];
+    var a=7*60, b=23*60;
+    if(restBlocksDay(d)){ var rs=restMin(state.rest.start,1350), re=restMin(state.rest.end,360); if(rs>re){ a=Math.max(a, re); b=Math.min(b, rs); } }
+    if(d===today){ var n=new Date(); a=Math.max(a, Math.ceil((n.getHours()*60+n.getMinutes())/15)*15); }
+    if(b-a<dur) return [];
+    var busy=[];
+    blocksForDate(d).forEach(function(x){
+      if(x.status==='skipped') return; var s,e;
+      if(x.status==='done' && x.actualStart && x.actualEnd){ var sd=new Date(x.actualStart), ed=new Date(x.actualEnd); s=sd.getHours()*60+sd.getMinutes(); e=ed.getHours()*60+ed.getMinutes(); }
+      else if(isActiveStatus(x.status) && x.actualStart){ var sd2=new Date(x.actualStart); s=sd2.getHours()*60+sd2.getMinutes(); e=Math.max(s+30, x.plannedEnd?minutesOf(x.plannedEnd):0); }
+      else if(!x.isLoose && x.plannedStart){ s=minutesOf(x.plannedStart); e=x.plannedEnd?minutesOf(x.plannedEnd):s+30; }
+      else return;
+      if(e<=s) e=1440; busy.push([s,e]);
+    });
+    checklistForDate(d).forEach(function(c){ if(c.timeLabel && !c.done){ var s=minutesOf(c.timeLabel); busy.push([s,s+20]); } });
+    busy.sort(function(p,q){ return p[0]-q[0]; });
+    var gaps=[], cur=a;
+    busy.forEach(function(r){ if(r[0]>cur) gaps.push([cur, Math.min(r[0], b)]); cur=Math.max(cur, r[1]); });
+    if(cur<b) gaps.push([cur, b]);
+    var fx=cat && layOn('faixas') ? faixasFor(d).filter(function(f){ return f.cat===cat; }) : [];
+    var out=[];
+    gaps.forEach(function(g){
+      if(g[1]-g[0]<dur) return;
+      out.push({s:g[0], e:g[1], best:false});
+      fx.forEach(function(f){ var s=Math.max(g[0], f.s), e=Math.min(g[1], f.e); if(e-s>=dur) out.push({s:s, e:e, best:true}); });
+    });
+    return out;
+  }
+  var MV_PER={m:[0,720], t:[720,1080], n:[1080,1440]};
+  function mvFitPaint(drag){
+    Array.prototype.forEach.call(document.querySelectorAll('.mv-fit, .pl-fit'), function(z){ z.remove(); });
+    Array.prototype.forEach.call(document.querySelectorAll('.pl-cell.pl-fit-ok, .pl-cell.pl-fit-no'), function(c){ c.classList.remove('pl-fit-ok','pl-fit-no'); });
+    var f=drag || MVFIT; if(!f) return;
+    var it=mvPickById(f.id); if(!it) return;
+    var clickable=!drag;
+    Array.prototype.forEach.call(document.querySelectorAll('.cal-col[data-date]'), function(col){
+      var d=col.getAttribute('data-date');
+      mvLivres(d, it.dur, it.cat).forEach(function(g){
+        var y0=yForMinute(g.s-DAY_START*60), y1=yForMinute(g.e-DAY_START*60); if(y1-y0<6) return;
+        var z=document.createElement(clickable?'button':'div'); z.className='mv-fit'+(g.best?' best':'')+(clickable?' tap':'');
+        z.style.top=y0+'px'; z.style.height=(y1-y0)+'px'; z.style.setProperty('--c', it.color);
+        if(clickable){ z.type='button'; z.title='Encaixar '+it.title+' às '+timeOfMinutes(g.s);
+          z.innerHTML='<span class="mvf-lab">'+(g.best?'★ ':'')+'livre '+timeOfMinutes(g.s)+'–'+(g.e>=1440?'24:00':timeOfMinutes(g.e))+'</span>';
+          z.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+          z.addEventListener('click', function(e){ e.stopPropagation(); mvFitSet(null); mvPickBloco(it, d, g.s, true); });
+        }
+        col.appendChild(z);
+      });
+    });
+    var mon=startOfWeek(state.selectedDate);
+    Array.prototype.forEach.call(document.querySelectorAll('.pl-cell[data-pd]'), function(cell){
+      var d=cell.getAttribute('data-pd'), p=cell.getAttribute('data-pp');
+      if(d==='nd' || !p || !MV_PER[p]) return;
+      var lv=mvLivres(d, it.dur, it.cat).filter(function(g){ return !g.best; }), r=MV_PER[p], tot=0, best=0;
+      lv.forEach(function(g){ var s=Math.max(g.s, r[0]), e=Math.min(g.e, r[1]); if(e>s){ tot+=e-s; best=Math.max(best, e-s); } });
+      var ok=best>=it.dur; cell.classList.add(ok?'pl-fit-ok':'pl-fit-no');
+      if(!ok) return;
+      var z=document.createElement(clickable?'button':'div'); z.className='pl-fit'; if(clickable) z.type='button';
+      z.innerHTML=(clickable?'<b>+ aqui</b> ':'')+mvDurTxt(tot)+' livre'+(tot===1?'':'s');
+      if(clickable) z.onclick=function(e){ e.stopPropagation(); mvFitSet(null); mvPickAfazer(it, d, p, mon, true); };
+      cell.appendChild(z);
+    });
+  }
+  /* Criar de verdade. Bloco: no computador, soltar na grade já cria (como o Planner); no celular — ou vindo do
+     toque no espaço verde — abre o "Novo bloco" preenchido para conferir, porque toque é fácil de sair sem querer. */
+  function mvPickBloco(it, d, startMin, conferir){
+    var s=startMin, e=Math.min(s+it.dur, 24*60-1);
+    if(conferir){
+      openModal({type:'create', date:d, start:timeOfMinutes(s), end:timeOfMinutes(e), fromGrid:true, carryTitle:it.title, carryNote:mvPickNote(it), carryCat:it.cat, mvTask:it.id, mvQuando:it.quando});
+      return;
+    }
+    var id=addBlock({categoryId:it.cat||(state.categories[0]&&state.categories[0].id)||null, title:it.title, note:mvPickNote(it), date:d, plannedStart:timeOfMinutes(s), plannedEnd:timeOfMinutes(e), mvTask:it.id});
+    if(id) showToast('Mini-meta na agenda: '+weekdayLabel(d).toLowerCase()+', '+timeOfMinutes(s)+'–'+timeOfMinutes(e)+'.', '🎯');
+  }
+  function mvPickAfazer(it, d, period, monday, direto){
+    if(!direto){ openModal({type:'createCheck', preDate:d||null, preTime:'', prePeriod:period||null, carryTitle:it.title, carryNote:mvPickNote(it), carryCat:it.cat, mvTask:it.id, mvQuando:it.quando}); return; }
+    addCheck({title:it.title, note:mvPickNote(it), date:d||null, period:(d&&period)||null, week:d?startOfWeek(d):(monday||startOfWeek(state.selectedDate)), mvTask:it.id});
+    showToast('Mini-meta nos afazeres: '+(d ? weekdayLabel(d).toLowerCase()+', '+dayNum(d)+(period&&periodDef(period)?' · '+periodDef(period).label:'') : 'sem dia')+'.', '🎯');
+  }
+
+  function mvPickDrag(e, chip, ctx){
+    var sx=e.clientX, sy=e.clientY, lx=sx, ly=sy, started=false, touch=e.pointerType==='touch', hold=null;
+    var ghost=null, range=null, col=null, cell=null, raf=null, it=mvPickById(chip.getAttribute('data-mvs'));
+    var scroller=document.getElementById('cal-scroll');
+    if(!it) return;
+    if(!touch) e.preventDefault();   // mouse: sem isso o arraste seleciona o texto da página
+    function startDrag(){
+      started=true; dragActive=true; listDragging=true; document.body.classList.add('list-dragging');
+      ghost=document.createElement('div'); ghost.className='pn-tray-ghost mv-ghost'; ghost.style.setProperty('--c', it.color);
+      ghost.innerHTML='🎯 '+escapeHtml(it.title)+'<span class="ldg-time"></span>';
+      document.body.appendChild(ghost); document.body.style.cursor='grabbing'; chip.classList.add('dragging');
+      mvFitPaint({id:it.id}); if(window.uiHaptic) uiHaptic(8);
+      place();
+    }
+    function minAt(c, y){ var r=c.getBoundingClientRect(); return snapMin(Math.max(0, Math.min(minuteForY(y-r.top), 24*60-it.dur)), 15); }
+    function setCell(c){ if(c===cell) return; if(cell) cell.classList.remove('drop-target'); cell=c; if(cell) cell.classList.add('drop-target'); }
+    function place(){
+      ghost.style.left=(lx+12)+'px'; ghost.style.top=(ly+10)+'px';
+      /* Coluna pela geometria (não pelo elementFromPoint): um aviso (toast) por cima da grade não pode roubar o alvo. */
+      var el=document.elementFromPoint(lx, ly), c=null, lab='solte num '+(ctx==='plan'?'dia':'horário'), sr=scroller&&scroller.getBoundingClientRect();
+      if(sr && lx>=sr.left && lx<=sr.right && ly>=sr.top && ly<=sr.bottom) Array.prototype.some.call(document.querySelectorAll('.cal-col[data-date]'), function(k){ var r=k.getBoundingClientRect(); if(lx>=r.left && lx<r.right){ c=k; return true; } return false; });
+      if(c!==col){ if(range){ range.remove(); range=null; } col=c; }
+      setCell(el && !col ? el.closest('.pl-cell, .check-group[data-cg-key]') : null);
+      if(col){
+        var m=minAt(col, ly);
+        if(!range){ range=document.createElement('div'); range.className='ghost-range'; col.appendChild(range); }
+        range.style.top=yForMinute(m)+'px'; range.style.height=(yForMinute(m+it.dur)-yForMinute(m))+'px';
+        lab=weekdayLabel(col.getAttribute('data-date')).toLowerCase().slice(0,3)+' '+timeOfMinutes(m)+'–'+timeOfMinutes(m+it.dur);
+        range.setAttribute('data-label', lab);
+      } else if(cell){
+        var pd=cell.getAttribute('data-pd') || cell.getAttribute('data-cg-key'), pp=cell.getAttribute('data-pp');
+        lab = pd==='nd' ? '→ afazer sem dia' : '→ afazer '+weekdayLabel(pd).toLowerCase()+' '+dayNum(pd)+(pp&&periodDef(pp)?' · '+periodDef(pp).label:'');
+      }
+      ghost.querySelector('.ldg-time').textContent=' '+lab;
+    }
+    function scrollLoop(){
+      raf=null; if(!started || !scroller) return;
+      var r=scroller.getBoundingClientRect(), moved=false;
+      if(ly<r.top+40 && ly>r.top-60){ scroller.scrollTop-=12; moved=true; } else if(ly>r.bottom-40 && ly<r.bottom+60){ scroller.scrollTop+=12; moved=true; }
+      if(moved){ place(); raf=requestAnimationFrame(scrollLoop); }
+    }
+    function move(ev){
+      lx=ev.clientX; ly=ev.clientY;
+      if(!started){ var dist=Math.abs(lx-sx)+Math.abs(ly-sy); if(touch){ if(dist>10) end(); return; } if(dist<5) return; startDrag(); }
+      ev.preventDefault(); place(); if(!raf) raf=requestAnimationFrame(scrollLoop);
+    }
+    function up(){
+      var acao=null;
+      if(started && col){ var m=minAt(col, ly), d=col.getAttribute('data-date'); acao=function(){ mvPickBloco(it, d, m, touch); }; }
+      else if(started && cell){
+        var pd=cell.getAttribute('data-pd') || cell.getAttribute('data-cg-key'), pp=cell.getAttribute('data-pp')||null;
+        acao=function(){ mvPickAfazer(it, pd==='nd'?null:pd, pp, startOfWeek(state.selectedDate), true); };
+      }
+      if(started){ mvJustDragged=true; setTimeout(function(){ mvJustDragged=false; }, 80); }
+      end(); if(acao) acao();
+    }
+    function end(){
+      clearTimeout(hold);
+      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', end);
+      if(ghost) ghost.remove(); if(range) range.remove(); setCell(null); chip.classList.remove('dragging'); document.body.style.cursor=''; document.body.classList.remove('list-dragging');
+      var was=started; started=false; dragActive=false; listDragging=false;
+      if(was){ MVFIT=null; render(); }
+    }
+    window.addEventListener('pointermove', move, {passive:false});
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', end);
+    if(touch) hold=setTimeout(function(){ if(!started){ startDrag(); } }, 350);
+  }
+
   function pnHoursTabHtml(t){
     var h=pnTaskHours(t.id), list=pnTaskSessions(t.id).slice().sort(function(a,b){ return (b.date+(b.plannedStart||'')).localeCompare(a.date+(a.plannedStart||'')); });
     var rows=list.map(function(b){
@@ -14513,7 +14801,7 @@ window.addEventListener('keydown', function(e){
   var MV_API={
     nav:function(t){ setView('mv-'+t); },
     cats:function(){ return (state.categories||[]).filter(function(c){ return !c.archived; }).map(function(c){ return {id:c.id, name:c.name, color:c.color}; }); },
-    onData:function(){ whyRebuild(); },
+    onData:function(){ whyRebuild(); mvStripAposMetas(); },
     pageWhys:function(){ return state.whyPageItems||[]; },
     schedule:function(t){ mvScheduleTask(t); },
     planned:function(){ return state.mvPlanned||{}; }
@@ -14541,6 +14829,7 @@ window.addEventListener('keydown', function(e){
       if(!cur || (cur.done && !it.done) || (cur.done===it.done && k<ck)) map[it.task]=it; });
     var j=JSON.stringify(map); if(j===state._mvPlanJ) return; state._mvPlanJ=j; state.mvPlanned=map;
     if(window.__metas && window.__metas.refresh) window.__metas.refresh();
+    mvStripRefresh();
   }
   function mvWatchPlanned(){
     if(mvPlanUnsub || !state.db) return;
@@ -15289,11 +15578,13 @@ window.addEventListener('keydown', function(e){
     var isWeek = dates.length>1;
     var trayHtml = pnTrayHtml(state.selectedDate);
     var monday = startOfWeek(state.selectedDate);
+    if(MVFIT && MVFIT.ctx!=='grid') MVFIT=null;
     app.innerHTML =
       navHtml(isWeek) +
       (isWeek ? '' : wakeStripHtml(state.selectedDate)) +
       (isWeek ? '' : habitsStripHtml(state.selectedDate)) +
       (isWeek ? weekStatCardsHtml() : dayPieHtml(state.selectedDate)) +
+      mvStripHtml('grid') +
       '<div class="main-grid'+(isWeek?' week':'')+'"'+(isWeek?'':' style="--side-w:'+lsNum('agenda-day-side-w', 300)+'px;"')+'>' +
         (isWeek ? '' : '<div class="split-handle split-v day-split" title="Arraste pra dar mais espaço à grade ou aos afazeres · duplo clique volta ao padrão"><span></span></div>') +
         '<div>' +
@@ -15325,6 +15616,7 @@ window.addEventListener('keydown', function(e){
     document.getElementById('btn-add-check').onclick=function(){ openModal({type:'createCheck'}); };
     renderDayLabels(dates);
     renderCalBody(dates);
+    mvStripWire(app); if(MVFIT) mvFitPaint();
 
     if(!listDragging){ renderLoose(); renderChecklist(); }
     renderNotesOnly();
@@ -17122,6 +17414,7 @@ window.addEventListener('keydown', function(e){
     if(state.planMode==='horas'){ renderHoras(app); return; }
 
     if(listDragging && document.querySelector('.plan-grid')) return;
+    if(MVFIT && MVFIT.ctx!=='plan') MVFIT=null;
     var monday = startOfWeek(state.selectedDate);
     var dates = weekDates(monday);
     var today = todayStr();
@@ -17157,6 +17450,7 @@ window.addEventListener('keydown', function(e){
           '<div class="daytop-sub mono">SEMANA '+isoWeekNum(monday)+' · '+isoWeekYear(monday)+'</div></div>' +
         '<div class="daytop-nav">'+planCarryBtnHtml(monday)+'<button class="btn primary pl-newcheck" id="pl-newcheck" title="Novo afazer no &quot;sem dia&quot; desta semana — depois é só arrastar pro dia e período">+ Novo afazer</button><button class="navbtn" id="pl-prev">‹</button><button class="today-btn" id="pl-today">Esta semana</button><button class="navbtn" id="pl-next">›</button></div>' +
       '</div>' +
+      mvStripHtml('plan') +
       '<div class="panel"><div class="plan-scroll"><div class="plan-grid" style="--pl-nd-w:'+lsNum('agenda-plan-nd-w', 132)+'px;">'+cells+'</div></div>' +
         '<div class="plan-legend lay-tip"><span>afazer = borda tracejada, arrasta pela alça ⋮⋮</span><span>bloco = barra colorida da categoria</span><span>📍 compromisso</span><span>clique numa célula vazia pra criar um afazer ali</span></div>' +
       '</div>';
@@ -17166,6 +17460,7 @@ window.addEventListener('keydown', function(e){
       widthAt:function(x, r){ return x - r.left; }});
 
     wirePlanMode(app); planModePill(app);
+    mvStripWire(app); if(MVFIT) mvFitPaint();
     document.getElementById('pl-newcheck').onclick=function(){ openModal({type:'createCheck', preDate:null, prePeriod:null}); };
     var plCarry=document.getElementById('pl-carry');
     if(plCarry) plCarry.onclick=function(){ openModal({type:'carry', monday:monday}); };
