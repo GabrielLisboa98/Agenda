@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261123-1230';</script>
+<script>window.AGENDA_BUILD = '20261123-1310';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261123-1230"></script>
+<script src="cloud.js?v=20261123-1310"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -756,6 +756,9 @@
   .pl-card .pl-ck.bad{color:var(--critical);}
   .pl-card .drag-grip{font-size:0.6111rem;}
   .pl-card.pl-src{opacity:.35;}
+  /* v172: recolhida (fx-h) a legenda vira texto corrido — com os <span> em flex, a 2ª linha vazava cortada embaixo */
+  .plan-legend.fx-h > span{display:inline;} .plan-legend.fx-h > span + span::before{content:' · ';}
+  .plan-legend.fx-h:not(.open){padding-top:0!important; padding-bottom:0!important; margin:8px 0;}   /* o recorte é na borda de dentro do padding: com padding, a 2ª linha aparecia pela metade */
   .plan-legend{display:flex; flex-wrap:wrap; gap:4px 14px; padding:8px 12px; font-family:var(--mono);font-variant-numeric:tabular-nums; font-size:0.6667rem; color:var(--ink-faint);}
   @media (max-width:860px){
     .plan-grid{grid-template-columns:134px 50px repeat(7, 134px);}
@@ -927,6 +930,15 @@
   .fq-center .fq-line{justify-content:center; margin-top:22px; gap:10px 12px;}
   .fq-center .fq-more-tog{margin:14px auto 0; display:flex;}
   .fq-center .fq-line .fq-more-tog{flex-basis:100%; justify-content:center; margin:6px 0 0;}
+  /* v172: categoria + tempos numa faixa da mesma largura do Começar; categoria mais estreita, tempos do mesmo tamanho */
+  .fq-center .fq-line{display:grid; grid-template-columns:minmax(140px,190px) 1fr; gap:10px; align-items:stretch;}
+  .fq-center .fq-line .fq-cat{min-width:0; flex:none;}
+  .fq-center .fq-line .fq-cat select{width:100%; height:44px;}
+  .fq-center .fq-line .fq-mins{display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:8px;}
+  .fq-center .fq-mins .btn{width:100%; min-width:0; height:44px; padding:0 4px; justify-content:center; white-space:nowrap;}
+  .fq-center .fq-line .fq-more-tog{grid-column:1 / -1;}
+  .fq-mins .fq-custom span{font-variant-numeric:tabular-nums;}
+  @media (max-width:600px){ .fq-center .fq-line{grid-template-columns:1fr;} .fq-center .fq-line .fq-mins{grid-template-columns:repeat(4, minmax(0,1fr));} }
   .fq-center .fq-more{text-align:left;}
   @media (max-width:600px){
     .fq-center{min-height:0; padding:4px 0;}
@@ -3152,6 +3164,7 @@ html[data-mode="dark"] .ck-round.red, html[data-mode="dark"] .ck-round.orange, h
 .tw-pop .ck-wpad{height:60px;}
 .tw-pop .tw-one .ck-wheel{width:110px;}
 .tw-acts{display:flex; justify-content:flex-end; gap:6px; margin-top:6px;}
+.tw-dur-h{text-align:center; font-weight:700; font-size:.8889rem; margin:2px 0 2px;}
 @keyframes tw-in{from{opacity:0; transform:translateY(-4px) scale(.98);}}
 input[type="time"].tw-on, select.tw-on{outline:2px solid var(--accent); outline-offset:1px;}
 @media (hover:hover) and (pointer:fine){
@@ -15067,6 +15080,27 @@ window.addEventListener('keydown', function(e){
     var orig=TW.el; var rm=function(){ field.classList.remove('tw-on'); };
     var obs=setInterval(function(){ if(!orig.isConnected){ clearInterval(obs); rm(); } else if(!field.isConnected){ clearInterval(obs); twClose(false); } }, 250);
   }
+  /* v172: rodinhas de DURAÇÃO (horas + minutos) num balão preso a um botão — usado no ⏱ do Foco. Reaproveita o
+     balão das horas (TW): clicar fora ou Enter confirma, Esc cancela. */
+  function durWheelOpen(anchor, mins, onOk){
+    twClose(false);
+    var hh=Math.min(23, Math.floor(mins/60)), mm=mins%60;
+    var pop=document.createElement('div'); pop.className='tw-pop tw-dur'; pop.setAttribute('role','dialog'); pop.setAttribute('aria-label','Escolher o tempo');
+    pop.innerHTML='<div class="tw-dur-h">Quanto tempo?</div><div class="ck-wheels">'+ckWheelHtml('tw-h',24,hh,'h')+ckWheelHtml('tw-m',60,mm,'min')+'</div>' +
+      '<div class="tw-acts"><button type="button" class="btn ghost small" data-tw="x">Cancelar</button><button type="button" class="btn primary small" data-tw="ok">OK</button></div>';
+    document.body.appendChild(pop);
+    Array.prototype.forEach.call(pop.querySelectorAll('.ck-wheel'), ckWheelInit);
+    pop.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+    pop.addEventListener('click', function(e){ e.stopPropagation(); });
+    pop.querySelector('[data-tw="ok"]').onclick=function(){ twClose(true); };
+    pop.querySelector('[data-tw="x"]').onclick=function(){ twClose(false); };
+    var r=anchor.getBoundingClientRect(), W=pop.offsetWidth, H=pop.offsetHeight;
+    pop.style.left=Math.max(8, Math.min(r.left + r.width/2 - W/2, innerWidth-W-8))+'px';
+    pop.style.top=(r.bottom+H+8>innerHeight ? Math.max(8, r.top-H-6) : r.bottom+6)+'px';
+    TW={el:pop, field:anchor, apply:function(){ onOk(ckWheelVal(pop.querySelector('#tw-h'))*60+ckWheelVal(pop.querySelector('#tw-m'))); }};
+    var w0=pop.querySelector('#tw-m'); try{ w0.focus({preventScroll:true}); }catch(_){}
+    var obs=setInterval(function(){ if(!pop.isConnected) clearInterval(obs); else if(!anchor.isConnected){ clearInterval(obs); twClose(false); } }, 250);
+  }
   function twTarget(t){
     if(!t || !t.closest) return null;
     var el=t.closest('input[type="time"], select[data-wheel]');
@@ -18588,12 +18622,13 @@ window.addEventListener('keydown', function(e){
         '</div>' +
         '<div class="fq-line">' +
           '<div class="fq-cat"><select data-cats="1" id="focus-new-cat">'+catOptionsHtml(c0)+'</select></div>' +
-          '<div class="duration-picker fq-mins">' + ['',15,30,45,60,90].map(function(m){ return '<button class="btn small'+(m===''?' on':'')+'" data-fq-min="'+m+'">'+(m===''?'livre':m+'min')+'</button>'; }).join('') + '</div>' +
+          '<div class="duration-picker fq-mins">' + ['',15,30,45,60,90].map(function(m){ return '<button class="btn small'+(m===''?' on':'')+'" data-fq-min="'+m+'">'+(m===''?'livre':m+'min')+'</button>'; }).join('') +
+            '<button class="btn small fq-custom" id="fq-custom" type="button" title="Escolher outro tempo girando as rodinhas">⏱ <span>outro</span></button></div>' +
+          '<input type="hidden" id="focus-new-min" value="">' +
           '<button class="fq-more-tog" id="fq-more-tog" type="button" aria-expanded="'+more+'">'+(more?'Menos detalhes':'Mais detalhes')+'<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>' +
         '</div>' +
         '<div class="fq-more">' +
           pnFocusTaskFieldHtml(c0) +
-          '<div class="field"><label>Meta de tempo exata (min)</label><input type="number" id="focus-new-min" min="1" step="1" placeholder="ex: 60"></div>' +
           '<div class="field" id="focus-project-wrap" style="'+(isWorkCategory(c0)?'':'display:none;')+'"><label>Projeto / trabalho (opcional)</label><input type="text" id="focus-new-project" list="focus-project-suggestions" placeholder="ex: Obra Residencial">'+projectDatalistHtmlFor('focus-project-suggestions', c0)+'</div>' +
           '<div class="field"><label>Anotação (opcional)</label><textarea id="focus-new-note" placeholder="O que fazer exatamente…"></textarea></div>' +
           '<div class="field"><label>Tags (opcional)</label><input type="text" id="focus-new-tags" placeholder="ex: obra JB, urgente"></div>' +
@@ -18689,12 +18724,22 @@ window.addEventListener('keydown', function(e){
       Array.prototype.forEach.call(app.querySelectorAll('[data-fq-min]'), function(btn){
         btn.onclick=function(){
           if(minInput) minInput.value=btn.getAttribute('data-fq-min');
-          Array.prototype.forEach.call(app.querySelectorAll('[data-fq-min]'), function(x){ x.classList.toggle('on', x===btn); x.setAttribute('aria-pressed', x===btn?'true':'false'); });
+          fqSyncMins();
         };
       });
 
-      function fqSyncMins(){ if(!minInput) return; Array.prototype.forEach.call(app.querySelectorAll('[data-fq-min]'), function(x){ x.classList.toggle('on', x.getAttribute('data-fq-min')===String(minInput.value||'')); x.setAttribute('aria-pressed', x.classList.contains('on')?'true':'false'); }); }
-      if(minInput){ minInput.addEventListener('input', fqSyncMins); fqSyncMins(); }
+      /* v172: o tempo exato saiu do "Mais detalhes" (campo de número, feio e escondido) e virou o chip ⏱ ao lado dos
+         atalhos: abre as mesmas rodinhas do Relógio (horas e minutos). Escolhido um tempo fora dos atalhos, o chip
+         mostra o valor ("⏱ 10min") e fica marcado. */
+      var fqCustom=document.getElementById('fq-custom');
+      function fqSyncMins(){ if(!minInput) return; var v=String(minInput.value||''), hit=false;
+        Array.prototype.forEach.call(app.querySelectorAll('[data-fq-min]'), function(x){ var on=x.getAttribute('data-fq-min')===v; if(on) hit=true; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on?'true':'false'); });
+        if(fqCustom){ var n=+v; fqCustom.classList.toggle('on', !hit && n>0); fqCustom.setAttribute('aria-pressed', (!hit && n>0)?'true':'false');
+          fqCustom.querySelector('span').textContent = (!hit && n>0) ? fmtDuration(n) : 'outro'; } }
+      if(minInput){ fqSyncMins(); }
+      if(fqCustom) fqCustom.onclick=function(e){ e.stopPropagation();
+        var cur=parseInt(minInput&&minInput.value,10); if(!(cur>0)) cur=20;
+        durWheelOpen(fqCustom, cur, function(n){ if(minInput){ minInput.value = n>0 ? String(n) : ''; } fqSyncMins(); }); };
       var moreTog=document.getElementById('fq-more-tog');
       if(moreTog) moreTog.onclick=function(){
         var f=document.getElementById('focus-form'), open=!f.classList.contains('more');
