@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261123-1530';</script>
+<script>window.AGENDA_BUILD = '20261124-1650';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261123-1530"></script>
+<script src="cloud.js?v=20261124-1650"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -2108,6 +2108,53 @@ div.pl-fit{cursor:default;}
 @media (min-width:861px){ .mvs-row{flex-wrap:wrap; overflow:visible;} .mvs-chip{max-width:340px;} }
 @media (max-width:600px){ .mv-strip .mvs-hint{display:none;} .mv-strip .panel-head .side-fold{flex:1; min-width:0;} }
 @media (prefers-reduced-motion:reduce){ .mv-fit{animation:none;} .mvs-chip{transition:none;} }
+/* v174: tarefas rápidas — cor de energia por tempo (--ec) */
+.est-l1{--ec:#F2D76B;} .est-l2{--ec:#F09A3E;} .est-l3{--ec:#E0533F;} .est-l4{--ec:#9B5BD4;} .est-l5{--ec:#5E3A9E;}
+.est-pill[class*="est-l"]{background:color-mix(in srgb, var(--ec) 30%, transparent) !important; border-color:color-mix(in srgb, var(--ec) 75%, transparent); color:var(--ink);}
+.pl-card > .est-pill[class*="est-l"]{background:color-mix(in srgb, var(--ec) 45%, var(--bg,#fff)) !important;}
+.est-opt[class*="est-l"]{border-color:color-mix(in srgb, var(--ec) 70%, transparent);}
+.est-opt[class*="est-l"].on, .est-opt[class*="est-l"]:hover{background:color-mix(in srgb, var(--ec) 35%, transparent);}
+.est-seg button[class*="est-l"]{box-shadow:inset 0 -3px 0 color-mix(in srgb, var(--ec) 80%, transparent);}
+.est-seg button[class*="est-l"].active{background:color-mix(in srgb, var(--ec) 40%, transparent); color:var(--ink);}
+.qk-row.in-combo[class*="est-l"]{border-left-color:var(--ec);}
+.qk-row[class*="est-l"] .checkbox:hover{border-color:var(--ec);}
+.est-pill{display:inline-flex; align-items:center; gap:2px; vertical-align:1px; margin-left:4px; padding:1px 7px; border-radius:999px; border:1px solid var(--line,rgba(127,127,127,.25)); background:transparent; color:var(--ink-soft); font:inherit; font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:.6667rem; font-weight:700; line-height:1.5; cursor:pointer; white-space:nowrap;}
+.est-pill.quick{background:color-mix(in srgb, #E0A43A 22%, transparent); border-color:color-mix(in srgb, #E0A43A 60%, transparent); color:var(--ink);}
+.est-pill.add{opacity:0; padding:1px 5px; transition:opacity .15s;}
+.check-item:hover .est-pill.add, .pl-card:hover .est-pill.add, .est-pill.add:focus-visible{opacity:.6;}
+@media (hover:none){ .est-pill.add{opacity:.45;} }
+/* no quadro o título é cortado em 2 linhas: a marca vira um selo no canto, para nunca sumir */
+.pl-card.check{position:relative;}
+.pl-card > .est-pill{position:absolute; top:-7px; right:-3px; margin:0; font-size:.5556rem; padding:0 5px; z-index:1; box-shadow:0 1px 3px rgba(0,0,0,.12);}
+.pl-card > .est-pill.quick{background:color-mix(in srgb, #E0A43A 45%, var(--bg,#fff));}
+.pl-card > .est-pill:not(.quick):not(.add){background:var(--bg,#fff);}
+.est-menu-h{font-size:.7222rem; font-weight:700; color:var(--ink-soft); padding:4px 8px 6px;}
+.est-menu-row{display:flex; gap:5px; flex-wrap:wrap; padding:0 6px 6px; max-width:230px;}
+.est-opt{padding:5px 10px; border-radius:999px; border:1px solid var(--line,rgba(127,127,127,.3)); background:transparent; color:var(--ink); font:inherit; font-size:.7222rem; font-weight:700; cursor:pointer;}
+.est-opt.quick{border-color:color-mix(in srgb, #E0A43A 55%, transparent);}
+.est-opt.on, .est-opt:hover{background:color-mix(in srgb, #E0A43A 28%, transparent);}
+.est-seg button.quick.active{background:color-mix(in srgb, #E0A43A 35%, transparent);}
+.qk-open{white-space:nowrap;}
+.panel-head .qk-open{margin-left:auto;}
+.qk .qk-lim{display:flex; align-items:center; gap:10px; margin-bottom:12px; font-weight:700;}
+.qk .qk-lim .seg{flex:1;}
+.qk-sum{padding:10px 12px; border-radius:12px; background:color-mix(in srgb, #E0A43A 16%, transparent); margin-bottom:8px; font-size:.8889rem;}
+.qk-empty{padding:14px 4px; color:var(--ink-soft);}
+.qk-row{display:flex; align-items:center; gap:10px; padding:9px 6px; border-bottom:1px solid var(--line,rgba(127,127,127,.15)); transition:opacity .3s;}
+.qk-row.in-combo .qk-t{font-weight:700;}
+.qk-row.in-combo{border-left:3px solid #E0A43A; padding-left:9px;}
+.qk-row.feito{opacity:.4;}
+.qk-row .checkbox{flex:none; width:22px; height:22px; border-radius:50%; border:2px solid var(--ink-faint); display:flex; align-items:center; justify-content:center; font-size:.7778rem; cursor:pointer; transition:background .15s, border-color .15s;}
+.qk-row .checkbox:hover{border-color:#E0A43A;}
+.qk-row .checkbox.done{background:#E0A43A; border-color:#E0A43A; color:#fff;}
+.qk-main{flex:1; min-width:0;}
+.qk-t{overflow-wrap:anywhere;}
+.qk-sub{font-size:.6667rem; color:var(--ink-faint);}
+.qk-chips{display:flex; gap:4px; flex:none;}
+.qk-chips .est-opt{padding:3px 8px; font-size:.6667rem;}
+.qk-sem{margin-top:14px;}
+.qk-sem summary{cursor:pointer; font-size:.7778rem; font-weight:700; color:var(--ink-soft); padding:6px 0;}
+@media (max-width:600px){ .qk-row{flex-wrap:wrap;} .qk-chips{width:100%; padding-left:32px;} }
 .ghost-range[data-label]::after{content:attr(data-label); position:absolute; left:6px; top:3px; font-family:var(--mono);font-variant-numeric:tabular-nums; font-size:0.6111rem; font-weight:700; color:var(--ink);}
 .grid-time-tip{position:fixed; z-index:300; pointer-events:none; display:flex; align-items:center; gap:10px; padding:8px 14px; border-radius:14px; background:var(--glass-bg-strong); backdrop-filter:blur(20px) saturate(1.6); -webkit-backdrop-filter:blur(20px) saturate(1.6); border:1px solid var(--border); color:var(--ink); font-size:0.8333rem; box-shadow:var(--shadow-lg); white-space:nowrap; font-variant-numeric:tabular-nums;}
 .grid-time-tip b{font-weight:800; color:var(--accent);}
@@ -11770,7 +11817,7 @@ window.addEventListener('keydown', function(e){
 
     week:v.week||null, carriedTo:v.carriedTo||null, carriedFrom:v.carriedFrom||null, carryCount:v.carryCount||1,
 
-    period:v.period||null}; }
+    period:v.period||null, est:(+v.est>0 ? +v.est : null)}; }
 
   function checkWeekOf(c){ return c.date ? startOfWeek(c.date) : (c.week || startOfWeek(todayStr())); }
 
@@ -11992,6 +12039,85 @@ window.addEventListener('keydown', function(e){
     return true;
   }
   function deleteBlock(id){ if(state.db) state.db.collection('blocks').doc(id).delete(); }
+  /* ===== v174: Tarefas rápidas =====
+     Ideia do Gabriel (24/11): com TDAH a tarefa chata parece enorme ("estender a roupa" fica na cabeça o dia todo),
+     mas leva 5 minutos. Cada afazer pode ter um tempo estimado; as de até 20 min ganham a marca ⚡ e o botão
+     "Tenho X min" mostra só o que cabe nesse tempo, já somando um combo que dá para fazer de uma vez. */
+  var EST_OPTS=[5,10,15,20,30,60], EST_RAPIDA=20;
+  /* Energia por tempo (pedido do Gabriel): 5 min = amarelo bem clarinho, 10 = laranja, 15–20 = vermelho,
+     30 = roxo, 1h = roxo escuro. A cor diz "quanto de mim isso pede" antes de ler o número. */
+  function estNivel(n){ n=+n||0; return n<=0?0 : n<=5?1 : n<=10?2 : n<=20?3 : n<=30?4 : 5; }
+  function estTxt(n){ return n>=60 ? (n%60 ? Math.floor(n/60)+'h'+pad2(n%60) : (n/60)+'h') : n+' min'; }
+  function estPillHtml(it){
+    if(!it || it.done || (!it.done && it.carriedTo)) return '';
+    var n=+it.est||0;
+    if(!n) return ' <button type="button" class="est-pill add" data-act="est" title="Quanto tempo leva? Toque para marcar">⏱</button>';
+    return ' <button type="button" class="est-pill est-l'+estNivel(n)+(n<=EST_RAPIDA?' quick':'')+'" data-act="est" title="'+(n<=EST_RAPIDA?'Tarefa rápida — ':'')+'leva uns '+estTxt(n)+' (toque para mudar)">'+(n<=EST_RAPIDA?'⚡ ':'⏱ ')+estTxt(n)+'</button>';
+  }
+  function estMenu(item, anchor, after){
+    var r=anchor.getBoundingClientRect();
+    var html='<div class="est-menu-h">Quanto tempo leva?</div><div class="est-menu-row">'+EST_OPTS.map(function(n){ return '<button type="button" class="est-opt est-l'+estNivel(n)+((+item.est||0)===n?' on':'')+'" data-est="'+n+'">'+estTxt(n)+'</button>'; }).join('')+'</div>' +
+      ((+item.est||0) ? '<button type="button" class="nt-mi" data-est="0"><span class="nt-mi-i">✕</span><span class="nt-mi-t">Tirar o tempo</span></button>' : '');
+    gridMenuOpen(r.left, r.bottom+4, html, function(m){
+      Array.prototype.forEach.call(m.querySelectorAll('[data-est]'), function(b){ b.onclick=function(e){ e.stopPropagation(); gridMenuClose();
+        var n=+b.getAttribute('data-est'); updateCheck(item.id, {est:n||null}); item.est=n||null;
+        if(n && n<=EST_RAPIDA) showToast('Marcada como rápida: '+estTxt(n)+'.', '⚡');
+        if(after) after(); }; });
+    });
+  }
+  function estWire(root, item, after){
+    var b=root.querySelector('[data-act=est]'); if(!b) return;
+    b.addEventListener('pointerdown', function(e){ e.stopPropagation(); });
+    b.onclick=function(e){ e.stopPropagation(); e.preventDefault(); estMenu(item, b, after); };
+  }
+  function estPendentes(){
+    var seen={}, out=[];
+    state.weekChecklist.concat(state.backlogChecklist).forEach(function(c){
+      if(seen[c.id] || c.done || c.carriedTo) return; seen[c.id]=1;
+      if(c.date && c.date<todayStr()) return;   // dia que já passou: é para replanejar, não para "fazer agora"
+      out.push(c);
+    });
+    return out;
+  }
+  function buildQuickModal(modal, m){
+    var lim=m.lim||15, todas=estPendentes();
+    var cabem=todas.filter(function(c){ return +c.est>0 && +c.est<=lim; }).sort(function(a,b){ return (+a.est)-(+b.est) || ((a.date||'9')<(b.date||'9')?-1:1); });
+    var semTempo=todas.filter(function(c){ return !(+c.est>0); });
+    // combo: as menores primeiro até encher o tempo — "estas 3 dão 15 min"
+    /* Combo que mais aproveita o tempo (soma máxima ≤ limite; no empate, mais tarefas). Mochila pequena:
+       limite ≤ 60 min, então a tabela é minúscula. */
+    var best=[[]]; for(var t=1;t<=lim;t++) best[t]=null;
+    cabem.forEach(function(c){ var e=+c.est; for(var t=lim;t>=e;t--){ var prev=best[t-e]; if(prev && (!best[t] || prev.length+1>best[t].length)) best[t]=prev.concat([c.id]); } });
+    var soma=0, combo={}; for(var t2=lim;t2>0;t2--){ if(best[t2]){ soma=t2; best[t2].forEach(function(id){ combo[id]=1; }); break; } }
+    var nCombo=Object.keys(combo).length;
+    function row(c, comChips){
+      var quando=c.date ? (c.date===todayStr()?'hoje':weekdayLabel(c.date).toLowerCase().slice(0,3)+' '+dayNum(c.date)) : 'sem dia';
+      return '<div class="qk-row est-l'+estNivel(c.est)+(combo[c.id]?' in-combo':'')+'" data-qk="'+c.id+'">' +
+        '<div class="checkbox" data-act="toggle" title="Feito!"></div>' +
+        '<div class="qk-main"><div class="qk-t">'+escapeHtml(c.title)+'</div><div class="qk-sub">'+quando+'</div></div>' +
+        (comChips ? '<div class="qk-chips">'+[5,10,15,20,30].map(function(n){ return '<button type="button" class="est-opt est-l'+estNivel(n)+'" data-set="'+n+'">'+n+'</button>'; }).join('')+'</div>'
+                  : '<span class="est-pill est-l'+estNivel(c.est)+(+c.est<=EST_RAPIDA?' quick':'')+'">'+(+c.est<=EST_RAPIDA?'⚡ ':'⏱ ')+estTxt(+c.est)+'</span>') +
+      '</div>';
+    }
+    modal.innerHTML='<div class="modal-head"><h3>⚡ Tarefas rápidas</h3><button class="iconbtn" data-act="close">✕</button></div><div class="modal-body qk">' +
+      '<div class="qk-lim"><span>Tenho</span><div class="seg" id="qk-seg">'+[5,10,15,30,60].map(function(n){ return '<button type="button" data-lim="'+n+'" class="'+(n===lim?'active':'')+'">'+estTxt(n)+'</button>'; }).join('')+'</div></div>' +
+      (cabem.length
+        ? '<div class="qk-sum">'+(nCombo>1 ? '<b>Estas '+nCombo+' dão '+estTxt(soma)+'.</b> Bora?' : '<b>'+escapeHtml(cabem[0].title)+'</b> leva só '+estTxt(+cabem[0].est)+'. Bora?')+'</div>' + cabem.map(function(c){ return row(c,false); }).join('')
+        : '<div class="qk-empty">Nada marcado que caiba em '+estTxt(lim)+'.'+(semTempo.length?' Marque o tempo de algumas aqui embaixo — leva um toque.':'')+'</div>') +
+      (semTempo.length ? '<details class="qk-sem"'+(cabem.length?'':' open')+'><summary>Sem tempo marcado ('+semTempo.length+') — quanto leva cada uma?</summary>'+semTempo.map(function(c){ return row(c,true); }).join('')+'</details>' : '') +
+    '</div>';
+    modal.querySelector('[data-act=close]').onclick=closeModal;
+    Array.prototype.forEach.call(modal.querySelectorAll('[data-lim]'), function(b){ b.onclick=function(){ m.lim=+b.getAttribute('data-lim'); try{ localStorage.setItem('agenda-qk-lim', m.lim); }catch(_){ } buildQuickModal(modal, m); }; });
+    function achar(id){ return todas.filter(function(x){ return x.id===id; })[0]; }
+    function depois(){ var aberto=modal.querySelector('.qk-sem'); m.semAberto=aberto&&aberto.open; setTimeout(function(){ if(state.modal===m && modal.isConnected){ buildQuickModal(modal, m); var d=modal.querySelector('.qk-sem'); if(d && m.semAberto) d.open=true; } }, 450); }
+    Array.prototype.forEach.call(modal.querySelectorAll('.qk-row'), function(r){
+      var c=achar(r.getAttribute('data-qk')); if(!c) return;
+      r.querySelector('[data-act=toggle]').onclick=function(){ var cb=this; cb.classList.add('done'); cb.textContent='✓'; r.classList.add('feito'); toggleCheck(c); depois(); };
+      Array.prototype.forEach.call(r.querySelectorAll('[data-set]'), function(b){ b.onclick=function(){ var n=+b.getAttribute('data-set'); updateCheck(c.id, {est:n}); c.est=n; b.classList.add('on'); depois(); }; });
+    });
+  }
+  function openQuick(){ var l=15; try{ l=+localStorage.getItem('agenda-qk-lim')||15; }catch(_){ } openModal({type:'quick', lim:l}); }
+
   function toggleCheck(item){
     if(!state.db) return;
     if(!item.done) celebrateCheck(item);
@@ -15631,7 +15757,7 @@ window.addEventListener('keydown', function(e){
         '</div>' +
 
         '<div class="side">' +
-          '<div class="panel'+sideFoldCls('check')+'" data-fold="check"><div class="panel-head">'+sideFoldHead('check','Afazeres da semana')+'<button class="iconbtn" id="btn-add-check">+</button></div><div class="panel-body" id="check-list"></div></div>' +
+          '<div class="panel'+sideFoldCls('check')+'" data-fold="check"><div class="panel-head">'+sideFoldHead('check','Afazeres da semana')+'<button class="iconbtn qk-open" id="btn-quick" title="Tarefas rápidas — tenho alguns minutos, o que cabe?" aria-label="Tarefas rápidas">⚡</button><button class="iconbtn" id="btn-add-check">+</button></div><div class="panel-body" id="check-list"></div></div>' +
           '<div class="panel'+sideFoldCls('loose')+'" data-fold="loose"><div class="panel-head">'+sideFoldHead('loose','Tarefas soltas')+'<button class="iconbtn" id="btn-add-loose">+</button></div><div class="panel-body" id="loose-list"></div></div>' +
           trayHtml +
         '</div>' +
@@ -15648,6 +15774,7 @@ window.addEventListener('keydown', function(e){
     document.getElementById('btn-add-loose').onclick=function(){ openModal({type:'createLoose'}); };
     pnWireTray(app);
     document.getElementById('btn-add-check').onclick=function(){ openModal({type:'createCheck'}); };
+    var bq=document.getElementById('btn-quick'); if(bq) bq.onclick=function(e){ e.stopPropagation(); openQuick(); };
     renderDayLabels(dates);
     renderCalBody(dates);
     mvStripWire(app); if(MVFIT) mvFitPaint();
@@ -16979,7 +17106,7 @@ window.addEventListener('keydown', function(e){
       var base = Date.now();
       chosen.forEach(function(c, i){
 
-        addCheck({title:c.title, note:c.note||'', date:null, week:m.monday, timeLabel:null, period:c.period||null, tags:(c.tags||[]).slice(), carriedFrom:c.id, carryCount:(c.carryCount||1)+1, order:base+i});
+        addCheck({title:c.title, note:c.note||'', date:null, week:m.monday, timeLabel:null, period:c.period||null, tags:(c.tags||[]).slice(), est:c.est||null, carriedFrom:c.id, carryCount:(c.carryCount||1)+1, order:base+i});
         updateCheck(c.id, {carriedTo:m.monday});
       });
 
@@ -17060,7 +17187,7 @@ window.addEventListener('keydown', function(e){
             (it.done || carried ? '' : '<span class="drag-grip" title="Arraste pra cima/baixo pra mudar a prioridade, pra outro dia da lista pra mudar o dia, ou até a grade pra marcar um horário">⋮⋮</span>') +
             '<div class="checkbox '+(it.done?'done':'')+'" data-act="toggle">'+(it.done?'✓':'')+'</div>' +
 
-            '<div class="ci-main"><div class="title" data-act="edit">'+escapeHtml(it.title)+(it.note?' <span class="ci-note" title="'+escapeHtml(it.note)+'"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 4h10M3 8h10M3 12h6"/></svg></span>':'')+(it.timeLabel?' <span class="mono" style="color:var(--ink-faint);font-size:.72rem;">'+it.timeLabel+'</span>':'')+tagsInlineHtml(it.tags)+'</div>'+
+            '<div class="ci-main"><div class="title" data-act="edit">'+escapeHtml(it.title)+(it.note?' <span class="ci-note" title="'+escapeHtml(it.note)+'"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 4h10M3 8h10M3 12h6"/></svg></span>':'')+(it.timeLabel?' <span class="mono" style="color:var(--ink-faint);font-size:.72rem;">'+it.timeLabel+'</span>':'')+estPillHtml(it)+tagsInlineHtml(it.tags)+'</div>'+
               (carried ? '<div class="plan-row"><span class="carry-pill out">→ passada pra semana de '+dayNum(it.carriedTo)+'/'+pad2(Number(it.carriedTo.split('-')[1]))+'</span></div>' : '') +
               (!carried && it.carryCount>1 ? '<div class="plan-row"><span class="carry-pill in" title="Quantas semanas essa tarefa já atravessou">↻ '+it.carryCount+'ª semana</span></div>' : '') +
               (function(){ if(carried) return ''; var pi=checkPlanInfo(it); if(!pi) return '';
@@ -17092,7 +17219,8 @@ window.addEventListener('keydown', function(e){
       var item = state.weekChecklist.filter(function(c){return c.id===id;})[0] || state.backlogChecklist.filter(function(c){return c.id===id;})[0];
       if(!item) return;
       row.querySelector('[data-act=toggle]').onclick=function(){ toggleCheck(item); };
-      row.querySelector('[data-act=edit]').onclick=function(e){ openModal({type:'editCheck', item:item}); };
+      row.querySelector('[data-act=edit]').onclick=function(e){ if(e.target.closest('[data-act=est]')) return; openModal({type:'editCheck', item:item}); };
+      estWire(row, item);
       var replanEl=row.querySelector('[data-act=replan]');
       if(replanEl) replanEl.onclick=function(e){ e.stopPropagation(); unlinkCheck(item); };
       var planEl=row.querySelector('[data-act=plan]');
@@ -17397,7 +17525,7 @@ window.addEventListener('keydown', function(e){
       return '<div class="pl-card check'+(it.done?' done':'')+'" data-pk="check" data-pi="'+it.id+'">' +
         (canDrag ? '<span class="drag-grip" title="Arraste pra outro dia ou outro período">⋮⋮</span>' : '') +
         '<span class="pl-box'+(it.done?' on':'')+'" data-act="toggle" title="Marcar como feito">'+(it.done?'✓':'')+'</span>' +
-        '<span class="pl-title" data-act="open" title="'+escapeHtml(it.title+(it.note?'\n\n'+it.note:''))+'">'+escapeHtml(it.title)+(it.note?' <span class="ci-note" title="'+escapeHtml(it.note)+'"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 4h10M3 8h10M3 12h6"/></svg></span>':'')+(it.timeLabel?' <span class="mono pl-t">'+it.timeLabel+'</span>':'')+'</span>' +
+        '<span class="pl-title" data-act="open" title="'+escapeHtml(it.title+(it.note?'\n\n'+it.note:''))+'">'+escapeHtml(it.title)+(it.note?' <span class="ci-note" title="'+escapeHtml(it.note)+'"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 4h10M3 8h10M3 12h6"/></svg></span>':'')+(it.timeLabel?' <span class="mono pl-t">'+it.timeLabel+'</span>':'')+'</span>' + estPillHtml(it) +
       '</div>';
     }
     var appt=isAppt(it);
@@ -17482,7 +17610,7 @@ window.addEventListener('keydown', function(e){
       '<div class="daytop">' +
         '<div class="daytop-left"><div class="daytop-label">Planejamento · semana de '+longDateLabel(monday)+'</div>' +
           '<div class="daytop-sub mono">SEMANA '+isoWeekNum(monday)+' · '+isoWeekYear(monday)+'</div></div>' +
-        '<div class="daytop-nav">'+planCarryBtnHtml(monday)+'<button class="btn primary pl-newcheck" id="pl-newcheck" title="Novo afazer no &quot;sem dia&quot; desta semana — depois é só arrastar pro dia e período">+ Novo afazer</button><button class="navbtn" id="pl-prev">‹</button><button class="today-btn" id="pl-today">Esta semana</button><button class="navbtn" id="pl-next">›</button></div>' +
+        '<div class="daytop-nav">'+planCarryBtnHtml(monday)+'<button class="btn qk-open" id="pl-quick" title="Tenho alguns minutos: mostrar as tarefas rápidas que cabem">⚡ Rápidas</button><button class="btn primary pl-newcheck" id="pl-newcheck" title="Novo afazer no &quot;sem dia&quot; desta semana — depois é só arrastar pro dia e período">+ Novo afazer</button><button class="navbtn" id="pl-prev">‹</button><button class="today-btn" id="pl-today">Esta semana</button><button class="navbtn" id="pl-next">›</button></div>' +
       '</div>' +
       mvStripHtml('plan') +
       '<div class="panel"><div class="plan-scroll"><div class="plan-grid" style="--pl-nd-w:'+lsNum('agenda-plan-nd-w', 132)+'px;">'+cells+'</div></div>' +
@@ -17495,6 +17623,7 @@ window.addEventListener('keydown', function(e){
 
     wirePlanMode(app); planModePill(app);
     mvStripWire(app); if(MVFIT) mvFitPaint();
+    var plq=document.getElementById('pl-quick'); if(plq) plq.onclick=openQuick;
     document.getElementById('pl-newcheck').onclick=function(){ openModal({type:'createCheck', preDate:null, prePeriod:null}); };
     var plCarry=document.getElementById('pl-carry');
     if(plCarry) plCarry.onclick=function(){ openModal({type:'carry', monday:monday}); };
@@ -17527,6 +17656,7 @@ window.addEventListener('keydown', function(e){
         if(box) box.onclick=function(e){ e.stopPropagation(); toggleCheck(c); };
         var ttl=card.querySelector('[data-act=open]');
         if(ttl) ttl.onclick=function(e){ e.stopPropagation(); openModal({type:'editCheck', item:c}); };
+        estWire(card, c);
         var grip=card.querySelector('.drag-grip');
         if(grip) wirePlanDrag(grip, {id:c.id, title:c.title, card:card});
         card.addEventListener('contextmenu', function(e){ e.preventDefault(); e.stopPropagation(); planCheckMenu(c, e.clientX, e.clientY); });
@@ -17561,7 +17691,7 @@ window.addEventListener('keydown', function(e){
     var mon=startOfWeek(state.selectedDate), where={date:date||null, period:period||(date===it.date ? it.period||null : null)};
     if(!date) where.week=mon;
     if(cut){ updateCheck(it.id, where); GRID_CLIP=null; }
-    else addCheck(Object.assign({title:it.title, note:it.note||'', timeLabel:date===it.date?it.timeLabel||null:null, tags:(it.tags||[]).slice()}, where));
+    else addCheck(Object.assign({title:it.title, note:it.note||'', timeLabel:date===it.date?it.timeLabel||null:null, tags:(it.tags||[]).slice(), est:it.est||null}, where));
     showToast((cut?'Movido para ':(src?'Duplicado em ':'Colado em '))+(date ? weekdayLabel(date).toLowerCase()+', '+dayNum(date) : '"Sem dia"')+'.', '✓');
     render();
   }
@@ -20324,6 +20454,7 @@ window.addEventListener('keydown', function(e){
     else if(m.type==='exportCsv') buildExportCsvModal(modal, m);
     else if(m.type==='night') buildNightModal(modal, m.date);
     else if(m.type==='carry') buildCarryModal(modal, m);
+    else if(m.type==='quick') buildQuickModal(modal, m);
   }
 
   function buildNightModal(modal, dstr){
@@ -21116,6 +21247,7 @@ window.addEventListener('keydown', function(e){
           '<button type="button" data-p="">—</button>' +
           PERIODS.map(function(p){ return '<button type="button" data-p="'+p.k+'">'+p.icon+' '+p.label+'</button>'; }).join('') +
         '</div><div class="mono" id="c-period-hint" style="margin-top:4px; font-size:.66rem; color:var(--ink-faint);"></div></div>' +
+        '<div class="field"><label>Quanto tempo leva? (opcional)</label><div class="seg est-seg" id="c-est">'+[0].concat(EST_OPTS).map(function(n){ var cur=+(isEdit?existing.est:m.est)||0; return '<button type="button" data-e="'+n+'" class="est-l'+estNivel(n)+(n===cur?' active':'')+'">'+(n?(n<=EST_RAPIDA?'⚡':'')+estTxt(n):'—')+'</button>'; }).join('')+'</div></div>' +
         '<div class="field"><label>Tags (opcional, separadas por vírgula)</label><input id="c-tags" type="text" placeholder="ex: obra JB, urgente" value="'+(isEdit?escapeHtml((existing.tags||[]).join(', ')):'')+'"></div>' +
         '<div class="modal-actions">' +
           (isEdit? '<button class="btn ghost" data-act="delete" style="color:var(--critical); margin-right:auto;">Excluir</button>' : '') +
@@ -21153,6 +21285,8 @@ window.addEventListener('keydown', function(e){
     });
     document.getElementById('c-time').oninput = paintPeriod;
     paintPeriod();
+    var estVal=+(isEdit?existing.est:m.est)||0;
+    Array.prototype.forEach.call(modal.querySelectorAll('#c-est [data-e]'), function(b){ b.onclick=function(){ estVal=+b.getAttribute('data-e'); Array.prototype.forEach.call(modal.querySelectorAll('#c-est [data-e]'), function(x){ x.classList.toggle('active', x===b); }); }; });
     modal.querySelector('[data-act=save]').onclick=function(){
       var title=document.getElementById('c-title').value.replace(/\s*\n\s*/g,' ').trim(); if(!title) return;
       var note=document.getElementById('c-note').value.trim();
@@ -21163,8 +21297,8 @@ window.addEventListener('keydown', function(e){
       var weekVal = dateVal ? startOfWeek(dateVal) : (isEdit && !existing.date && existing.week ? existing.week : startOfWeek(state.selectedDate));
 
       var perVal = (curPeriod && curPeriod===periodOfTime(time)) ? null : (curPeriod||null);
-      if(isEdit) updateCheck(existing.id, {title:title, note:note, date:dateVal, timeLabel:time, tags:tags, week:weekVal, period:perVal});
-      else addCheck(Object.assign({title:title, note:note, date:dateVal, timeLabel:time, tags:tags, week:weekVal, period:perVal}, m.mvTask ? {mvTask:m.mvTask} : {}, m.pnLink ? {pnLink:m.pnLink} : {}));
+      if(isEdit) updateCheck(existing.id, {title:title, note:note, date:dateVal, timeLabel:time, tags:tags, week:weekVal, period:perVal, est:estVal||null});
+      else addCheck(Object.assign({title:title, note:note, date:dateVal, timeLabel:time, tags:tags, week:weekVal, period:perVal, est:estVal||null}, m.mvTask ? {mvTask:m.mvTask} : {}, m.pnLink ? {pnLink:m.pnLink} : {}));
       closeModal();
       if(!isEdit && m.pnLink) setTimeout(function(){ showToast('Item do Planner nos afazeres'+(dateVal?': '+longDateLabel(dateVal):'')+'.', '📋'); }, 50);
       if(!isEdit && m.mvTask) setTimeout(function(){ showToast('Mini-meta nos afazeres'+(dateVal?': '+longDateLabel(dateVal):'')+'.', '🎯'); }, 50);
