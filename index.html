@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261125-1400';</script>
+<script>window.AGENDA_BUILD = '20261125-1430';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261125-1400"></script>
+<script src="cloud.js?v=20261125-1430"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -2118,6 +2118,26 @@ div.pl-fit{cursor:default;}
 .de-hint{font-size:.7222rem; color:var(--ink-faint); margin:2px 0 10px;}
 .dl-event[data-rid]{cursor:pointer;}
 .dl-event[data-rid]:hover{text-decoration:underline;}
+/* v176: ficou para trás — laranja-avermelhado quente, com um pontinho que pulsa devagar */
+:root{--atr:#E8653A;}
+.pl-card.atrasado, .check-item.atrasado{position:relative; border:1.5px solid color-mix(in srgb, var(--atr) 75%, transparent) !important; background:linear-gradient(135deg, color-mix(in srgb, var(--atr) 16%, transparent), color-mix(in srgb, var(--atr) 5%, transparent)) !important; border-radius:10px;}
+.check-item.atrasado{padding-top:20px;}
+.pl-card.atrasado{padding-top:18px;}
+.atr-selo{position:absolute; top:3px; left:8px; right:6px; overflow:hidden; text-overflow:ellipsis; display:inline-flex; align-items:center; gap:5px; font-size:.5556rem; font-weight:800; letter-spacing:.02em; text-transform:uppercase; color:var(--atr); white-space:nowrap; pointer-events:none;}
+.atr-selo i, .pd-atr i, .atr-faixa-t i{width:6px; height:6px; border-radius:50%; background:var(--atr); flex:none; box-shadow:0 0 0 0 color-mix(in srgb, var(--atr) 60%, transparent); animation:atr-pulse 2.2s ease-out infinite;}
+@keyframes atr-pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb, var(--atr) 55%, transparent);} 70%{box-shadow:0 0 0 6px transparent;} 100%{box-shadow:0 0 0 0 transparent;}}
+.pd-atr{display:inline-flex; align-items:center; gap:4px; margin-top:3px; padding:1px 7px; border-radius:999px; font-size:.5556rem; font-weight:800; color:#fff; background:var(--atr);}
+.pd-atr i{background:#fff;}
+.atr-faixa{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:0 0 12px; padding:10px 14px; border-radius:16px; border:1.5px solid color-mix(in srgb, var(--atr) 60%, transparent); background:linear-gradient(90deg, color-mix(in srgb, var(--atr) 18%, transparent), color-mix(in srgb, var(--atr) 6%, transparent));}
+.atr-faixa-t{display:inline-flex; align-items:center; gap:8px; color:var(--atr); font-size:.8333rem;}
+.atr-faixa-t i{width:8px; height:8px;}
+.atr-chips{display:flex; gap:6px; flex-wrap:wrap; flex:1; min-width:0;}
+.atr-chip{border:1px solid color-mix(in srgb, var(--atr) 45%, transparent); background:var(--surface,rgba(255,255,255,.5)); color:var(--ink); border-radius:999px; padding:3px 10px; font:inherit; font-size:.7222rem; font-weight:600; cursor:pointer; max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.atr-chip em{font-style:normal; color:var(--atr); font-weight:800; margin-left:3px;}
+.atr-chip:hover{background:color-mix(in srgb, var(--atr) 18%, transparent);}
+.atr-flash{animation:atr-flash 1.4s ease;}
+@keyframes atr-flash{0%,100%{box-shadow:none;} 25%,60%{box-shadow:0 0 0 4px color-mix(in srgb, var(--atr) 55%, transparent);}}
+@media (prefers-reduced-motion:reduce){ .atr-selo i, .pd-atr i, .atr-faixa-t i, .atr-flash{animation:none;} }
 .est-l1{--ec:#F2D76B;} .est-l2{--ec:#F09A3E;} .est-l3{--ec:#E0533F;} .est-l4{--ec:#9B5BD4;} .est-l5{--ec:#5E3A9E;}
 .est-pill[class*="est-l"]{background:color-mix(in srgb, var(--ec) 30%, transparent) !important; border-color:color-mix(in srgb, var(--ec) 75%, transparent); color:var(--ink);}
 .pl-card > .est-pill[class*="est-l"]{background:color-mix(in srgb, var(--ec) 45%, var(--bg,#fff)) !important;}
@@ -17269,7 +17289,8 @@ window.addEventListener('keydown', function(e){
     function itemHtml(it){
           var piRow = checkPlanInfo(it);
           var carried = !it.done && !!it.carriedTo;
-          return '<div class="check-item '+(it.done?'done':'')+(carried?' carried':'')+(!carried&&piRow?(piRow.missed?' missed':' planned'):'')+'" data-id="'+it.id+'">' +
+          var atrC=atrasado('check', it);
+          return '<div class="check-item '+(it.done?'done':'')+(carried?' carried':'')+(atrC?' atrasado':'')+(!carried&&piRow?(piRow.missed?' missed':' planned'):'')+'" data-id="'+it.id+'">' + (atrC?atrasoSelo('check', it):'') +
             (it.done || carried ? '' : '<span class="drag-grip" title="Arraste pra cima/baixo pra mudar a prioridade, pra outro dia da lista pra mudar o dia, ou até a grade pra marcar um horário">⋮⋮</span>') +
             '<div class="checkbox '+(it.done?'done':'')+'" data-act="toggle">'+(it.done?'✓':'')+'</div>' +
 
@@ -17604,11 +17625,59 @@ window.addEventListener('keydown', function(e){
         return oa-ob;
       }).map(function(c){ return {kind:'check', it:c}; });
   }
+  /* ===== v176: o que ficou para trás =====
+     Pedido do Gabriel (25/11): no Planejamento, um afazer de ontem não feito ("imprimir documentos do postinho")
+     se perdia no meio do resto — e outras tarefas dependiam dele. Agora o que passou do dia (afazer) ou do horário
+     (bloco) sem ser feito ganha borda quente, selo "ficou para trás" com um pontinho pulsando, o dia mostra quantos
+     ficaram, e uma faixa no topo lista tudo com "trazer para hoje". Incomoda o suficiente, sem gritar. */
+  function atrasado(kind, it){
+    var hoje=todayStr();
+    if(kind==='check') return !it.done && !it.carriedTo && !!it.date && it.date<hoje;
+    if(!it || it.isLoose || !it.plannedStart || it.status!=='planned') return false;
+    if(it.date<hoje) return true;
+    var n=new Date(); return it.date===hoje && minutesOf(it.plannedEnd||it.plannedStart) <= n.getHours()*60+n.getMinutes();
+  }
+  function atrasoTxt(d){ var n=Math.round((new Date(todayStr()+'T12:00:00')-new Date(d+'T12:00:00'))/864e5); return n<=0?'hoje' : n===1?'ontem' : 'há '+n+' dias'; }
+  function atrasoSelo(kind, it, curto){ return '<span class="atr-selo" title="Era para '+(it.date===todayStr()?'hoje':weekdayLabel(it.date).toLowerCase()+' '+dayNum(it.date))+' e não foi feito"><i></i>'+(kind==='check'||it.date!==todayStr()?(curto?'':'para trás · ')+atrasoTxt(it.date):(curto?'passou':'passou da hora'))+'</span>'; }
+  function atrasadosSemana(monday){
+    var dates=weekDates(monday), out=[];
+    dates.forEach(function(d){
+      if(d>todayStr()) return;
+      checklistForDate(d).forEach(function(c){ if(atrasado('check',c)) out.push({kind:'check', it:c}); });
+      blocksForDate(d).forEach(function(b){ if(atrasado('block',b)) out.push({kind:'block', it:b}); });
+    });
+    // afazeres de semanas anteriores que nunca foram feitos nem trazidos também contam
+    state.weekChecklist.concat(state.backlogChecklist).forEach(function(c){ if(c.date && c.date<monday && atrasado('check',c) && !out.some(function(x){ return x.it.id===c.id; })) out.push({kind:'check', it:c}); });
+    return out;
+  }
+  function atrasoFaixaHtml(monday){
+    if(monday < startOfWeek(todayStr())) return '';
+    var lst=atrasadosSemana(monday); if(!lst.length) return '';
+    var nCk=lst.filter(function(x){ return x.kind==='check'; }).length;
+    return '<div class="atr-faixa" id="atr-faixa"><span class="atr-faixa-t"><i></i><b>'+lst.length+(lst.length===1?' coisa ficou':' coisas ficaram')+' para trás</b></span>' +
+      '<span class="atr-chips">'+lst.map(function(x){ var t=x.it.title||(catById(x.it.categoryId)||{}).name||'Bloco'; return '<button type="button" class="atr-chip" data-atr="'+x.kind+':'+x.it.id+'" title="Mostrar no quadro">'+(x.kind==='block'?'⏱ ':'')+escapeHtml(t)+' <em>'+(x.it.date===todayStr()?'hoje':weekdayLabel(x.it.date).toLowerCase().slice(0,3))+'</em></button>'; }).join('')+'</span>' +
+      (nCk ? '<button type="button" class="btn small" id="atr-hoje" title="Muda o dia dos afazeres atrasados para hoje">Trazer '+(nCk===1?'o afazer':'os '+nCk+' afazeres')+' para hoje</button>' : '') + '</div>';
+  }
+  function atrasoFaixaWire(app){
+    var f=app.querySelector('#atr-faixa'); if(!f) return;
+    Array.prototype.forEach.call(f.querySelectorAll('[data-atr]'), function(b){ b.onclick=function(){
+      var k=b.getAttribute('data-atr').split(':'), card=app.querySelector('.pl-card[data-pk="'+k[0]+'"][data-pi="'+k[1]+'"]');
+      if(!card){ var it=null; (state.weekChecklist.concat(state.backlogChecklist)).some(function(c){ if(c.id===k[1]){ it=c; return true; } return false; }); if(it){ setDate(it.date); } return; }
+      card.scrollIntoView({block:'center', behavior:'smooth'}); card.classList.remove('atr-flash'); void card.offsetWidth; card.classList.add('atr-flash');
+    }; });
+    var h=f.querySelector('#atr-hoje'); if(h) h.onclick=function(){
+      var hoje=todayStr(), n=0;
+      atrasadosSemana(startOfWeek(state.selectedDate)).forEach(function(x){ if(x.kind!=='check') return; updateCheck(x.it.id, {date:hoje, week:startOfWeek(hoje)}); n++; });
+      showToast(n+(n===1?' afazer veio':' afazeres vieram')+' para hoje. Um de cada vez.', '📥');
+    };
+  }
+
   function planCardHtml(kind, it){
     var cat=catById(it.categoryId);
     if(kind==='check'){
       var canDrag = !it.done && !it.carriedTo;
-      return '<div class="pl-card check'+(it.done?' done':'')+'" data-pk="check" data-pi="'+it.id+'">' +
+      var atr=atrasado('check', it);
+      return '<div class="pl-card check'+(it.done?' done':'')+(atr?' atrasado':'')+'" data-pk="check" data-pi="'+it.id+'">' + (atr?atrasoSelo('check', it, true):'') +
         (canDrag ? '<span class="drag-grip" title="Arraste pra outro dia ou outro período">⋮⋮</span>' : '') +
         '<span class="pl-box'+(it.done?' on':'')+'" data-act="toggle" title="Marcar como feito">'+(it.done?'✓':'')+'</span>' +
         '<span class="pl-title" data-act="open" title="'+escapeHtml(it.title+(it.note?'\n\n'+it.note:''))+'">'+escapeHtml(it.title)+(it.note?' <span class="ci-note" title="'+escapeHtml(it.note)+'"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 4h10M3 8h10M3 12h6"/></svg></span>':'')+(it.timeLabel?' <span class="mono pl-t">'+it.timeLabel+'</span>':'')+'</span>' + estPillHtml(it) +
@@ -17618,8 +17687,9 @@ window.addEventListener('keydown', function(e){
     var titulo = it.title || (cat?cat.name:(appt?'Compromisso':'Bloco'));
     var hora = it.isLoose ? '' : (it.plannedStart||'');
     var marca = it.status==='done' ? '<span class="pl-ck">✓</span>' : (it.status==='skipped' ? '<span class="pl-ck bad">'+xIcon()+'</span>' : (isActiveStatus(it.status) ? '<span class="pl-ck" style="color:var(--accent);">▶</span>' : ''));
-    return '<div class="pl-card block status-'+it.status+(appt?' appt':'')+'" data-pk="block" data-pi="'+it.id+'" style="--pl-c:'+(cat?cat.color:'#8A8F98')+';" data-act="open" title="'+escapeHtml((hora?hora+' · ':'')+titulo)+'">' +
-      '<span class="pl-title">'+(appt?'📍 ':'')+(hora?'<span class="mono pl-t">'+hora+'</span> ':'')+escapeHtml(titulo)+'</span>' + marca +
+    var atrB=atrasado('block', it);
+    return '<div class="pl-card block status-'+it.status+(appt?' appt':'')+(atrB?' atrasado':'')+'" data-pk="block" data-pi="'+it.id+'" style="--pl-c:'+(cat?cat.color:'#8A8F98')+';" data-act="open" title="'+escapeHtml((hora?hora+' · ':'')+titulo)+'">' +
+      (atrB?atrasoSelo('block', it, true):'') + '<span class="pl-title">'+(appt?'📍 ':'')+(hora?'<span class="mono pl-t">'+hora+'</span> ':'')+escapeHtml(titulo)+'</span>' + marca +
     '</div>';
   }
 
@@ -17676,7 +17746,7 @@ window.addEventListener('keydown', function(e){
       var hol=holidayFor(d);
       cells += '<button class="pl-dayhead'+(d===today?' is-today':'')+(hol?' is-holiday':'')+'" data-pday="'+d+'" style="grid-column:'+(i+3)+'; grid-row:1;" title="Abrir o dia '+dayNum(d)+'">' +
         '<span class="pd-dow">'+weekdayLabel(d)+'</span><span class="pd-num">'+dayNum(d)+'</span>' +
-        '<span class="pd-n lay-stat">'+planCountLabel(d)+'</span></button>';
+        '<span class="pd-n lay-stat">'+planCountLabel(d)+'</span>' + (function(){ var n=checklistForDate(d).filter(function(c){ return atrasado('check',c); }).length + blocksForDate(d).filter(function(b){ return atrasado('block',b); }).length; return n ? '<span class="pd-atr" title="'+n+' não feito'+(n>1?'s':'')+' neste dia"><i></i>'+n+' para trás</span>' : ''; })() + '</button>';
     });
     var ndItems = planNdItems(monday);
     cells += '<div class="pl-cell nd" data-pd="nd" data-pp="">' +
@@ -17698,7 +17768,7 @@ window.addEventListener('keydown', function(e){
           '<div class="daytop-sub mono">SEMANA '+isoWeekNum(monday)+' · '+isoWeekYear(monday)+'</div></div>' +
         '<div class="daytop-nav">'+planCarryBtnHtml(monday)+'<button class="btn qk-open" id="pl-quick" title="Tenho alguns minutos: mostrar as tarefas rápidas que cabem">⚡ Rápidas</button><button class="btn primary pl-newcheck" id="pl-newcheck" title="Novo afazer no &quot;sem dia&quot; desta semana — depois é só arrastar pro dia e período">+ Novo afazer</button><button class="navbtn" id="pl-prev">‹</button><button class="today-btn" id="pl-today">Esta semana</button><button class="navbtn" id="pl-next">›</button></div>' +
       '</div>' +
-      mvStripHtml('plan') +
+      atrasoFaixaHtml(monday) + mvStripHtml('plan') +
       '<div class="panel"><div class="plan-scroll"><div class="plan-grid" style="--pl-nd-w:'+lsNum('agenda-plan-nd-w', 132)+'px;">'+cells+'</div></div>' +
         '<div class="plan-legend lay-tip"><span>afazer = borda tracejada, arrasta pela alça ⋮⋮</span><span>bloco = barra colorida da categoria</span><span>📍 compromisso</span><span>clique numa célula vazia pra criar um afazer ali</span></div>' +
       '</div>';
@@ -17708,7 +17778,7 @@ window.addEventListener('keydown', function(e){
       widthAt:function(x, r){ return x - r.left; }});
 
     wirePlanMode(app); planModePill(app);
-    mvStripWire(app); if(MVFIT) mvFitPaint();
+    mvStripWire(app); if(MVFIT) mvFitPaint(); atrasoFaixaWire(app);
     var plq=document.getElementById('pl-quick'); if(plq) plq.onclick=openQuick;
     document.getElementById('pl-newcheck').onclick=function(){ openModal({type:'createCheck', preDate:null, prePeriod:null}); };
     var plCarry=document.getElementById('pl-carry');
