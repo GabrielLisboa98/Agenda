@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261124-1650';</script>
+<script>window.AGENDA_BUILD = '20261125-1400';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261124-1650"></script>
+<script src="cloud.js?v=20261125-1400"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -2109,6 +2109,15 @@ div.pl-fit{cursor:default;}
 @media (max-width:600px){ .mv-strip .mvs-hint{display:none;} .mv-strip .panel-head .side-fold{flex:1; min-width:0;} }
 @media (prefers-reduced-motion:reduce){ .mv-fit{animation:none;} .mvs-chip{transition:none;} }
 /* v174: tarefas rápidas — cor de energia por tempo (--ec) */
+.est-ic{width:1.15em; height:1.15em; flex:none; margin-right:2px; vertical-align:-.2em; filter:drop-shadow(0 1px 1px rgba(0,0,0,.18));}
+.est-opt .est-ic, .est-seg .est-ic{width:1em; height:1em;}
+.dm-h{font-size:.7222rem; font-weight:700; color:var(--ink-soft); padding:6px 10px 4px;}
+.dm-sub{margin-left:auto; padding-left:10px; font-size:.6667rem; color:var(--ink-faint);}
+.de-row{display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap;} .de-row .field{flex:0 1 200px; margin-bottom:0;}
+.de-rec{display:inline-flex; align-items:center; gap:8px; font-weight:400; height:40px; white-space:nowrap; cursor:pointer;} .de-rec input{width:auto; margin:0;}
+.de-hint{font-size:.7222rem; color:var(--ink-faint); margin:2px 0 10px;}
+.dl-event[data-rid]{cursor:pointer;}
+.dl-event[data-rid]:hover{text-decoration:underline;}
 .est-l1{--ec:#F2D76B;} .est-l2{--ec:#F09A3E;} .est-l3{--ec:#E0533F;} .est-l4{--ec:#9B5BD4;} .est-l5{--ec:#5E3A9E;}
 .est-pill[class*="est-l"]{background:color-mix(in srgb, var(--ec) 30%, transparent) !important; border-color:color-mix(in srgb, var(--ec) 75%, transparent); color:var(--ink);}
 .pl-card > .est-pill[class*="est-l"]{background:color-mix(in srgb, var(--ec) 45%, var(--bg,#fff)) !important;}
@@ -12048,15 +12057,23 @@ window.addEventListener('keydown', function(e){
      30 = roxo, 1h = roxo escuro. A cor diz "quanto de mim isso pede" antes de ler o número. */
   function estNivel(n){ n=+n||0; return n<=0?0 : n<=5?1 : n<=10?2 : n<=20?3 : n<=30?4 : 5; }
   function estTxt(n){ return n>=60 ? (n%60 ? Math.floor(n/60)+'h'+pad2(n%60) : (n/60)+'h') : n+' min'; }
+  /* v175: o raio/relógio da marca é um SVG pintado em degradê (amarelo claro→amarelo, amarelo→laranja,
+     laranja→vermelho, vermelho→roxo, roxo→roxo escuro) — o Gabriel preferiu ao ícone de emoji do app. */
+  var EST_GRAD={1:['#FFF3B0','#F7C948'],2:['#F7C948','#F08A24'],3:['#F08A24','#E0402F'],4:['#E0402F','#9B4DD4'],5:['#9B4DD4','#4B2A8C']};
+  function estIcon(n){
+    var lv=estNivel(n)||1, g=EST_GRAD[lv], id='eg'+lv;
+    return '<svg class="est-ic" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+g[0]+'"/><stop offset="1" stop-color="'+g[1]+'"/></linearGradient></defs>' +
+      '<path d="M13.5 1.5 4 13.6h6.6L9.3 22.5 20 9.9h-6.9z" fill="url(#'+id+')" stroke="rgba(0,0,0,.28)" stroke-width="1" stroke-linejoin="round"/></svg>';
+  }
   function estPillHtml(it){
     if(!it || it.done || (!it.done && it.carriedTo)) return '';
     var n=+it.est||0;
     if(!n) return ' <button type="button" class="est-pill add" data-act="est" title="Quanto tempo leva? Toque para marcar">⏱</button>';
-    return ' <button type="button" class="est-pill est-l'+estNivel(n)+(n<=EST_RAPIDA?' quick':'')+'" data-act="est" title="'+(n<=EST_RAPIDA?'Tarefa rápida — ':'')+'leva uns '+estTxt(n)+' (toque para mudar)">'+(n<=EST_RAPIDA?'⚡ ':'⏱ ')+estTxt(n)+'</button>';
+    return ' <button type="button" class="est-pill est-l'+estNivel(n)+(n<=EST_RAPIDA?' quick':'')+'" data-act="est" title="'+(n<=EST_RAPIDA?'Tarefa rápida — ':'')+'leva uns '+estTxt(n)+' (toque para mudar)">'+estIcon(n)+estTxt(n)+'</button>';
   }
   function estMenu(item, anchor, after){
     var r=anchor.getBoundingClientRect();
-    var html='<div class="est-menu-h">Quanto tempo leva?</div><div class="est-menu-row">'+EST_OPTS.map(function(n){ return '<button type="button" class="est-opt est-l'+estNivel(n)+((+item.est||0)===n?' on':'')+'" data-est="'+n+'">'+estTxt(n)+'</button>'; }).join('')+'</div>' +
+    var html='<div class="est-menu-h">Quanto tempo leva?</div><div class="est-menu-row">'+EST_OPTS.map(function(n){ return '<button type="button" class="est-opt est-l'+estNivel(n)+((+item.est||0)===n?' on':'')+'" data-est="'+n+'">'+estIcon(n)+estTxt(n)+'</button>'; }).join('')+'</div>' +
       ((+item.est||0) ? '<button type="button" class="nt-mi" data-est="0"><span class="nt-mi-i">✕</span><span class="nt-mi-t">Tirar o tempo</span></button>' : '');
     gridMenuOpen(r.left, r.bottom+4, html, function(m){
       Array.prototype.forEach.call(m.querySelectorAll('[data-est]'), function(b){ b.onclick=function(e){ e.stopPropagation(); gridMenuClose();
@@ -12096,7 +12113,7 @@ window.addEventListener('keydown', function(e){
         '<div class="checkbox" data-act="toggle" title="Feito!"></div>' +
         '<div class="qk-main"><div class="qk-t">'+escapeHtml(c.title)+'</div><div class="qk-sub">'+quando+'</div></div>' +
         (comChips ? '<div class="qk-chips">'+[5,10,15,20,30].map(function(n){ return '<button type="button" class="est-opt est-l'+estNivel(n)+'" data-set="'+n+'">'+n+'</button>'; }).join('')+'</div>'
-                  : '<span class="est-pill est-l'+estNivel(c.est)+(+c.est<=EST_RAPIDA?' quick':'')+'">'+(+c.est<=EST_RAPIDA?'⚡ ':'⏱ ')+estTxt(+c.est)+'</span>') +
+                  : '<span class="est-pill est-l'+estNivel(c.est)+(+c.est<=EST_RAPIDA?' quick':'')+'">'+estIcon(c.est)+estTxt(+c.est)+'</span>') +
       '</div>';
     }
     modal.innerHTML='<div class="modal-head"><h3>⚡ Tarefas rápidas</h3><button class="iconbtn" data-act="close">✕</button></div><div class="modal-body qk">' +
@@ -14670,6 +14687,7 @@ window.addEventListener('keydown', function(e){
     mc.querySelector('[data-mc=next]').onclick=function(){ state.miniCalAnchor=addMonthsStr(anchor,1); render(); };
     Array.prototype.forEach.call(mc.querySelectorAll('.mini-cal-day'), function(el){
       el.onclick=function(){ state.miniCalAnchor=null; setDate(el.getAttribute('data-d'), state.view==='week'||state.view==='month'); };
+      dayCtxWire(el);
     });
   }
   function brandMarkHtml(){
@@ -15023,6 +15041,7 @@ window.addEventListener('keydown', function(e){
   }
   window.__mvParse=mvParseQuando;
   window.__agendaView=function(v){ setView(v); };   // v166: as Notas abrem o Mapa mental trocando para a vista delas
+  window.__agendaDate=function(d){ setDate(d, true); };   // v175: testes (e o Assistente) mudam o dia sem clicar
   window.__mvTestCheck=function(id){ var c=(state.weekChecklist||[]).concat(state.backlogChecklist||[]).filter(function(x){ return x.id===id; })[0]; if(c) toggleCheck(c); return !!c; };
   window.__mvTestDone=function(id){ var b=freshBlockById(id); if(b) completeBlock(b, Date.now()-3600000, Date.now()); return !!b; };
   function mvScheduleTask(t){
@@ -16219,6 +16238,68 @@ window.addEventListener('keydown', function(e){
     return timeStr(d);
   }
 
+  /* ===== v175: opções do dia =====
+     Pedido do Gabriel (25/11): marcar "formatura da prima, sexta 11/12" sem ir às Configurações › Eventos e sem
+     saber o horário. Botão direito (ou toque longo no celular) num dia — mini-calendário, cabeçalho do Dia/Semana,
+     célula do Mês — abre as opções daquele dia: evento do dia todo, afazer, bloco, abrir o dia. */
+  function dayCtxWire(el, d){
+    if(!el || el.__dctx) return; el.__dctx=true;
+    el.addEventListener('contextmenu', function(e){ e.preventDefault(); e.stopPropagation(); dayMenu(e.clientX, e.clientY, d||el.getAttribute('data-d')); });
+    var t=null, sx=0, sy=0, longo=false;
+    el.addEventListener('pointerdown', function(e){ if(e.pointerType!=='touch') return; longo=false; sx=e.clientX; sy=e.clientY;
+      clearTimeout(t); t=setTimeout(function(){ longo=true; if(window.uiHaptic) uiHaptic(10); dayMenu(sx, sy, d||el.getAttribute('data-d')); }, 500); });
+    el.addEventListener('pointermove', function(e){ if(t && Math.abs(e.clientX-sx)+Math.abs(e.clientY-sy)>10){ clearTimeout(t); t=null; } });
+    el.addEventListener('pointerup', function(){ clearTimeout(t); t=null; });
+    el.addEventListener('pointercancel', function(){ clearTimeout(t); t=null; });
+    // o toque longo não pode também "clicar" (trocaria de dia por baixo do menu)
+    el.addEventListener('click', function(e){ if(longo){ longo=false; e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+    if(!el.title) el.title='Botão direito: opções do dia';
+  }
+  function dayMenu(x, y, d){
+    if(!d) return;
+    var evs=remindersForDate(d);
+    var html='<div class="dm-h">'+escapeHtml(weekdayLabel(d))+', '+dayNum(d)+' de '+escapeHtml(monthNameOf(d))+'</div>' +
+      evs.map(function(r){ var mt=reminderTypeMeta(r.type); return '<button type="button" class="nt-mi" data-dm-ev="'+r.id+'"><span class="nt-mi-i">'+mt.icon+'</span><span class="nt-mi-t">'+escapeHtml(r.label)+'</span><span class="dm-sub">editar</span></button>'; }).join('') +
+      '<button type="button" class="nt-mi" data-dm="ev"><span class="nt-mi-i">🎉</span><span class="nt-mi-t">Marcar evento neste dia</span></button>' +
+      '<button type="button" class="nt-mi" data-dm="ck"><span class="nt-mi-i">☑️</span><span class="nt-mi-t">Novo afazer neste dia</span></button>' +
+      '<button type="button" class="nt-mi" data-dm="bl"><span class="nt-mi-i">⏱️</span><span class="nt-mi-t">Novo bloco neste dia</span></button>' +
+      '<button type="button" class="nt-mi" data-dm="go"><span class="nt-mi-i">📅</span><span class="nt-mi-t">Abrir o dia</span></button>';
+    gridMenuOpen(x, y, html, function(m){
+      Array.prototype.forEach.call(m.querySelectorAll('[data-dm],[data-dm-ev]'), function(b){ b.onclick=function(e){ e.stopPropagation(); gridMenuClose();
+        var a=b.getAttribute('data-dm'), evId=b.getAttribute('data-dm-ev');
+        if(evId){ var r=(state.reminders||[]).filter(function(x){ return x.id===evId; })[0]; if(r) openModal({type:'dayEvent', date:d, item:r}); return; }
+        if(a==='ev') openModal({type:'dayEvent', date:d});
+        else if(a==='ck') openModal({type:'createCheck', preDate:d});
+        else if(a==='bl') openModal({type:'create', date:d, start:'09:00', end:'10:00'});
+        else if(a==='go'){ state.miniCalAnchor=null; setDate(d); setView('day'); }
+      }; });
+    });
+  }
+  function monthNameOf(d){ try{ return new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{month:'long'}); }catch(_){ return ''; } }
+  function buildDayEventModal(modal, m){
+    var ed=m.item||null, tipo=ed?ed.type:'evento';
+    modal.innerHTML='<div class="modal-head"><h3>'+(ed?'Editar evento':'🎉 Novo evento do dia')+'</h3><button class="iconbtn" data-act="close">✕</button></div><div class="modal-body">' +
+      '<div class="field"><label>O quê</label><input type="text" id="de-label" placeholder="ex: Formatura da minha prima" value="'+escapeHtml(ed?ed.label:'')+'"></div>' +
+      '<div class="field"><label>Tipo</label><div class="seg" id="de-type">'+Object.keys(REMINDER_TYPES).map(function(k){ var mt=REMINDER_TYPES[k]; return '<button type="button" data-t="'+k+'" class="'+(k===tipo?'active':'')+'">'+mt.icon+' '+mt.label+'</button>'; }).join('')+'</div></div>' +
+      '<div class="de-row"><div class="field"><label>Dia</label><input type="date" id="de-date" value="'+(ed?ed.date:m.date)+'"></div>' +
+      '<label class="de-rec"><input type="checkbox" id="de-rec" '+(ed&&ed.recurring?'checked':'')+'> <span>repete todo ano</span></label></div>' +
+      '<div class="de-hint">Sem horário: fica no topo do dia, o dia todo. Quando souber a hora, crie um bloco.</div>' +
+      '<div class="modal-actions">'+(ed?'<button class="btn ghost danger" id="de-del" style="margin-right:auto;">Excluir</button>':'')+'<button class="btn ghost" data-act="close">Cancelar</button><button class="btn primary" id="de-save">'+(ed?'Salvar':'Marcar evento')+'</button></div></div>';
+    Array.prototype.forEach.call(modal.querySelectorAll('[data-act=close]'), function(b){ b.onclick=closeModal; });
+    Array.prototype.forEach.call(modal.querySelectorAll('#de-type [data-t]'), function(b){ b.onclick=function(){ tipo=b.getAttribute('data-t'); Array.prototype.forEach.call(modal.querySelectorAll('#de-type [data-t]'), function(x){ x.classList.toggle('active', x===b); }); }; });
+    var inp=modal.querySelector('#de-label'); setTimeout(function(){ try{ inp.focus(); }catch(_){ } }, 50);
+    function salvar(){
+      var label=inp.value.trim(), date=modal.querySelector('#de-date').value, rec=modal.querySelector('#de-rec').checked;
+      if(!label){ inp.focus(); inp.classList.add('shake'); setTimeout(function(){ inp.classList.remove('shake'); }, 400); return; }
+      if(!date) return;
+      if(ed) updateReminder(ed.id, {label:label, date:date, type:tipo, recurring:rec}); else addReminder(date, label, tipo, rec);
+      closeModal(); showToast((ed?'Evento atualizado: ':'Evento marcado: ')+label+' · '+weekdayLabel(date).toLowerCase()+', '+dayNum(date)+'.', REMINDER_TYPES[tipo].icon);
+    }
+    modal.querySelector('#de-save').onclick=salvar;
+    inp.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); salvar(); } });
+    var del=modal.querySelector('#de-del'); if(del) wireArmConfirm(del, 'Excluir de vez?', function(){ removeReminder(ed.id); closeModal(); });
+  }
+
   function renderDayLabels(dates){
     var el=document.getElementById('daylabels');
     el.innerHTML = dates.map(function(d){
@@ -16228,7 +16309,7 @@ window.addEventListener('keydown', function(e){
       var rems=remindersForDate(d);
       var remShown=rems.slice(0,2), remOverflow=rems.length>2?rems.length-2:0;
       var remHtml = rems.length ? '<div class="dl-events">' +
-        remShown.map(function(r){ var meta=reminderTypeMeta(r.type); return '<div class="dl-event" style="color:'+meta.color+';" title="'+escapeHtml(r.label)+'">'+meta.icon+' '+escapeHtml(r.label)+'</div>'; }).join('') +
+        remShown.map(function(r){ var meta=reminderTypeMeta(r.type); return '<div class="dl-event" data-rid="'+r.id+'" style="color:'+meta.color+';" title="'+escapeHtml(r.label)+' — toque para editar">'+meta.icon+' '+escapeHtml(r.label)+'</div>'; }).join('') +
         (remOverflow ? '<div class="dl-event-more">+'+remOverflow+'</div>' : '') +
       '</div>' : '';
       return '<div class="'+cls+'" data-d="'+d+'" '+(hol?'title="'+escapeHtml(hol.name)+'"':'')+'>' +
@@ -16239,6 +16320,11 @@ window.addEventListener('keydown', function(e){
     }).join('');
     Array.prototype.forEach.call(el.querySelectorAll('.cal-daylabel'), function(lb){
       lb.onclick=function(){ setDate(lb.getAttribute('data-d'), true); };
+      dayCtxWire(lb);
+    });
+    // tocar num evento do cabeçalho abre para editar
+    Array.prototype.forEach.call(el.querySelectorAll('.dl-event[data-rid]'), function(ev){
+      ev.onclick=function(e){ e.stopPropagation(); var r=(state.reminders||[]).filter(function(x){ return x.id===ev.getAttribute('data-rid'); })[0]; if(r) openModal({type:'dayEvent', date:r.date, item:r}); };
     });
   }
 
@@ -17856,7 +17942,7 @@ window.addEventListener('keydown', function(e){
 
       var rems=remindersForDate(d);
       var remShown=rems.slice(0,2), remOverflow=rems.length>2?rems.length-2:0;
-      var remHtml = rems.length ? remShown.map(function(r){ var meta=reminderTypeMeta(r.type); return '<div class="dl-event" style="color:'+meta.color+';" title="'+escapeHtml(r.label)+'">'+meta.icon+' '+escapeHtml(r.label)+'</div>'; }).join('') + (remOverflow?'<div class="month-more">+'+remOverflow+'</div>':'') : '';
+      var remHtml = rems.length ? remShown.map(function(r){ var meta=reminderTypeMeta(r.type); return '<div class="dl-event" data-rid="'+r.id+'" style="color:'+meta.color+';" title="'+escapeHtml(r.label)+' — toque para editar">'+meta.icon+' '+escapeHtml(r.label)+'</div>'; }).join('') + (remOverflow?'<div class="month-more">+'+remOverflow+'</div>':'') : '';
       return '<div class="month-cell'+(inMonth?'':' outside')+(d===todayStr()?' is-today':'')+(hol?' is-holiday':'')+'" data-d="'+d+'" '+(hol?'title="'+escapeHtml(hol.name)+'"':'')+'>' +
         '<div class="n">'+dayNum(d)+'</div>' +
         (hol?'<div class="holiday-lbl">'+escapeHtml(hol.name)+'</div>':'') +
@@ -17867,6 +17953,7 @@ window.addEventListener('keydown', function(e){
     }).join('');
     Array.prototype.forEach.call(cells.querySelectorAll('.month-cell'), function(c){
       c.onclick=function(){ setDate(c.getAttribute('data-d')); };
+      dayCtxWire(c);
     });
   }
 
@@ -20455,6 +20542,7 @@ window.addEventListener('keydown', function(e){
     else if(m.type==='night') buildNightModal(modal, m.date);
     else if(m.type==='carry') buildCarryModal(modal, m);
     else if(m.type==='quick') buildQuickModal(modal, m);
+    else if(m.type==='dayEvent') buildDayEventModal(modal, m);
   }
 
   function buildNightModal(modal, dstr){
@@ -21247,7 +21335,7 @@ window.addEventListener('keydown', function(e){
           '<button type="button" data-p="">—</button>' +
           PERIODS.map(function(p){ return '<button type="button" data-p="'+p.k+'">'+p.icon+' '+p.label+'</button>'; }).join('') +
         '</div><div class="mono" id="c-period-hint" style="margin-top:4px; font-size:.66rem; color:var(--ink-faint);"></div></div>' +
-        '<div class="field"><label>Quanto tempo leva? (opcional)</label><div class="seg est-seg" id="c-est">'+[0].concat(EST_OPTS).map(function(n){ var cur=+(isEdit?existing.est:m.est)||0; return '<button type="button" data-e="'+n+'" class="est-l'+estNivel(n)+(n===cur?' active':'')+'">'+(n?(n<=EST_RAPIDA?'⚡':'')+estTxt(n):'—')+'</button>'; }).join('')+'</div></div>' +
+        '<div class="field"><label>Quanto tempo leva? (opcional)</label><div class="seg est-seg" id="c-est">'+[0].concat(EST_OPTS).map(function(n){ var cur=+(isEdit?existing.est:m.est)||0; return '<button type="button" data-e="'+n+'" class="est-l'+estNivel(n)+(n===cur?' active':'')+'">'+(n?estIcon(n)+estTxt(n):'—')+'</button>'; }).join('')+'</div></div>' +
         '<div class="field"><label>Tags (opcional, separadas por vírgula)</label><input id="c-tags" type="text" placeholder="ex: obra JB, urgente" value="'+(isEdit?escapeHtml((existing.tags||[]).join(', ')):'')+'"></div>' +
         '<div class="modal-actions">' +
           (isEdit? '<button class="btn ghost" data-act="delete" style="color:var(--critical); margin-right:auto;">Excluir</button>' : '') +
