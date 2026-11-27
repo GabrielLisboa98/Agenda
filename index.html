@@ -7,9 +7,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/sl-favicon-32.png">
 <link rel="apple-touch-icon" href="icons/sl-apple-touch-icon.png">
-<script>window.AGENDA_BUILD = '20261125-1430';</script>
+<script>window.AGENDA_BUILD = '20261127-1440';</script>
 <script src="config.js"></script>
-<script src="cloud.js?v=20261125-1430"></script>
+<script src="cloud.js?v=20261127-1440"></script>
 <style>@media (max-width:860px){ .ac-dot{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 18px)!important;} .ac-menu{left:calc(16px + env(safe-area-inset-left,0px))!important; bottom:auto!important; top:calc(var(--safe-top,0px) + 54px)!important;} }</style>
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Agenda</title>
@@ -8892,7 +8892,9 @@ function ntWire(){
 
   document.addEventListener('click', function(e){
     var el=e.target.closest && e.target.closest('[data-open],[data-go],[data-new],[data-exp],[data-res],[data-cap],[data-back],[data-moveto],[data-promote],[data-pin],[data-pagemenu],[data-cover-pick],[data-cover-del],#nt-iconbtn,#nt-addicon,[data-newmenu],[data-dbview],[data-dbaddview],[data-dbviewmenu],[data-dbfilter],[data-dbsort],[data-dbgroup],[data-dbprops],[data-dbchart],[data-dbnew],[data-propmenu],[data-dbaddprop],[data-dbcalc],[data-pick],[data-dbgtoggle],[data-newtpl],[data-tpltoggle],[data-restore],[data-newfromtpl],[data-usetpl],[data-bltoggle],[data-blopen]');
-    if(!el || el.closest('.nt-pop') || !el.closest('#nt-host,.nt-overlay')) return;
+    /* v177: desde a v168 a lateral das Notas (#nt-side) mora dentro da lateral do app no PC, fora do #nt-host —
+       sem aceitar #nt-side aqui, todo clique em Início, Caixa de entrada, Mapa mental e nas páginas era descartado. */
+    if(!el || el.closest('.nt-pop') || !el.closest('#nt-host,#nt-side,.nt-overlay')) return;
     if(el.hasAttribute('data-newmenu')){ ntNewMenu(el, null); return; }
     if(el.hasAttribute('data-dbview') && NT.cur){ var d0=ntClone(ntDbOf(NT.cur.id)); d0.active=el.getAttribute('data-dbview'); ntDbSave(NT.cur.id, d0); ntDbRender(); return; }
     if(el.hasAttribute('data-dbaddview')){ ntDbAddViewPop(el); return; }
@@ -11590,7 +11592,7 @@ window.addEventListener('keydown', function(e){
     state.searchOpen=false; renderSearchUi();
   });
   document.addEventListener('keydown', function(e){
-    if((e.ctrlKey||e.metaKey) && (e.key==='k' || e.key==='K')){ if(e.target && e.target.closest && e.target.closest('#nt-host,.nt-pop,.nt-overlay')) return; e.preventDefault(); if(!state.searchOpen) toggleSearch(); }
+    if((e.ctrlKey||e.metaKey) && (e.key==='k' || e.key==='K')){ if(e.target && e.target.closest && e.target.closest('#nt-host,#nt-side,.nt-pop,.nt-overlay')) return; e.preventDefault(); if(!state.searchOpen) toggleSearch(); }
   });
 
   function notifBellHtml(){
